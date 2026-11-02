@@ -1,0 +1,25 @@
+<div class="app-shell">
+  <app-header (toggleMobile)="openMobileSidebar()" />
+
+  <div class="app-shell__body">
+    <app-sidebar
+      [collapsed]="sidebarCollapsed()"
+      [mobileOpen]="mobileSidebarOpen()"
+      (toggleCollapse)="toggleSidebar()"
+      (closeMobile)="closeMobileSidebar()"
+    />
+
+    @if (mobileSidebarOpen()) {
+      <button
+        class="app-shell__scrim"
+        type="button"
+        aria-label="Close navigation"
+        (click)="closeMobileSidebar()"
+      ></button>
+    }
+
+    <main class="app-shell__content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

@@ -1,0 +1,57 @@
+<article class="trend-card">
+  <header class="trend-card__head">
+    <div>
+      <h2 class="trend-card__title">Real-time Lock-in Trends</h2>
+      <p class="trend-card__subtitle">Hourly today</p>
+    </div>
+    <span class="trend-card__unit">Locked items</span>
+  </header>
+
+  @if (points().length > 0) {
+    <div class="trend-card__chart">
+      <svg viewBox="0 0 720 260" role="img" aria-label="Hourly locked items trend">
+        <defs>
+          <linearGradient id="trend-area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.2"></stop>
+            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"></stop>
+          </linearGradient>
+        </defs>
+
+        @for (tick of geometry().ticks; track tick.value) {
+          <line
+            class="trend-grid"
+            [attr.x1]="geometry().plotLeft"
+            [attr.y1]="tick.y"
+            [attr.x2]="geometry().plotRight"
+            [attr.y2]="tick.y"
+          ></line>
+          <text
+            class="trend-axis"
+            [attr.x]="geometry().plotLeft - 10"
+            [attr.y]="tick.y + 4"
+            text-anchor="end"
+          >
+            {{ tick.value }}
+          </text>
+        }
+
+        <path [attr.d]="geometry().areaPath" fill="url(#trend-area)"></path>
+        <path class="trend-line" [attr.d]="geometry().linePath"></path>
+
+        @for (point of geometry().points; track point.hour) {
+          <circle class="trend-dot" [attr.cx]="point.x" [attr.cy]="point.y" r="4"></circle>
+          <text
+            class="trend-axis"
+            [attr.x]="point.x"
+            [attr.y]="geometry().plotBottom + 24"
+            text-anchor="middle"
+          >
+            {{ point.hour }}
+          </text>
+        }
+      </svg>
+    </div>
+  } @else {
+    <div class="trend-card__empty">No trend data available for today.</div>
+  }
+</article>

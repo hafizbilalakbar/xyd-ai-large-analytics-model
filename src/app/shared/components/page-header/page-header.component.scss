@@ -1,0 +1,38 @@
+@use 'mixins' as mixins;
+
+:host {
+  display: block;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.page-header__copy {
+  min-width: 0;
+}
+
+.page-header__title {
+  color: var(--color-text);
+  font-size: var(--font-size-2xl);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.page-header__description {
+  max-width: 48rem;
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+@include mixins.media-down(768px) {
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,95 @@
+@use 'mixins' as mixins;
+
+:host {
+  display: block;
+}
+
+.trend-card {
+  @include mixins.surface-card;
+
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.trend-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.trend-card__title {
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.trend-card__subtitle {
+  margin-top: 0.125rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.trend-card__unit {
+  flex: none;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.trend-card__chart {
+  margin-top: auto;
+  overflow-x: auto;
+}
+
+.trend-card__chart svg {
+  display: block;
+  width: 100%;
+  min-width: 34rem;
+  height: auto;
+}
+
+.trend-card__empty {
+  display: grid;
+  min-height: 15rem;
+  margin-top: auto;
+  place-items: center;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.trend-grid {
+  stroke: #e8edf5;
+  stroke-dasharray: 4 6;
+  stroke-width: 1;
+}
+
+.trend-axis {
+  fill: #94a3b8;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.trend-line {
+  fill: none;
+  stroke: var(--color-primary-600);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+}
+
+.trend-dot {
+  fill: #ffffff;
+  stroke: var(--color-primary-600);
+  stroke-width: 2.5;
+}

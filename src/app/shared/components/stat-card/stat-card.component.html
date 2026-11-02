@@ -1,0 +1,22 @@
+<article class="stat-card">
+  <div class="stat-card__head">
+    <span class="stat-card__icon" [attr.data-tone]="tone()">
+      <app-icon [name]="icon()" />
+    </span>
+    <span class="stat-card__label">{{ label() }}</span>
+  </div>
+
+  <p class="stat-card__value">{{ value() }}</p>
+
+  @if (delta()) {
+    <p class="stat-card__delta" [class.stat-card__delta--negative]="deltaTone() === 'negative'">
+      <span
+        class="stat-card__trend"
+        [class.stat-card__trend--down]="deltaDirection() === 'down'"
+        aria-hidden="true"
+      ></span>
+      <strong>{{ delta() }}</strong>
+      <span class="stat-card__delta-label">vs. yesterday</span>
+    </p>
+  }
+</article>

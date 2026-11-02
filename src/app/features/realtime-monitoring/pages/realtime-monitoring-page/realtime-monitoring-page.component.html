@@ -1,0 +1,36 @@
+<section class="monitoring">
+  <header class="monitoring__header">
+    <div class="monitoring__heading">
+      <h1 class="monitoring__title">Real-time Lock Monitoring</h1>
+      <p class="monitoring__subtitle">
+        <span class="monitoring__subtitle-bar" aria-hidden="true"></span>
+        <span>Workstation status and judgment results are updated in real time.</span>
+      </p>
+    </div>
+
+    <app-monitoring-status-badges
+      [serviceStatus]="monitoring.serviceStatus()"
+      [modelVersion]="monitoring.activationModelVersion()"
+    />
+  </header>
+
+  <div class="monitoring__card">
+    @if (monitoring.latestRecord(); as record) {
+      <app-monitoring-live-result
+        [record]="record"
+        [recentRecords]="monitoring.recentRecords()"
+      />
+    } @else {
+      <app-monitoring-empty-state
+        [serviceRunning]="serviceRunning()"
+        [devicePushed]="devicePushed()"
+      />
+    }
+  </div>
+
+  <app-monitoring-status-bar
+    [isTimedOut]="monitoring.isTimedOut()"
+    [frequency]="monitoring.receiveFrequency()"
+    [lastReceivedAt]="monitoring.lastReceivedAt()"
+  />
+</section>

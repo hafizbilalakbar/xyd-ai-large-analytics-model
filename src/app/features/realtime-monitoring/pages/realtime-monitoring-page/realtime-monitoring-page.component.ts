@@ -1,0 +1,28 @@
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { MonitoringEmptyStateComponent } from '../../components/monitoring-empty-state/monitoring-empty-state.component';
+import { MonitoringLiveResultComponent } from '../../components/monitoring-live-result/monitoring-live-result.component';
+import { MonitoringStatusBadgesComponent } from '../../components/monitoring-status-badges/monitoring-status-badges.component';
+import { MonitoringStatusBarComponent } from '../../components/monitoring-status-bar/monitoring-status-bar.component';
+import { MonitoringService } from '../../data-access/monitoring.service';
+
+@Component({
+  selector: 'app-realtime-monitoring-page',
+  imports: [
+    MonitoringStatusBadgesComponent,
+    MonitoringEmptyStateComponent,
+    MonitoringLiveResultComponent,
+    MonitoringStatusBarComponent,
+  ],
+  templateUrl: './realtime-monitoring-page.component.html',
+  styleUrl: './realtime-monitoring-page.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class RealtimeMonitoringPageComponent {
+  protected readonly monitoring = inject(MonitoringService);
+  protected readonly serviceRunning = computed(
+    () => this.monitoring.serviceStatus() !== 'error',
+  );
+  protected readonly devicePushed = computed(
+    () => this.monitoring.deviceStatus() === 'pushed',
+  );
+}

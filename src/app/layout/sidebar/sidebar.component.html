@@ -1,0 +1,57 @@
+<aside
+  class="sidebar"
+  [class.sidebar--collapsed]="collapsed()"
+  [class.sidebar--open]="mobileOpen()"
+>
+  <div class="sidebar__head">
+    <span class="sidebar__heading">Workspace</span>
+
+    <div class="sidebar__tools">
+      <button
+        class="sidebar__tool sidebar__collapse"
+        type="button"
+        [attr.aria-label]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+        [attr.title]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+        (click)="toggleCollapse.emit()"
+      >
+        <app-icon name="chevron-left" />
+      </button>
+
+      <button
+        class="sidebar__tool sidebar__close"
+        type="button"
+        aria-label="Close navigation"
+        (click)="closeMobile.emit()"
+      >
+        <app-icon name="close" />
+      </button>
+    </div>
+  </div>
+
+  <nav class="sidebar__nav" aria-label="Main navigation">
+    @for (item of navigationItems; track item.route) {
+      <a
+        class="nav-item"
+        [routerLink]="item.route"
+        routerLinkActive="nav-item--active"
+        [attr.title]="collapsed() ? item.label : null"
+        (click)="closeMobile.emit()"
+      >
+        <span class="nav-item__icon">
+          <app-icon [name]="item.icon" />
+        </span>
+        <span class="nav-item__label">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <footer class="sidebar__foot">
+    <div class="sidebar__status">
+      <span class="sidebar__status-dot" aria-hidden="true"></span>
+      <div class="sidebar__status-copy">
+        <span class="sidebar__status-label">{{ settings.statusLabel }}</span>
+        <span class="sidebar__status-version">{{ settings.version }}</span>
+      </div>
+    </div>
+  </footer>
+</aside>

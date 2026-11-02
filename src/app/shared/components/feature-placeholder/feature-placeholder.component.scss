@@ -1,0 +1,48 @@
+@use 'mixins' as mixins;
+
+:host {
+  display: block;
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.feature__empty {
+  @include mixins.surface-card;
+
+  display: flex;
+  min-height: 22rem;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: var(--space-10);
+  text-align: center;
+}
+
+.feature__icon {
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin-bottom: var(--space-4);
+  place-items: center;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+  --icon-size: 1.5rem;
+}
+
+.feature__title {
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+  font-weight: 650;
+}
+
+.feature__text {
+  max-width: 26rem;
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}

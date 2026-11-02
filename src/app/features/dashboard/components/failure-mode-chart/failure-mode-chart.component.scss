@@ -1,0 +1,124 @@
+@use 'mixins' as mixins;
+
+:host {
+  display: block;
+}
+
+.failure-card {
+  @include mixins.surface-card;
+
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-5);
+}
+
+.failure-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.failure-card__title {
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.failure-card__subtitle {
+  margin-top: 0.125rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.failure-card__total {
+  flex: none;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-danger-soft);
+  color: var(--color-danger);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.failure-card__list {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.failure-mode__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: 0.375rem;
+}
+
+.failure-mode__label {
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.failure-mode__value {
+  flex: none;
+  color: var(--color-text-muted);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.failure-mode__track {
+  height: 0.375rem;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background-color: #f1f5f9;
+}
+
+.failure-mode__bar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.failure-mode__bar[data-tone='blue'] {
+  background-color: var(--color-primary-600);
+}
+
+.failure-mode__bar[data-tone='amber'] {
+  background-color: #f59e0b;
+}
+
+.failure-mode__bar[data-tone='red'] {
+  background-color: #dc2626;
+}
+
+.failure-mode__bar[data-tone='violet'] {
+  background-color: var(--color-violet);
+}
+
+.failure-mode__bar[data-tone='slate'] {
+  background-color: #94a3b8;
+}
+
+.failure-card__empty {
+  display: grid;
+  min-height: 15rem;
+  flex: 1;
+  place-items: center;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}

@@ -1,0 +1,17 @@
+<div class="badges">
+  <span class="badge">
+    <span
+      class="badge__dot"
+      [class.badge__dot--receiving]="serviceStatus() === 'receiving'"
+      [class.badge__dot--error]="serviceStatus() === 'error'"
+      role="img"
+      [attr.aria-label]="'Data access status: ' + serviceLabel()"
+    ></span>
+    <span>Electric Screw Data Access: {{ serviceLabel() }}</span>
+  </span>
+
+  <span class="badge">
+    <span>Current activation model</span>
+    <strong class="badge__version">{{ modelVersion() }}</strong>
+  </span>
+</div>
