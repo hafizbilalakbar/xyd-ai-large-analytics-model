@@ -1,0 +1,33 @@
+<div class="summary-cards">
+  <div class="summary-card">
+    <div class="summary-card__header">
+      <span class="summary-card__marker summary-card__marker--red"></span>
+      <span class="summary-card__title">Pending review</span>
+    </div>
+    <div class="summary-card__value summary-card__value--red">{{ pendingCount() }}</div>
+    <div class="summary-card__hint">Highest confidence is below {{ threshold() }}%.</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-card__header">
+      <span class="summary-card__marker summary-card__marker--green"></span>
+      <span class="summary-card__title">Reviewed</span>
+    </div>
+    <div class="summary-card__value summary-card__value--green">{{ reviewedCount() }}</div>
+    <div class="summary-card__hint">Includes corrections and confirmations.</div>
+  </div>
+
+  <div class="summary-card">
+    <div class="summary-card__header">
+      <span class="summary-card__marker summary-card__marker--orange"></span>
+      <span class="summary-card__title">Review completion rate</span>
+    </div>
+    <div class="summary-card__value summary-card__value--orange">{{ completionRate() }}%</div>
+    <div class="summary-card__hint">Reviewed / Total = {{ reviewedCount() }} / {{ totalCount() }}</div>
+    <div class="summary-card__progress">
+      <div class="summary-card__progress-track">
+        <div class="summary-card__progress-fill" [style.width.%]="completionRate()"></div>
+      </div>
+    </div>
+  </div>
+</div>

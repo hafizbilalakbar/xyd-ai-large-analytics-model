@@ -1,0 +1,213 @@
+<div class="results-card">
+  <div class="results-card__header">
+    <span class="results-card__title">Checklist</span>
+    <div class="results-card__actions">
+      <span class="results-card__summary">Total {{ totalCount() }} items, {{ notReviewedCount() }} not reviewed.</span>
+      <button
+        type="button"
+        class="btn-export"
+        [disabled]="isExporting()"
+        (click)="export.emit()"
+        aria-label="Batch export">
+        @if (isExporting()) {
+          <span class="btn__spinner"></span>
+        } @else {
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        }
+        Batch export
+      </button>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    <table class="results-table">
+      <colgroup>
+        <col style="width: 40px;">
+        <col style="width: 6%;">
+        <col style="width: 12%;">
+        <col style="width: 14%;">
+        <col style="width: 16%;">
+        <col style="width: 8%;">
+        <col style="width: 7%;">
+        <col style="width: 9%;">
+        <col style="width: 90px;">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>
+            <input
+              type="checkbox"
+              [checked]="allSelectedOnPage()"
+              [indeterminate]="someSelectedOnPage()"
+              (change)="toggleSelectAll.emit()"
+              aria-label="Select all rows on page">
+          </th>
+          <th>Serial No.</th>
+          <th class="sortable" (click)="onSort('lockingTime')">
+            Locking Time
+            <span class="sort-icon" [class.active]="sort().field === 'lockingTime'">
+              @if (sort().field === 'lockingTime' && sort().direction === 'desc') {
+                &#9662;
+              } @else {
+                &#9652;
+              }
+            </span>
+          </th>
+          <th>Sample ID</th>
+          <th>Major Failure Mode</th>
+          <th class="sortable" (click)="onSort('confidence')">
+            Confidence
+            <span class="sort-icon" [class.active]="sort().field === 'confidence'">
+              @if (sort().field === 'confidence' && sort().direction === 'desc') {
+                &#9662;
+              } @else {
+                &#9652;
+              }
+            </span>
+          </th>
+          <th>Corrected</th>
+          <th>Model Version</th>
+          <th class="actions-header">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr class="state-row">
+            <td colspan="9">
+              <div class="skeleton-rows">
+                @for (i of [1, 2, 3, 4, 5]; track i) {
+                  <div class="skeleton-row">
+                    <div class="skeleton-cell" style="width: 40px;"></div>
+                    <div class="skeleton-cell" style="width: 6%;"></div>
+                    <div class="skeleton-cell" style="width: 14%;"></div>
+                    <div class="skeleton-cell" style="width: 12%;"></div>
+                    <div class="skeleton-cell" style="width: 16%;"></div>
+                    <div class="skeleton-cell" style="width: 8%;"></div>
+                    <div class="skeleton-cell" style="width: 7%;"></div>
+                    <div class="skeleton-cell" style="width: 9%;"></div>
+                    <div class="skeleton-cell" style="width: 90px;"></div>
+                  </div>
+                }
+              </div>
+            </td>
+          </tr>
+        } @else if (errorMessage()) {
+          <tr class="state-row">
+            <td colspan="9">
+              <div class="error-state">
+                <p class="error-message">Failed to load data.</p>
+                <button class="retry-btn" type="button" (click)="retry.emit()" aria-label="Retry loading data">Retry</button>
+              </div>
+            </td>
+          </tr>
+        } @else if (rows().length === 0) {
+          <tr class="state-row">
+            <td colspan="9">
+              <div class="empty-state">
+                <svg class="empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+                  <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                </svg>
+                <p class="empty-text">No data available.</p>
+              </div>
+            </td>
+          </tr>
+        } @else {
+          @for (row of rows(); track row.serialNo) {
+            <tr [class.selected]="selectedIds().has(row.sampleId)">
+              <td>
+                <input
+                  type="checkbox"
+                  [checked]="selectedIds().has(row.sampleId)"
+                  (change)="toggleSelect.emit(row.sampleId)"
+                  [attr.aria-label]="'Select sample ' + row.sampleId">
+              </td>
+              <td>{{ row.serialNo }}</td>
+              <td>{{ row.lockingTime }}</td>
+              <td>{{ row.sampleId }}</td>
+              <td>{{ row.failureMode ?? '-' }}</td>
+              <td>
+                @if (row.confidence !== null) {
+                  <span [class.confidence-low]="isLowConfidence(row.confidence)">
+                    {{ row.confidence }}%
+                  </span>
+                } @else {
+                  <span>-</span>
+                }
+              </td>
+              <td>
+                @if (row.corrected) {
+                  <span class="tag tag--yes">Yes</span>
+                } @else {
+                  <span class="tag tag--no">No</span>
+                }
+              </td>
+              <td>{{ row.modelVersion }}</td>
+              <td class="actions-cell">
+                <button
+                  class="action-btn"
+                  type="button"
+                  title="View details"
+                  [attr.aria-label]="'View details for sample ' + row.sampleId"
+                  (click)="$event.stopPropagation()">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+                <button
+                  class="action-btn"
+                  type="button"
+                  title="Review"
+                  [attr.aria-label]="'Review sample ' + row.sampleId"
+                  (click)="onReview(row.sampleId)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="results-card__footer">
+    <app-table-pagination
+      [totalCount]="totalCount()"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="pageChange.emit($event)"
+      (pageSizeChange)="pageSizeChange.emit($event)">
+    </app-table-pagination>
+  </div>
+</div>
+
+@if (reviewDialogOpen()) {
+  <div class="dialog-overlay" (click)="closeReviewDialog()">
+    <div class="dialog" (click)="$event.stopPropagation()">
+      <div class="dialog__header">
+        <span class="dialog__title">Review Sample</span>
+        <button type="button" class="dialog__close" (click)="closeReviewDialog()" aria-label="Close dialog">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="dialog__body">
+        <p>Sample ID: <strong>{{ reviewDialogSampleId() }}</strong></p>
+        <p>Review action placeholder. Connect to backend review API here.</p>
+      </div>
+      <div class="dialog__footer">
+        <button type="button" class="btn btn-query" (click)="closeReviewDialog()">Confirm</button>
+        <button type="button" class="btn btn-reset" (click)="closeReviewDialog()">Cancel</button>
+      </div>
+    </div>
+  </div>
+}

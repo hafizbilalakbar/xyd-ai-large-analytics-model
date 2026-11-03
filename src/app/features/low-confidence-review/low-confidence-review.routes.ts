@@ -4,8 +4,8 @@ export const LOW_CONFIDENCE_REVIEW_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./pages/low-confidence-review/low-confidence-review.component').then(
-        (component) => component.LowConfidenceReviewComponent,
+      import('./pages/low-confidence-review-page/low-confidence-review-page.component').then(
+        (component) => component.LowConfidenceReviewPageComponent,
       ),
     title: 'Low Confidence Review | XYD AI Platform',
   },

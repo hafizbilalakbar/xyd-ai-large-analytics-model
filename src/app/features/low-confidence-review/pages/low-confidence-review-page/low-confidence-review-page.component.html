@@ -1,0 +1,47 @@
+<div class="low-confidence-review-page">
+  <app-toast-container></app-toast-container>
+
+  <header class="page-header">
+    <div class="page-header__copy">
+      <h1 class="page-header__title">Low Confidence Review</h1>
+      <p class="page-header__description">Filter results that require manual confirmation.</p>
+    </div>
+  </header>
+
+  <app-review-summary-cards
+    [pendingCount]="pendingCount()"
+    [reviewedCount]="reviewedCount()"
+    [totalCount]="totalCount()"
+    [completionRate]="completionRate()"
+    [threshold]="threshold">
+  </app-review-summary-cards>
+
+  <app-review-filter-panel
+    (query)="onQuery()"
+    (reset)="onReset()"
+    [filterOptions]="filterOptions()">
+  </app-review-filter-panel>
+
+  <app-review-checklist-table
+    [rows]="rows()"
+    [totalCount]="totalCount()"
+    [currentPage]="currentPage()"
+    [pageSize]="pageSize()"
+    [loading]="isLoading()"
+    [errorMessage]="errorMessage()"
+    [sort]="sort()"
+    [selectedIds]="selectedIds()"
+    [allSelectedOnPage]="allSelectedOnPage()"
+    [someSelectedOnPage]="someSelectedOnPage()"
+    [notReviewedCount]="notReviewedCount()"
+    [isExporting]="isExporting()"
+    (retry)="onQuery()"
+    (pageChange)="setPage($event)"
+    (pageSizeChange)="setPageSize($event)"
+    (sortChange)="onSort($event)"
+    (toggleSelect)="onToggleSelect($event)"
+    (toggleSelectAll)="onToggleSelectAll()"
+    (export)="onExport()"
+    (review)="onReview($event)">
+  </app-review-checklist-table>
+</div>

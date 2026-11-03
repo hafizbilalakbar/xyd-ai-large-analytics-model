@@ -1,0 +1,96 @@
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+@media (max-width: 768px) {
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.summary-card {
+  background: var(--color-surface);
+  border: 1px solid #e3e7ee;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 6%);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.summary-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-card__marker {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.summary-card__marker--red {
+  background: var(--color-danger);
+}
+
+.summary-card__marker--green {
+  background: var(--color-success);
+}
+
+.summary-card__marker--orange {
+  background: #f59e0b;
+}
+
+.summary-card__title {
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.summary-card__value {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.summary-card__value--red {
+  color: var(--color-danger);
+}
+
+.summary-card__value--green {
+  color: var(--color-success);
+}
+
+.summary-card__value--orange {
+  color: #f59e0b;
+}
+
+.summary-card__hint {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.summary-card__progress {
+  margin-top: 4px;
+}
+
+.summary-card__progress-track {
+  height: 6px;
+  background: #e3e7ee;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.summary-card__progress-fill {
+  height: 100%;
+  background: #f59e0b;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
