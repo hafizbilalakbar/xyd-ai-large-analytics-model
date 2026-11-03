@@ -25,10 +25,10 @@ export class ModalComponent {
         setTimeout(() => this.focusFirst());
       } else {
         document.body.style.overflow = '';
-        if (this.lastFocusedElement instanceof HTMLElement) {
+        if (this.lastFocusedElement instanceof HTMLElement && this.lastFocusedElement.isConnected) {
           this.lastFocusedElement.focus();
-          this.lastFocusedElement = null;
         }
+        this.lastFocusedElement = null;
       }
     });
   }

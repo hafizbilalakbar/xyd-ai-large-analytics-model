@@ -6,7 +6,7 @@
 }
 
 .btn {
-  height: 34px;
+  height: 36px;
   padding: 0 16px;
   border-radius: 6px;
   font-size: var(--font-size-sm);
@@ -35,8 +35,13 @@
   font-weight: 600;
 }
 
-.btn-danger:hover {
+.btn-danger:hover:not(:disabled) {
   background: var(--color-danger-dark, var(--color-danger));
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-reset {

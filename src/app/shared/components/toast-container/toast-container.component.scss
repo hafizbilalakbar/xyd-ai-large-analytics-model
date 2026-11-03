@@ -36,6 +36,10 @@
   color: var(--color-text-inverse);
 }
 
+.toast--leaving {
+  animation: toast-out 0.25s ease forwards;
+}
+
 .toast__message {
   flex: 1;
   word-break: break-word;
@@ -68,5 +72,16 @@
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(20px);
   }
 }

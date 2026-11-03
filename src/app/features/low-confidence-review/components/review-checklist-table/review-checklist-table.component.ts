@@ -44,7 +44,7 @@ export class ReviewChecklistTableComponent {
   readonly view = output<string>();
   readonly edit = output<string>();
   readonly delete = output<string>();
-  readonly bulkDelete = output<void>();
+  readonly bulkDelete = output<string[]>();
   readonly update = output<{ sampleId: string; changes: { failureMode: string | null; corrected: boolean } }>();
   readonly closeModal = output<void>();
   readonly discardChanges = output<void>();
@@ -73,13 +73,15 @@ export class ReviewChecklistTableComponent {
     return form.failureMode !== null && form.failureMode !== '';
   });
 
+  protected readonly bulkDeleteTargetIds = signal<string[]>([]);
+
   protected readonly deleteTargetIds = computed(() => {
     const state = this.modalState();
     if (state.type === 'delete' && state.record) {
       return [state.record.sampleId];
     }
     if (state.type === 'bulkDelete') {
-      return Array.from(this.selectedIds());
+      return this.bulkDeleteTargetIds();
     }
     return [];
   });
@@ -95,10 +97,17 @@ export class ReviewChecklistTableComponent {
     return text;
   });
 
+  private lastInitializedSampleId: string | null = null;
+
   constructor() {
     effect(() => {
       const state = this.modalState();
-      if (state.type === 'edit' && state.record) {
+
+      if (state.type === null) {
+        this.lastInitializedSampleId = null;
+      }
+
+      if (state.type === 'edit' && state.record && state.record.sampleId !== this.lastInitializedSampleId) {
         const form = {
           sampleId: state.record.sampleId,
           failureMode: state.record.failureMode,
@@ -108,6 +117,7 @@ export class ReviewChecklistTableComponent {
         this.editForm.set(form);
         this.originalEditForm.set({ ...form });
         this.editTouched.set(false);
+        this.lastInitializedSampleId = state.record.sampleId;
       }
     });
   }
@@ -131,7 +141,9 @@ export class ReviewChecklistTableComponent {
   }
 
   onBulkDelete() {
-    this.bulkDelete.emit();
+    const ids = Array.from(this.selectedIds());
+    this.bulkDeleteTargetIds.set(ids);
+    this.bulkDelete.emit(ids);
   }
 
   onCloseModal() {
@@ -171,7 +183,7 @@ export class ReviewChecklistTableComponent {
     if (state.type === 'delete' && state.record) {
       this.delete.emit(state.record.sampleId);
     } else if (state.type === 'bulkDelete') {
-      this.bulkDelete.emit();
+      this.bulkDelete.emit(this.bulkDeleteTargetIds());
     }
   }
 

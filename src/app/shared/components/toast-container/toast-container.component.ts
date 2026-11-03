@@ -15,4 +15,12 @@ export class ToastContainerComponent {
   dismiss(id: number) {
     this.toastService.dismiss(id);
   }
+
+  pause(id: number) {
+    this.toastService.pause(id);
+  }
+
+  resume(id: number) {
+    this.toastService.resume(id);
+  }
 }

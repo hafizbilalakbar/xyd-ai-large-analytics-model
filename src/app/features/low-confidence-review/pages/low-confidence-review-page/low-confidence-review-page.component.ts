@@ -92,9 +92,8 @@ export class LowConfidenceReviewPageComponent {
     }
   }
 
-  onBulkDelete() {
+  onBulkDelete(ids: string[]) {
     if (this.modalState().type === 'bulkDelete') {
-      const ids = Array.from(this.selectedIds());
       this.service.deleteRecords(ids, this.toastService);
     } else {
       this.service.openModal('bulkDelete', null);

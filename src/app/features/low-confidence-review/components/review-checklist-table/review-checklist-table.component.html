@@ -338,17 +338,19 @@
   confirmLabel="Delete"
   [danger]="true"
   [autofocusCancel]="true"
+  [confirmDisabled]="isDeleting()"
   (confirm)="onConfirmDelete()"
   (cancel)="closeModal.emit()">
 </app-confirm-dialog>
 
 <app-confirm-dialog
   [open]="modalState().type === 'bulkDelete'"
-  [title]="'Delete ' + selectedCount() + ' samples?'"
+  [title]="'Delete ' + deleteTargetIds().length + ' samples?'"
   [message]="bulkDeleteMessage()"
   confirmLabel="Delete"
   [danger]="true"
   [autofocusCancel]="true"
+  [confirmDisabled]="isDeleting()"
   (confirm)="onConfirmDelete()"
   (cancel)="closeModal.emit()">
 </app-confirm-dialog>

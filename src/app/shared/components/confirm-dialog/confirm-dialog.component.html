@@ -9,6 +9,7 @@
       class="btn"
       [class.btn-danger]="danger()"
       [class.btn-query]="!danger()"
+      [disabled]="confirmDisabled()"
       (click)="confirm.emit()"
       [attr.autofocus]="!autofocusCancel() ? '' : null">
       {{ confirmLabel() }}
