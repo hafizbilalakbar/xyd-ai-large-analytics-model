@@ -118,45 +118,46 @@
         </app-multi-select-dropdown>
       </div>
 
-      <div class="field confidence-field">
+      <div class="field">
         <label class="field__label" for="confidence">Confidence</label>
-        <div class="confidence-row">
-          <select
-            id="confidence"
-            class="field__input confidence-select"
-            [ngModel]="filters().confidenceMode"
-            (ngModelChange)="setFilter('confidenceMode', $event)"
-            aria-label="Confidence">
-            @for (opt of filterOptions().confidenceOptions; track opt.key) {
-              <option [value]="opt.key">{{ opt.label }}</option>
-            }
-          </select>
-
-          @if (showConfidenceRange()) {
-            <div class="range-inputs">
-              <input
-                type="number"
-                class="field__input range-input"
-                min="0"
-                max="100"
-                [value]="filters().confidenceMin"
-                (input)="setConfidenceMin($event)"
-                aria-label="Minimum confidence">
-              <span class="range-sep">~</span>
-              <input
-                type="number"
-                class="field__input range-input"
-                min="0"
-                max="100"
-                [value]="filters().confidenceMax"
-                (input)="setConfidenceMax($event)"
-                aria-label="Maximum confidence">
-              <span class="range-unit">%</span>
-            </div>
+        <select
+          id="confidence"
+          class="field__input"
+          [ngModel]="filters().confidenceMode"
+          (ngModelChange)="setFilter('confidenceMode', $event)"
+          aria-label="Confidence">
+          @for (opt of filterOptions().confidenceOptions; track opt.key) {
+            <option [value]="opt.key">{{ opt.label }}</option>
           }
-        </div>
-        @if (rangeError()) {
-          <span class="field__error">Range must be 0–100 and Min cannot exceed Max.</span>
+        </select>
+      </div>
+
+      <div class="field confidence-range-cell">
+        <span class="field__label" style="visibility: hidden">Confidence</span>
+        @if (showConfidenceRange()) {
+          <div class="range-inputs">
+            <input
+              type="number"
+              class="field__input range-input"
+              min="0"
+              max="100"
+              [value]="filters().confidenceMin"
+              (input)="setConfidenceMin($event)"
+              aria-label="Minimum confidence">
+            <span class="range-sep">~</span>
+            <input
+              type="number"
+              class="field__input range-input"
+              min="0"
+              max="100"
+              [value]="filters().confidenceMax"
+              (input)="setConfidenceMax($event)"
+              aria-label="Maximum confidence">
+            <span class="range-unit">%</span>
+          </div>
+          @if (rangeError()) {
+            <span class="field__error">Range must be 0–100 and Min cannot exceed Max.</span>
+          }
         }
       </div>
     </div>

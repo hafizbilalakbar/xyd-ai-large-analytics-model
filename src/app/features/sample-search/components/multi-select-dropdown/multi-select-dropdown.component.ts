@@ -16,6 +16,8 @@ export class MultiSelectDropdownComponent {
   readonly valueChange = output<string[]>();
 
   protected readonly open = signal(false);
+  protected readonly focusedIndex = signal(-1);
+  protected readonly popupUpward = signal(false);
 
   protected readonly displayText = computed(() => {
     const v = this.value();
@@ -27,23 +29,37 @@ export class MultiSelectDropdownComponent {
     return `${v.length} selected`;
   });
 
+  protected readonly selectedCountText = computed(() => {
+    const count = this.value().length;
+    if (count === 1) return '1 item selected';
+    return `${count} items selected`;
+  });
+
   constructor(private readonly elementRef: ElementRef<HTMLElement>) {}
 
   toggle() {
     if (this.disabled()) return;
-    this.open.update(o => !o);
+    const willOpen = !this.open();
+    if (willOpen) {
+      const rect = this.elementRef.nativeElement.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      this.popupUpward.set(spaceBelow < 280);
+      this.focusedIndex.set(0);
+    }
+    this.open.set(willOpen);
   }
 
   close() {
     this.open.set(false);
+    this.focusedIndex.set(-1);
   }
 
   isSelected(key: string): boolean {
     return this.value().includes(key);
   }
 
-  onChange(key: string, event: Event) {
-    event.stopPropagation();
+  onChange(key: string, event?: Event) {
+    event?.stopPropagation();
     const current = this.value();
     const next = current.includes(key)
       ? current.filter(k => k !== key)
@@ -56,6 +72,31 @@ export class MultiSelectDropdownComponent {
     this.valueChange.emit([]);
   }
 
+  onKeydown(event: KeyboardEvent) {
+    if (!this.open()) {
+      if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        this.toggle();
+      }
+      return;
+    }
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.focusedIndex.update(i => Math.min(i + 1, this.options().length - 1));
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.focusedIndex.update(i => Math.max(i - 1, 0));
+    } else if (event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault();
+      const opt = this.options()[this.focusedIndex()];
+      if (opt) this.onChange(opt.key);
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      this.close();
+    }
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     if (this.open() && !this.elementRef.nativeElement.contains(event.target as Node)) {
@@ -63,8 +104,8 @@ export class MultiSelectDropdownComponent {
     }
   }
 
-  @HostListener('keydown.escape')
-  onEscape() {
+  @HostListener('document:keydown.escape')
+  onGlobalEscape() {
     this.close();
   }
 }
