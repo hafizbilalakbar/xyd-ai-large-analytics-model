@@ -9,7 +9,9 @@ export interface SampleFilter {
   toothType: string;
   resultStatus: string;
   failureModes: string[];
-  confidence: string;
+  confidenceMode: 'none' | 'low' | 'range';
+  confidenceMin: number;
+  confidenceMax: number;
   startDate: string;
   endDate: string;
 }
@@ -57,7 +59,9 @@ export const SAMPLE_FILTER_DEFAULTS: SampleFilter = {
   toothType: 'all',
   resultStatus: 'all',
   failureModes: [],
-  confidence: 'all',
+  confidenceMode: 'none',
+  confidenceMin: 0,
+  confidenceMax: 100,
   startDate: '',
   endDate: '',
 };

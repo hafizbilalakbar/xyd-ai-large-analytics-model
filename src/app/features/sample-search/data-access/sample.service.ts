@@ -2,6 +2,8 @@ import { Injectable, signal, computed } from '@angular/core';
 import { SampleFilter, SampleResult, SampleFilterOptions, SAMPLE_FILTER_DEFAULTS } from './sample-models';
 import { MOCK_FILTER_OPTIONS, MOCK_RESULTS, USE_SAMPLE_MOCK } from './sample.mock';
 
+export const LOW_CONFIDENCE_THRESHOLD = 80;
+
 @Injectable({ providedIn: 'root' })
 export class SampleService {
   readonly filters = signal<SampleFilter>({ ...SAMPLE_FILTER_DEFAULTS });
@@ -134,10 +136,13 @@ export class SampleService {
       filtered = filtered.filter(r => r.failureMode !== null && f.failureModes.includes(r.failureMode));
     }
 
-    if (f.confidence && f.confidence !== 'all') {
-      if (f.confidence === 'low') {
-        filtered = filtered.filter(r => (r.confidence ?? 100) < 80);
-      }
+    if (f.confidenceMode === 'low') {
+      filtered = filtered.filter(r => (r.confidence ?? 100) < LOW_CONFIDENCE_THRESHOLD);
+    } else if (f.confidenceMode === 'range') {
+      filtered = filtered.filter(r => {
+        const c = r.confidence ?? 0;
+        return c >= f.confidenceMin && c <= f.confidenceMax;
+      });
     }
 
     if (f.startDate) {

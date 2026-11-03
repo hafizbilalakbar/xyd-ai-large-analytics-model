@@ -31,10 +31,21 @@ export class SampleFilterPanelComponent {
     return false;
   });
 
-  protected readonly canQuery = computed(() => !this.isLoading() && !this.dateError());
+  protected readonly rangeError = computed(() => {
+    const f = this.filters();
+    if (f.confidenceMode !== 'range') return false;
+    const min = f.confidenceMin;
+    const max = f.confidenceMax;
+    if (min < 0 || min > 100 || max < 0 || max > 100) return true;
+    return min > max;
+  });
+
+  protected readonly canQuery = computed(() => !this.isLoading() && !this.dateError() && !this.rangeError());
+
+  protected readonly showConfidenceRange = computed(() => this.filters().confidenceMode === 'range');
 
   onQuery() {
-    if (this.dateError()) return;
+    if (this.dateError() || this.rangeError()) return;
     this.query.emit();
   }
 
@@ -51,5 +62,15 @@ export class SampleFilterPanelComponent {
 
   setFilter<K extends keyof ReturnType<typeof this.filters>>(key: K, value: ReturnType<typeof this.filters>[K]) {
     this.service.setFilter(key, value);
+  }
+
+  setConfidenceMin(event: Event) {
+    const value = parseInt((event.target as HTMLInputElement).value, 10);
+    this.setFilter('confidenceMin', isNaN(value) ? 0 : value);
+  }
+
+  setConfidenceMax(event: Event) {
+    const value = parseInt((event.target as HTMLInputElement).value, 10);
+    this.setFilter('confidenceMax', isNaN(value) ? 100 : value);
   }
 }

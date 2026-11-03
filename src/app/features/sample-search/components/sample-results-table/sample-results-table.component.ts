@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { SampleResult } from '../../data-access/sample-models';
+import { LOW_CONFIDENCE_THRESHOLD } from '../../data-access/sample.service';
 import { TablePaginationComponent } from '../table-pagination/table-pagination.component';
 
 @Component({
@@ -22,5 +23,7 @@ export class SampleResultsTableComponent {
   readonly pageChange = output<number>();
   readonly pageSizeChange = output<number>();
 
-  protected readonly isLowConfidence = (confidence: number | null) => (confidence ?? 100) < 80;
+  protected readonly lowThreshold = LOW_CONFIDENCE_THRESHOLD;
+
+  protected readonly isLowConfidence = (confidence: number | null) => (confidence ?? 100) < this.lowThreshold;
 }

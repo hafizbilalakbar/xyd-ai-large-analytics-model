@@ -126,8 +126,8 @@ export const MOCK_FILTER_OPTIONS: SampleFilterOptions = {
     { key: 'F13', label: 'Hole Position Abnormal' },
   ],
   confidenceOptions: [
-    { key: 'all', label: 'No limit' },
-    { key: 'low', label: 'Low confidence' },
-    { key: 'range', label: 'Range' },
+    { key: 'none', label: 'No limit' },
+    { key: 'low', label: 'Only low confidence' },
+    { key: 'range', label: 'Custom range' },
   ],
 };

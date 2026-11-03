@@ -30,10 +30,6 @@
   font-size: var(--font-size-sm);
 }
 
-.results-card__body {
-  padding: 0;
-}
-
 .results-card__footer {
   border-top: 1px solid var(--color-border);
 }
@@ -49,13 +45,9 @@
   min-width: 980px;
 }
 
-.results-table thead {
+.results-table th {
   position: sticky;
   top: 0;
-  z-index: 10;
-}
-
-.results-table th {
   background: #f3f5f9;
   color: var(--color-text);
   font-size: 13px;
@@ -64,6 +56,7 @@
   padding: 10px 12px;
   white-space: nowrap;
   border-bottom: 1px solid var(--color-border);
+  z-index: 10;
 }
 
 .results-table td {
@@ -72,6 +65,11 @@
   padding: 10px 12px;
   white-space: nowrap;
   border-bottom: 1px solid var(--color-border-soft);
+}
+
+.state-row td {
+  padding: 0;
+  border-bottom: none;
 }
 
 .result-tag {

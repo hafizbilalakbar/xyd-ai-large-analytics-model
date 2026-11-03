@@ -18,7 +18,7 @@ export class TablePaginationComponent {
   protected readonly pageSizeOptions = [20, 50, 100];
 
   protected readonly pages = () => {
-    const totalPages = Math.ceil(this.totalCount() / this.pageSize());
+    const totalPages = Math.max(1, Math.ceil(this.totalCount() / this.pageSize()));
     const pages: number[] = [];
     for (let i = 1; i <= totalPages; i++) {
       pages.push(i);
@@ -26,8 +26,8 @@ export class TablePaginationComponent {
     return pages;
   };
 
-  protected readonly isFirstPage = () => this.currentPage() <= 1;
-  protected readonly isLastPage = () => this.currentPage() >= Math.ceil(this.totalCount() / this.pageSize());
+  protected readonly isFirstPage = () => this.currentPage() <= 1 || this.totalCount() === 0;
+  protected readonly isLastPage = () => this.currentPage() >= Math.ceil(this.totalCount() / this.pageSize()) || this.totalCount() === 0;
 
   protected readonly from = () => {
     if (this.totalCount() === 0) return 0;

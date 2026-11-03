@@ -118,18 +118,46 @@
         </app-multi-select-dropdown>
       </div>
 
-      <div class="field">
+      <div class="field confidence-field">
         <label class="field__label" for="confidence">Confidence</label>
-        <select
-          id="confidence"
-          class="field__input"
-          [ngModel]="filters().confidence"
-          (ngModelChange)="setFilter('confidence', $event)"
-          aria-label="Confidence">
-          @for (opt of filterOptions().confidenceOptions; track opt.key) {
-            <option [value]="opt.key">{{ opt.label }}</option>
+        <div class="confidence-row">
+          <select
+            id="confidence"
+            class="field__input confidence-select"
+            [ngModel]="filters().confidenceMode"
+            (ngModelChange)="setFilter('confidenceMode', $event)"
+            aria-label="Confidence">
+            @for (opt of filterOptions().confidenceOptions; track opt.key) {
+              <option [value]="opt.key">{{ opt.label }}</option>
+            }
+          </select>
+
+          @if (showConfidenceRange()) {
+            <div class="range-inputs">
+              <input
+                type="number"
+                class="field__input range-input"
+                min="0"
+                max="100"
+                [value]="filters().confidenceMin"
+                (input)="setConfidenceMin($event)"
+                aria-label="Minimum confidence">
+              <span class="range-sep">~</span>
+              <input
+                type="number"
+                class="field__input range-input"
+                min="0"
+                max="100"
+                [value]="filters().confidenceMax"
+                (input)="setConfidenceMax($event)"
+                aria-label="Maximum confidence">
+              <span class="range-unit">%</span>
+            </div>
           }
-        </select>
+        </div>
+        @if (rangeError()) {
+          <span class="field__error">Range must be 0–100 and Min cannot exceed Max.</span>
+        }
       </div>
     </div>
 
@@ -166,14 +194,6 @@
   <div class="filter-card__actions">
     <button
       type="button"
-      class="btn btn-reset"
-      (click)="onReset()"
-      aria-label="Reset filters">
-      Reset
-    </button>
-
-    <button
-      type="button"
       class="btn btn-query"
       [disabled]="!canQuery()"
       (click)="onQuery()"
@@ -182,6 +202,14 @@
         <span class="btn__spinner"></span>
       }
       Query
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-reset"
+      (click)="onReset()"
+      aria-label="Reset filters">
+      Reset
     </button>
   </div>
 </div>

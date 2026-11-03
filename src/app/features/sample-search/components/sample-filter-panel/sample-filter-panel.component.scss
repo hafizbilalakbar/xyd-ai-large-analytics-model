@@ -100,6 +100,44 @@
   margin-top: 2px;
 }
 
+.confidence-field {
+  grid-column: span 2;
+}
+
+.confidence-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.confidence-select {
+  flex: 1;
+  min-width: 120px;
+}
+
+.range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.range-input {
+  width: 68px;
+  padding: 0 6px;
+  text-align: center;
+}
+
+.range-sep {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.range-unit {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
 .filter-card__actions {
   display: flex;
   gap: var(--space-3);
@@ -122,17 +160,6 @@
   gap: 6px;
 }
 
-.btn-reset {
-  background: var(--color-surface);
-  color: var(--color-text);
-  border: 1px solid #d9dee7;
-}
-
-.btn-reset:hover {
-  border-color: var(--color-primary-400);
-  color: var(--color-primary-600);
-}
-
 .btn-query {
   background: var(--color-primary-600);
   color: var(--color-text-inverse);
@@ -146,6 +173,17 @@
 .btn-query:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.btn-reset {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid #d9dee7;
+}
+
+.btn-reset:hover {
+  border-color: var(--color-primary-400);
+  color: var(--color-primary-600);
 }
 
 .btn__spinner {
