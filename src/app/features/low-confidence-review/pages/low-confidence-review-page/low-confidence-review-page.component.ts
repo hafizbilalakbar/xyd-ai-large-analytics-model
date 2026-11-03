@@ -30,15 +30,19 @@ export class LowConfidenceReviewPageComponent {
   readonly pageSize = this.service.pageSize;
   readonly isLoading = this.service.isLoading;
   readonly isExporting = this.service.isExporting;
+  readonly isSaving = this.service.isSaving;
+  readonly isDeleting = this.service.isDeleting;
   readonly errorMessage = this.service.errorMessage;
   readonly sort = this.service.sort;
   readonly selectedIds = this.service.selectedIds;
   readonly allSelectedOnPage = this.service.allSelectedOnPage;
   readonly someSelectedOnPage = this.service.someSelectedOnPage;
+  readonly selectedCount = this.service.selectedCount;
   readonly pendingCount = this.service.pendingCount;
   readonly reviewedCount = this.service.reviewedCount;
   readonly notReviewedCount = this.service.notReviewedCount;
   readonly completionRate = this.service.completionRate;
+  readonly modalState = this.service.modalState;
   readonly threshold = LOW_CONFIDENCE_THRESHOLD;
 
   onQuery() {
@@ -61,11 +65,62 @@ export class LowConfidenceReviewPageComponent {
     this.service.toggleSelectAllOnPage();
   }
 
+  onClearSelection() {
+    this.service.clearSelection();
+  }
+
   onExport() {
     this.service.exportRows(this.toastService);
   }
 
-  onReview(_sampleId: string) {
+  onView(sampleId: string) {
+    const record = this.rows().find(r => r.sampleId === sampleId) ?? null;
+    this.service.openModal('view', record);
+  }
+
+  onEdit(sampleId: string) {
+    const record = this.rows().find(r => r.sampleId === sampleId) ?? null;
+    this.service.openModal('edit', record);
+  }
+
+  onDelete(sampleId: string) {
+    if (this.modalState().type === 'delete' && this.modalState().record?.sampleId === sampleId) {
+      this.service.deleteRecord(sampleId, this.toastService);
+    } else {
+      const record = this.rows().find(r => r.sampleId === sampleId) ?? null;
+      this.service.openModal('delete', record);
+    }
+  }
+
+  onBulkDelete() {
+    if (this.modalState().type === 'bulkDelete') {
+      const ids = Array.from(this.selectedIds());
+      this.service.deleteRecords(ids, this.toastService);
+    } else {
+      this.service.openModal('bulkDelete', null);
+    }
+  }
+
+  onUpdate(event: { sampleId: string; changes: { failureMode: string | null; corrected: boolean } }) {
+    this.service.updateRecord(event.sampleId, event.changes, this.toastService);
+  }
+
+  onCloseModal() {
+    this.service.closeModal();
+  }
+
+  onDiscardChanges() {
+    this.service.openModal('discard', this.modalState().record);
+  }
+
+  onConfirmDelete() {
+    const state = this.modalState();
+    if (state.type === 'delete' && state.record) {
+      this.service.deleteRecord(state.record.sampleId, this.toastService);
+    } else if (state.type === 'bulkDelete') {
+      const ids = Array.from(this.selectedIds());
+      this.service.deleteRecords(ids, this.toastService);
+    }
   }
 
   setPage(page: number) {

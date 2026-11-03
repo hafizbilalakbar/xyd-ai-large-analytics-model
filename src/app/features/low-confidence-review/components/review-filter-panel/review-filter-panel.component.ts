@@ -59,6 +59,7 @@ export class ReviewFilterPanelComponent {
 
   setFilter<K extends keyof ReturnType<typeof this.filters>>(key: K, value: ReturnType<typeof this.filters>[K]) {
     this.service.setFilter(key, value);
+    this.service.clearSelection();
   }
 
   setConfidenceMin(event: Event) {

@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { ReviewFilter, ReviewRow, ReviewFilterOptions, ReviewSort, REVIEW_FILTER_DEFAULTS, REVIEW_SORT_DEFAULT } from './low-confidence-review.models';
+import { ReviewFilter, ReviewRow, ReviewFilterOptions, ReviewSort, ReviewModalState, REVIEW_FILTER_DEFAULTS, REVIEW_SORT_DEFAULT } from './low-confidence-review.models';
 import { MOCK_REVIEW_FILTER_OPTIONS, MOCK_REVIEW_ROWS, USE_REVIEW_MOCK } from './low-confidence-review.mock';
 import { LOW_CONFIDENCE_THRESHOLD } from '../../sample-search/data-access/sample.service';
 
@@ -11,7 +11,11 @@ export class LowConfidenceReviewService {
   readonly filterOptions = signal<ReviewFilterOptions>(MOCK_REVIEW_FILTER_OPTIONS);
   readonly sort = signal<ReviewSort>({ ...REVIEW_SORT_DEFAULT });
   readonly selectedIds = signal<Set<string>>(new Set());
+  readonly modalState = signal<ReviewModalState>({ type: null, record: null });
+  readonly isSaving = signal(false);
+  readonly isDeleting = signal(false);
 
+  private readonly _sourceRows = signal<ReviewRow[]>(USE_REVIEW_MOCK ? [...MOCK_REVIEW_ROWS] : []);
   private readonly _allFilteredRows = signal<ReviewRow[]>([]);
 
   readonly rows = computed(() => {
@@ -65,6 +69,7 @@ export class LowConfidenceReviewService {
     return pageRows.some(r => selected.has(r.sampleId)) && !this.allSelectedOnPage();
   });
 
+  readonly selectedCount = computed(() => this.selectedIds().size);
   readonly notReviewedCount = computed(() => this.pendingCount());
 
   constructor() {
@@ -85,6 +90,7 @@ export class LowConfidenceReviewService {
       return { field, direction: 'asc' };
     });
     this.currentPage.set(1);
+    this.clearSelection();
   }
 
   toggleSelect(id: string) {
@@ -113,14 +119,23 @@ export class LowConfidenceReviewService {
     this.selectedIds.set(new Set());
   }
 
+  openModal(type: ReviewModalState['type'], record: ReviewRow | null = null) {
+    this.modalState.set({ type, record });
+  }
+
+  closeModal() {
+    this.modalState.set({ type: null, record: null });
+  }
+
   query() {
     this.isLoading.set(true);
     this.errorMessage.set(null);
     this.currentPage.set(1);
+    this.clearSelection();
 
     setTimeout(() => {
       try {
-        const data = USE_REVIEW_MOCK ? [...MOCK_REVIEW_ROWS] : [];
+        const data = [...this._sourceRows()];
         const filtered = this.applyFilters(data);
         const sorted = this.applySort(filtered);
         this._allFilteredRows.set(sorted);
@@ -135,7 +150,6 @@ export class LowConfidenceReviewService {
   resetFilters() {
     this.filters.set({ ...REVIEW_FILTER_DEFAULTS });
     this.sort.set({ ...REVIEW_SORT_DEFAULT });
-    this._allFilteredRows.set([]);
     this.currentPage.set(1);
     this.pageSize.set(20);
     this.isLoading.set(false);
@@ -147,6 +161,7 @@ export class LowConfidenceReviewService {
   prevPage() {
     if (this.currentPage() > 1) {
       this.currentPage.update(p => p - 1);
+      this.clearSelection();
     }
   }
 
@@ -154,6 +169,7 @@ export class LowConfidenceReviewService {
     const total = this.totalPages();
     if (this.currentPage() < total) {
       this.currentPage.update(p => p + 1);
+      this.clearSelection();
     }
   }
 
@@ -161,12 +177,82 @@ export class LowConfidenceReviewService {
     const total = this.totalPages();
     if (page >= 1 && page <= total) {
       this.currentPage.set(page);
+      this.clearSelection();
     }
   }
 
   setPageSize(size: number) {
     this.pageSize.set(size);
     this.currentPage.set(1);
+    this.clearSelection();
+  }
+
+  updateRecord(sampleId: string, changes: { failureMode?: string | null; corrected?: boolean }, toast: { show: (msg: string, type: 'info' | 'success' | 'error') => void }) {
+    this.isSaving.set(true);
+
+    setTimeout(() => {
+      try {
+        this._sourceRows.update(rows => {
+          return rows.map(r => r.sampleId === sampleId ? { ...r, ...changes } : r);
+        });
+
+        this.recomputeFilteredRows();
+        this.selectedIds.update(set => {
+          const next = new Set(set);
+          next.delete(sampleId);
+          return next;
+        });
+        this.closeModal();
+        toast.show('Sample updated.', 'success');
+      } catch {
+        toast.show('Update failed. Please try again.', 'error');
+      } finally {
+        this.isSaving.set(false);
+      }
+    }, 600);
+  }
+
+  deleteRecord(sampleId: string, toast: { show: (msg: string, type: 'info' | 'success' | 'error') => void }) {
+    this.isDeleting.set(true);
+
+    setTimeout(() => {
+      try {
+        this._sourceRows.update(rows => rows.filter(r => r.sampleId !== sampleId));
+        this.recomputeFilteredRows();
+        this.selectedIds.update(set => {
+          const next = new Set(set);
+          next.delete(sampleId);
+          return next;
+        });
+        this.correctPageIfNeeded();
+        this.closeModal();
+        toast.show('Sample deleted.', 'success');
+      } catch {
+        toast.show('Delete failed. Please try again.', 'error');
+      } finally {
+        this.isDeleting.set(false);
+      }
+    }, 600);
+  }
+
+  deleteRecords(sampleIds: string[], toast: { show: (msg: string, type: 'info' | 'success' | 'error') => void }) {
+    this.isDeleting.set(true);
+
+    setTimeout(() => {
+      try {
+        const idSet = new Set(sampleIds);
+        this._sourceRows.update(rows => rows.filter(r => !idSet.has(r.sampleId)));
+        this.recomputeFilteredRows();
+        this.clearSelection();
+        this.correctPageIfNeeded();
+        this.closeModal();
+        toast.show(`${sampleIds.length} samples deleted.`, 'success');
+      } catch {
+        toast.show('Delete failed. Please try again.', 'error');
+      } finally {
+        this.isDeleting.set(false);
+      }
+    }, 600);
   }
 
   exportRows(toast: { show: (msg: string, type: 'info' | 'success' | 'error') => void }) {
@@ -221,6 +307,22 @@ export class LowConfidenceReviewService {
         this.isExporting.set(false);
       }
     }, 800);
+  }
+
+  private recomputeFilteredRows() {
+    const data = [...this._sourceRows()];
+    const filtered = this.applyFilters(data);
+    const sorted = this.applySort(filtered);
+    this._allFilteredRows.set(sorted);
+  }
+
+  private correctPageIfNeeded() {
+    const totalPages = this.totalPages();
+    if (this.currentPage() > totalPages && totalPages > 0) {
+      this.currentPage.set(totalPages);
+    } else if (totalPages === 0) {
+      this.currentPage.set(1);
+    }
   }
 
   private applyFilters(data: ReviewRow[]): ReviewRow[] {

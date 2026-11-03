@@ -1,0 +1,34 @@
+@if (open()) {
+  <div
+    class="modal-overlay"
+    (click)="onBackdropClick()"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="'modal-title-' + title()">
+    <div
+      #dialog
+      class="modal"
+      [class.modal--md]="size() === 'md'"
+      [class.modal--lg]="size() === 'lg'"
+      (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h2 [id]="'modal-title-' + title()" class="modal__title">{{ title() }}</h2>
+        <button
+          type="button"
+          class="modal__close"
+          (click)="onCloseClick()"
+          aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="modal__body">
+        <ng-content select="[modalBody]"></ng-content>
+      </div>
+      <div class="modal__footer">
+        <ng-content select="[modalFooter]"></ng-content>
+      </div>
+    </div>
+  </div>
+}

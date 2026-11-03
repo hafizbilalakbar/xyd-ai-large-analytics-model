@@ -33,15 +33,27 @@
     [selectedIds]="selectedIds()"
     [allSelectedOnPage]="allSelectedOnPage()"
     [someSelectedOnPage]="someSelectedOnPage()"
+    [selectedCount]="selectedCount()"
     [notReviewedCount]="notReviewedCount()"
     [isExporting]="isExporting()"
+    [modalState]="modalState()"
+    [isSaving]="isSaving()"
+    [isDeleting]="isDeleting()"
+    [failureModeOptions]="filterOptions().failureModes"
     (retry)="onQuery()"
     (pageChange)="setPage($event)"
     (pageSizeChange)="setPageSize($event)"
     (sortChange)="onSort($event)"
     (toggleSelect)="onToggleSelect($event)"
     (toggleSelectAll)="onToggleSelectAll()"
+    (clearSelection)="onClearSelection()"
     (export)="onExport()"
-    (review)="onReview($event)">
+    (view)="onView($event)"
+    (edit)="onEdit($event)"
+    (delete)="onDelete($event)"
+    (bulkDelete)="onBulkDelete()"
+    (update)="onUpdate($event)"
+    (closeModal)="onCloseModal()"
+    (discardChanges)="onDiscardChanges()">
   </app-review-checklist-table>
 </div>
