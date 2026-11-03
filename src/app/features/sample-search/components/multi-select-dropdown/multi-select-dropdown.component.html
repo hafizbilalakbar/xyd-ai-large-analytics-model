@@ -1,0 +1,47 @@
+<div class="ms-root">
+  <button
+    type="button"
+    class="ms-trigger"
+    [class.open]="open()"
+    [disabled]="disabled()"
+    (click)="toggle()"
+    aria-haspopup="listbox"
+    [attr.aria-expanded]="open()">
+    <span class="ms-summary">{{ displayText() }}</span>
+    <span class="ms-caret">&#9662;</span>
+  </button>
+
+  @if (open()) {
+    <div class="ms-popup" role="listbox">
+      @if (options().length > 0) {
+        @for (opt of options(); track opt.key) {
+          <label
+            class="ms-opt"
+            [class.on]="isSelected(opt.key)"
+            (click)="$event.stopPropagation()">
+            <input
+              type="checkbox"
+              class="ms-opt-box"
+              [checked]="isSelected(opt.key)"
+              (change)="onChange(opt.key, $event)"
+              [disabled]="disabled()"
+              [attr.aria-label]="opt.label">
+            <span class="ms-opt-label">{{ opt.label }}</span>
+          </label>
+        }
+      } @else {
+        <span class="ms-empty">No options available</span>
+      }
+
+      @if (value().length > 0 && !disabled()) {
+        <button
+          type="button"
+          class="ms-clear"
+          (click)="clear($event)"
+          aria-label="Clear all selections">
+          Clear
+        </button>
+      }
+    </div>
+  }
+</div>

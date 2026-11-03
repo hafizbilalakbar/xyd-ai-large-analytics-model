@@ -1,0 +1,30 @@
+<div class="sample-search-page">
+  <header class="page-header">
+    <div class="page-header__copy">
+      <h1 class="page-header__title">Sample Query</h1>
+      <p class="page-header__description">Search historical lock records based on criteria.</p>
+    </div>
+    <div class="page-header__divider"></div>
+    <div class="page-header__actions">
+      <span class="page-header__result">There were <strong>{{ totalCount() }}</strong> results.</span>
+    </div>
+  </header>
+
+  <app-sample-filter-panel
+    (query)="onQuery()"
+    (reset)="onReset()"
+    [filterOptions]="filterOptions()">
+  </app-sample-filter-panel>
+
+  <app-sample-results-table
+    [results]="results()"
+    [totalCount]="totalCount()"
+    [currentPage]="currentPage()"
+    [pageSize]="pageSize()"
+    [loading]="isLoading()"
+    [errorMessage]="errorMessage()"
+    (retry)="onQuery()"
+    (pageChange)="setPage($event)"
+    (pageSizeChange)="setPageSize($event)">
+  </app-sample-results-table>
+</div>

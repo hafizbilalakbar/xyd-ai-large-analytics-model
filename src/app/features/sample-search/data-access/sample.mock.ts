@@ -1,0 +1,133 @@
+import { SampleFilterOptions, SampleResult } from './sample-models';
+
+export const USE_SAMPLE_MOCK = false;
+
+export const MOCK_RESULTS: SampleResult[] = [
+  {
+    serialNo: 1,
+    sampleId: 'XYD-20261103-001',
+    lockingTime: '2026-11-03 10:30',
+    electricScrewdriverModel: 'XYD Model',
+    screwSpecification: 'M2',
+    result: 'PASS',
+    failureMode: null,
+    confidence: 95,
+    corrected: true,
+    modelVersion: 'V3.0',
+  },
+  {
+    serialNo: 2,
+    sampleId: 'XYD-20261103-002',
+    lockingTime: '2026-11-03 10:25',
+    electricScrewdriverModel: 'XYD Model',
+    screwSpecification: 'P2',
+    result: 'FAIL',
+    failureMode: 'F01',
+    confidence: 72,
+    corrected: false,
+    modelVersion: 'V3.0',
+  },
+  {
+    serialNo: 3,
+    sampleId: 'XYD-20261103-003',
+    lockingTime: '2026-11-03 10:20',
+    electricScrewdriverModel: 'XYD Model',
+    screwSpecification: 'M2',
+    result: 'PASS',
+    failureMode: null,
+    confidence: 88,
+    corrected: true,
+    modelVersion: 'V3.0',
+  },
+  {
+    serialNo: 4,
+    sampleId: 'XYD-20261103-004',
+    lockingTime: '2026-11-03 10:15',
+    electricScrewdriverModel: 'XYD Model',
+    screwSpecification: 'P2',
+    result: 'FAIL',
+    failureMode: 'F03',
+    confidence: 65,
+    corrected: false,
+    modelVersion: 'V3.0',
+  },
+  {
+    serialNo: 5,
+    sampleId: 'XYD-20261103-005',
+    lockingTime: '2026-11-03 10:10',
+    electricScrewdriverModel: 'XYD Model',
+    screwSpecification: 'M2',
+    result: 'PASS',
+    failureMode: null,
+    confidence: 92,
+    corrected: true,
+    modelVersion: 'V3.0',
+  },
+];
+
+export const MOCK_FILTER_OPTIONS: SampleFilterOptions = {
+  electricBatchNumbers: [
+    { key: 'all', label: 'All' },
+    { key: 'B001', label: 'B001' },
+    { key: 'B002', label: 'B002' },
+    { key: 'B003', label: 'B003' },
+    { key: 'B004', label: 'B004' },
+    { key: 'B005', label: 'B005' },
+  ],
+  modelNames: [
+    { key: 'XYD-2024', label: 'XYD Model' },
+    { key: 'Model-A', label: 'Model A' },
+    { key: 'Model-B', label: 'Model B' },
+  ],
+  electricScrewdriverModels: [
+    { key: '1', label: 'XYD Model' },
+    { key: '2', label: 'XYD Pro' },
+  ],
+  bitTypes: [
+    { key: 'P2', label: 'P2' },
+    { key: 'P3', label: 'P3' },
+  ],
+  screwSpecs: [
+    { key: 'M2', label: 'M2' },
+    { key: 'P2', label: 'P2' },
+  ],
+  lockedItemMaterials: [
+    { key: 'steel', label: 'Steel' },
+    { key: 'aluminum', label: 'Aluminum' },
+  ],
+  gluePeelingResistantOptions: [
+    { key: 'all', label: 'All' },
+    { key: 'true', label: 'Yes' },
+    { key: 'false', label: 'No' },
+  ],
+  toothTypes: [
+    { key: 'all', label: 'All' },
+    { key: 'single', label: 'Single' },
+    { key: 'double', label: 'Double' },
+  ],
+  resultStatuses: [
+    { key: 'all', label: 'All' },
+    { key: 'pass', label: 'PASS' },
+    { key: 'fail', label: 'FAIL' },
+  ],
+  failureModes: [
+    { key: 'F01', label: 'Floating High' },
+    { key: 'F02', label: 'Fit Abnormal' },
+    { key: 'F03', label: 'Clamping Abnormal' },
+    { key: 'F04', label: 'Oblique Locking' },
+    { key: 'F05', label: 'Slipped Tooth' },
+    { key: 'F06', label: 'Bit Slipping' },
+    { key: 'F07', label: 'Repeated Tightening' },
+    { key: 'F08', label: 'Idle' },
+    { key: 'F09', label: 'Trigger Loss' },
+    { key: 'F10', label: 'Excessive Friction' },
+    { key: 'F11', label: 'Torque Not Reached' },
+    { key: 'F12', label: 'Screw Abnormal' },
+    { key: 'F13', label: 'Hole Position Abnormal' },
+  ],
+  confidenceOptions: [
+    { key: 'all', label: 'No limit' },
+    { key: 'low', label: 'Low confidence' },
+    { key: 'range', label: 'Range' },
+  ],
+};

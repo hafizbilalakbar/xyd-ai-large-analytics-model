@@ -1,0 +1,187 @@
+<div class="filter-card" (keydown)="onKeydown($event)">
+  <div class="filter-card__header">
+    <span class="filter-card__title">Filtering criteria</span>
+    <span class="filter-card__combined">Combined Search</span>
+  </div>
+
+  <div class="filter-card__fields">
+    <div class="filter-row">
+      <div class="field">
+        <label class="field__label" for="electricBatchNumber">Electric batch number</label>
+        <select
+          id="electricBatchNumber"
+          class="field__input"
+          [ngModel]="filters().electricBatchNumber"
+          (ngModelChange)="setFilter('electricBatchNumber', $event)"
+          aria-label="Electric batch number">
+          @for (opt of filterOptions().electricBatchNumbers; track opt.key) {
+            <option [value]="opt.key">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field__label">Model name</label>
+        <app-multi-select-dropdown
+          [value]="filters().modelName"
+          [options]="filterOptions().modelNames"
+          (valueChange)="setFilter('modelName', $event)">
+        </app-multi-select-dropdown>
+      </div>
+
+      <div class="field">
+        <label class="field__label">Electric screwdriver model</label>
+        <app-multi-select-dropdown
+          [value]="filters().electricScrewdriverModel"
+          [options]="filterOptions().electricScrewdriverModels"
+          (valueChange)="setFilter('electricScrewdriverModel', $event)">
+        </app-multi-select-dropdown>
+      </div>
+
+      <div class="field">
+        <label class="field__label">Bit type</label>
+        <app-multi-select-dropdown
+          [value]="filters().bitType"
+          [options]="filterOptions().bitTypes"
+          (valueChange)="setFilter('bitType', $event)">
+        </app-multi-select-dropdown>
+      </div>
+
+      <div class="field">
+        <label class="field__label">Screw specifications</label>
+        <app-multi-select-dropdown
+          [value]="filters().screwSpec"
+          [options]="filterOptions().screwSpecs"
+          (valueChange)="setFilter('screwSpec', $event)">
+        </app-multi-select-dropdown>
+      </div>
+
+      <div class="field">
+        <label class="field__label">Locked item material</label>
+        <app-multi-select-dropdown
+          [value]="filters().lockedItemMaterial"
+          [options]="filterOptions().lockedItemMaterials"
+          (valueChange)="setFilter('lockedItemMaterial', $event)">
+        </app-multi-select-dropdown>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="gluePeelingResistant">Glue peeling resistant?</label>
+        <select
+          id="gluePeelingResistant"
+          class="field__input"
+          [ngModel]="filters().gluePeelingResistant"
+          (ngModelChange)="setFilter('gluePeelingResistant', $event)"
+          aria-label="Glue peeling resistant">
+          @for (opt of filterOptions().gluePeelingResistantOptions; track opt.key) {
+            <option [value]="opt.key">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="toothType">Tooth type</label>
+        <select
+          id="toothType"
+          class="field__input"
+          [ngModel]="filters().toothType"
+          (ngModelChange)="setFilter('toothType', $event)"
+          aria-label="Tooth type">
+          @for (opt of filterOptions().toothTypes; track opt.key) {
+            <option [value]="opt.key">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="field">
+        <label class="field__label" for="resultStatus">Result status</label>
+        <select
+          id="resultStatus"
+          class="field__input"
+          [ngModel]="filters().resultStatus"
+          (ngModelChange)="setFilter('resultStatus', $event)"
+          aria-label="Result status">
+          @for (opt of filterOptions().resultStatuses; track opt.key) {
+            <option [value]="opt.key">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field__label">Failure modes</label>
+        <app-multi-select-dropdown
+          [value]="filters().failureModes"
+          [options]="filterOptions().failureModes"
+          (valueChange)="setFilter('failureModes', $event)">
+        </app-multi-select-dropdown>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="confidence">Confidence</label>
+        <select
+          id="confidence"
+          class="field__input"
+          [ngModel]="filters().confidence"
+          (ngModelChange)="setFilter('confidence', $event)"
+          aria-label="Confidence">
+          @for (opt of filterOptions().confidenceOptions; track opt.key) {
+            <option [value]="opt.key">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="field">
+        <label class="field__label" for="startDate">Start date</label>
+        <input
+          type="date"
+          id="startDate"
+          class="field__input"
+          [ngModel]="filters().startDate"
+          (ngModelChange)="setFilter('startDate', $event)"
+          placeholder="mm/dd/yyyy"
+          aria-label="Start date">
+        @if (dateError()) {
+          <span class="field__error">Start date cannot be later than end date.</span>
+        }
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="endDate">End date</label>
+        <input
+          type="date"
+          id="endDate"
+          class="field__input"
+          [ngModel]="filters().endDate"
+          (ngModelChange)="setFilter('endDate', $event)"
+          placeholder="mm/dd/yyyy"
+          aria-label="End date">
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-card__actions">
+    <button
+      type="button"
+      class="btn btn-reset"
+      (click)="onReset()"
+      aria-label="Reset filters">
+      Reset
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-query"
+      [disabled]="!canQuery()"
+      (click)="onQuery()"
+      aria-label="Query samples">
+      @if (isLoading()) {
+        <span class="btn__spinner"></span>
+      }
+      Query
+    </button>
+  </div>
+</div>

@@ -1,0 +1,52 @@
+<div class="pagination">
+  <div class="pagination__summary">
+    <span>
+      Total {{ totalCount() }} items, showing {{ from() }}–{{ to() }}. Items per page:
+    </span>
+    <select
+      class="page-size-select"
+      [value]="pageSize()"
+      (change)="onPageSizeChange($event)"
+      aria-label="Items per page">
+      @for (opt of pageSizeOptions; track opt) {
+        <option [value]="opt">{{ opt }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="pagination__controls">
+    <button
+      type="button"
+      class="btn btn-nav"
+      [disabled]="isFirstPage()"
+      (click)="pageChange.emit(currentPage() - 1)"
+      aria-label="Previous page">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M15 18l-6-6 6-6"></path>
+      </svg>
+    </button>
+
+    @for (page of pages(); track page) {
+      <button
+        type="button"
+        class="btn btn-nav"
+        [class.active]="page === currentPage()"
+        (click)="pageChange.emit(page)"
+        [attr.aria-label]="'Go to page ' + page"
+        [attr.aria-current]="page === currentPage() ? 'page' : null">
+        {{ page }}
+      </button>
+    }
+
+    <button
+      type="button"
+      class="btn btn-nav"
+      [disabled]="isLastPage()"
+      (click)="pageChange.emit(currentPage() + 1)"
+      aria-label="Next page">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M9 18l6-6-6-6"></path>
+      </svg>
+    </button>
+  </div>
+</div>
