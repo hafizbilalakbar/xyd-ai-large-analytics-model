@@ -1,3 +1,5 @@
+import type { BatchOption, TrainingRow, TrainingRowStatus } from './data-import.models';
+
 export const MAX_FILE_SIZE_MB = 100;
 export const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 export const MAX_ZIP_ENTRIES = 500;
@@ -5,6 +7,8 @@ export const CHUNK_SIZE = 256 * 1024;
 export const IMPORT_PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 export const IMPORT_FILE_EXTENSIONS = ['.zip', '.csv', '.tsv', '.txt', '.xlsx', '.xls', '.json'];
+
+export const IMPORT_FILE_ACCEPT = IMPORT_FILE_EXTENSIONS.join(',');
 
 export const IMPORT_MIME_TYPES: Record<string, string[]> = {
   zip: ['application/zip', 'application/x-zip-compressed'],
@@ -99,4 +103,94 @@ export const MOCK_BATCHES: readonly BatchOption[] = [
   { id: 'B005', name: 'B005' },
 ];
 
-import type { BatchOption } from './data-import.models';
+export function isKnownFailureCode(value: string | null | undefined): boolean {
+  if (!value) return false;
+  const upper = value.trim().toUpperCase();
+  return FAILURE_CODES.some((code) => code.key === upper);
+}
+
+export function validateTrainingRow(
+  values: {
+    sampleId: string;
+    lockingTime: string;
+    failureMode: string | null;
+    confidence: number;
+    modelVersion: string;
+  },
+  allRows: readonly TrainingRow[],
+  currentId: string,
+): { errors: Readonly<{ sampleId?: string; lockingTime?: string; failureMode?: string; confidence?: string; modelVersion?: string }>; duplicateSampleId: boolean; status: TrainingRowStatus; reason: string } {
+  const errors: { sampleId?: string; lockingTime?: string; failureMode?: string; confidence?: string; modelVersion?: string } = {};
+  const sampleIdInput = values.sampleId.trim();
+  const failureModeInput = values.failureMode?.trim() ? values.failureMode.trim().toUpperCase() : null;
+
+  if (!sampleIdInput) {
+    errors.sampleId = 'Sample ID is required.';
+  }
+
+  const lockingTimeInput = values.lockingTime.trim();
+  if (!lockingTimeInput) {
+    errors.lockingTime = 'Locking time is required.';
+  } else if (Number.isNaN(new Date(lockingTimeInput).getTime())) {
+    errors.lockingTime = 'Enter a valid date and time.';
+  }
+
+  if (failureModeInput && !isKnownFailureCode(failureModeInput)) {
+    errors.failureMode = `Unknown failure code: ${failureModeInput}.`;
+  }
+
+  if (!Number.isFinite(values.confidence) || values.confidence < 0 || values.confidence > 100) {
+    errors.confidence = 'Confidence must be between 0 and 100.';
+  }
+
+  if (!values.modelVersion.trim()) {
+    errors.modelVersion = 'Model version is required.';
+  }
+
+  const sampleId = sampleIdInput;
+  const duplicateSampleId = sampleId
+    ? allRows.some((row) => row.id !== currentId && row.sampleId.trim() === sampleId)
+    : false;
+
+  let status: TrainingRowStatus = 'Valid';
+  let reason = '';
+
+  if (!sampleId) {
+    status = 'Error';
+    reason = 'Missing Sample ID.';
+  } else if (duplicateSampleId) {
+    status = 'Warning';
+    reason = 'Duplicate Sample ID inside the loaded rows.';
+  } else if (errors['lockingTime']) {
+    status = 'Warning';
+    reason = 'Bad or missing locking time.';
+  } else if (errors['confidence']) {
+    status = 'Error';
+    reason = 'Confidence must be between 0 and 100.';
+  } else if (!values.modelVersion.trim()) {
+    status = 'Error';
+    reason = 'Missing model version.';
+  } else if (errors['failureMode']) {
+    status = 'Error';
+    reason = errors['failureMode'];
+  } else if (errors['sampleId']) {
+    status = 'Error';
+    reason = 'Missing Sample ID.';
+  }
+
+  return { errors: Object.freeze(errors), duplicateSampleId, status, reason };
+}
+
+export function toDateTimeLocalValue(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+export function fromDateTimeLocalValue(value: string): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString();
+}

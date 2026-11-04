@@ -1,30 +1,53 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Injectable } from '@angular/core';
+import { computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ImportApiService } from './import-api.service';
 import { ImportParserService } from './import-parser.service';
-import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB, IMPORT_FILE_EXTENSIONS } from './import-constants';
+import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB, IMPORT_FILE_EXTENSIONS, validateTrainingRow } from './import-constants';
 import { generateMockPlaybackItems, generateMockTrainingRows } from './data-import.mock';
 import type {
   BatchOption,
   DuplicateMode,
+  ImportProgressState,
   ImportStatus,
   ImportTab,
   PlaybackCurveItem,
   TrainingRow,
   TrainingRowStatus,
+  TrainingSource,
   WriteTrainingResult,
 } from './data-import.models';
 
-@Injectable()
+const BUSY_STATUSES: readonly ImportStatus[] = [
+  'reading',
+  'extracting',
+  'detecting',
+  'parsing',
+  'validating',
+  'saving',
+];
+
+function idleProgress(): ImportProgressState {
+  return { status: 'idle', percent: 0, stage: '', fileName: '', elapsedMs: 0 };
+}
+
+@Injectable({ providedIn: 'root' })
 export class DataImportService {
   private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
   private readonly toastService = inject(ToastService);
   private readonly api = inject(ImportApiService);
   private readonly parser = inject(ImportParserService);
 
   readonly activeTab = signal<ImportTab>('playback');
+  readonly subtitle = computed(() => {
+    const tab = this.activeTab();
+    if (tab === 'training') {
+      return 'Preview and import the corrected sample.';
+    }
+    return 'Temporarily view curves and make judgments.';
+  });
+
   readonly batches = signal<BatchOption[]>([]);
   readonly batchesLoading = signal(false);
 
@@ -35,6 +58,8 @@ export class DataImportService {
   readonly playbackSort = signal<'name' | 'time'>('time');
   readonly playbackPage = signal(1);
   readonly playbackPageSize = signal(20);
+  readonly playbackProgress = signal<ImportProgressState>(idleProgress());
+  readonly playbackImportErrors = signal<{ fileName: string; rowIndex?: number; message: string }[]>([]);
 
   readonly trainingRows = signal<TrainingRow[]>([]);
   readonly trainingSelectedIds = signal<Set<string>>(new Set());
@@ -42,18 +67,15 @@ export class DataImportService {
   readonly duplicateMode = signal<DuplicateMode>('skip');
   readonly trainingPage = signal(1);
   readonly trainingPageSize = signal(20);
+  readonly trainingProgress = signal<ImportProgressState>(idleProgress());
+  readonly trainingImportErrors = signal<{ fileName: string; rowIndex?: number; message: string }[]>([]);
 
-  readonly importStatus = signal<ImportStatus>('idle');
-  readonly progressPercent = signal(0);
-  readonly currentStage = signal('');
-  readonly currentFileName = signal('');
-  readonly importElapsedMs = signal(0);
-  readonly importErrors = signal<{ fileName: string; rowIndex?: number; message: string }[]>([]);
-  readonly isImporting = computed(() =>
-    ['reading', 'extracting', 'detecting', 'parsing', 'validating', 'saving'].includes(this.importStatus()),
-  );
+  readonly playbackIsImporting = computed(() => BUSY_STATUSES.includes(this.playbackProgress().status));
+  readonly trainingIsImporting = computed(() => BUSY_STATUSES.includes(this.trainingProgress().status));
+  readonly isImporting = computed(() => this.playbackIsImporting() || this.trainingIsImporting());
 
-  private importStartTime = 0;
+  private playbackStartTime = 0;
+  private trainingStartTime = 0;
   private elapsedTimer: ReturnType<typeof setInterval> | null = null;
 
   readonly selectedPlaybackItem = computed(() =>
@@ -114,6 +136,7 @@ export class DataImportService {
   });
 
   readonly trainingTotalCount = computed(() => this.filteredTrainingRows().length);
+  readonly trainingRowCount = computed(() => this.trainingRows().length);
 
   readonly trainingCounts = computed(() => {
     const rows = this.trainingRows();
@@ -125,7 +148,16 @@ export class DataImportService {
     };
   });
 
-  readonly trainingSelectedCount = computed(() => this.trainingSelectedIds().size);
+  readonly trainingSources = computed<TrainingSource[]>(() => {
+    const counts = new Map<string, number>();
+    for (const row of this.trainingRows()) {
+      counts.set(row.fileName, (counts.get(row.fileName) ?? 0) + 1);
+    }
+    return [...counts.entries()].map(([fileName, rowCount]) => ({ fileName, rowCount }));
+  });
+
+  readonly trainingSelectedCount = computed(() => this.trainingSelectedValidRows().length);
+
   readonly trainingSelectedValidRows = computed(() =>
     this.trainingRows().filter((row) => row.status !== 'Error' && this.trainingSelectedIds().has(row.id)),
   );
@@ -139,7 +171,6 @@ export class DataImportService {
   setTab(tab: ImportTab): void {
     this.activeTab.set(tab);
     this.router.navigate([], {
-      relativeTo: this.route,
       queryParams: { tab },
       queryParamsHandling: 'merge',
     });
@@ -194,7 +225,23 @@ export class DataImportService {
     this.selectedPlaybackId.set(null);
     this.playbackSearch.set('');
     this.playbackFilter.set('all');
+    this.playbackSort.set('time');
     this.playbackPage.set(1);
+    this.playbackImportErrors.set([]);
+  }
+
+  removePlaybackItem(id: string): void {
+    const items = this.playbackItems();
+    const index = items.findIndex((item) => item.id === id);
+    if (index === -1) return;
+    const next = items.filter((item) => item.id !== id);
+    this.playbackItems.set(next);
+    if (this.selectedPlaybackId() === id) {
+      const fallback = next[Math.min(index, next.length - 1)] ?? null;
+      this.selectedPlaybackId.set(fallback ? fallback.id : null);
+    }
+    this.clampPlaybackPage();
+    this.toastService.show('Curve removed.', 'info');
   }
 
   reJudgeSelected(): void {
@@ -255,50 +302,66 @@ export class DataImportService {
   }
 
   async importPlayback(batchId: string, files: File[]): Promise<void> {
-    this.startImport('reading');
+    this.startPlaybackImport();
     try {
       const result = await this.parser.parsePlayback(files, batchId);
       await new Promise((resolve) => setTimeout(resolve, 400));
-      this.importStatus.set('done');
+      this.playbackProgress.set({ ...this.playbackProgress(), status: 'done', percent: 100, stage: 'Import complete' });
       this.playbackItems.set([...result.items]);
-      this.importErrors.set([...result.errors]);
-      if (result.items.length > 0) {
-        this.selectedPlaybackId.set(result.items[0].id);
-      }
-      if (result.errors.length > 0) {
+      this.playbackImportErrors.set([...result.errors]);
+      this.selectedPlaybackId.set(result.items[0]?.id ?? null);
+      this.playbackPage.set(1);
+      const totalErrors = result.errors.length;
+      const totalWarnings = result.items.filter((i) => i.warning).length;
+      if (totalErrors > 0) {
         this.toastService.show(
-          `Import finished with ${result.errors.length} warnings. Download the error report.`,
+          `Import finished with ${totalErrors} ${totalErrors === 1 ? 'error' : 'errors'}. Download the error report.`,
+          'info',
+        );
+      } else if (totalWarnings > 0) {
+        this.toastService.show(
+          `Import finished with ${totalWarnings} ${totalWarnings === 1 ? 'warning' : 'warnings'}.`,
           'info',
         );
       } else {
         this.toastService.show(`Import complete. ${result.items.length} curves imported.`, 'success');
       }
     } catch (error) {
-      this.handleImportError(error);
+      this.handleImportError(error, 'playback');
     } finally {
       this.stopElapsedTimer();
     }
   }
 
   async importTraining(files: File[]): Promise<void> {
-    this.startImport('reading');
+    this.startTrainingImport();
     try {
       const result = await this.parser.parseTraining(files);
       await new Promise((resolve) => setTimeout(resolve, 400));
-      this.importStatus.set('done');
-      this.trainingRows.set([...result.rows]);
-      this.importErrors.set([...result.errors]);
-      this.trainingSelectedIds.set(new Set());
-      if (result.errors.length > 0) {
+      this.trainingProgress.set({ ...this.trainingProgress(), status: 'done', percent: 100, stage: 'Import complete' });
+      const existing = this.trainingRows();
+      const incoming = result.rows.map((row) => ({ ...row, edited: false }));
+      const merged = this.revalidate([...existing, ...incoming]);
+      this.trainingRows.set(merged);
+      this.trainingImportErrors.set([...result.errors]);
+      this.trainingPage.set(1);
+      const totalErrors = result.errors.length;
+      const totalWarnings = merged.filter((r) => r.status === 'Warning').length;
+      if (totalErrors > 0) {
         this.toastService.show(
-          `Import finished with ${result.errors.length} warnings. Download the error report.`,
+          `Import finished with ${totalErrors} ${totalErrors === 1 ? 'error' : 'errors'}. Download the error report.`,
+          'info',
+        );
+      } else if (totalWarnings > 0) {
+        this.toastService.show(
+          `Import finished with ${totalWarnings} ${totalWarnings === 1 ? 'warning' : 'warnings'}.`,
           'info',
         );
       } else {
-        this.toastService.show('Format detected automatically.', 'info');
+        this.toastService.show(`Import complete. ${incoming.length} rows imported.`, 'success');
       }
     } catch (error) {
-      this.handleImportError(error);
+      this.handleImportError(error, 'training');
     } finally {
       this.stopElapsedTimer();
     }
@@ -306,7 +369,8 @@ export class DataImportService {
 
   cancelImport(): void {
     this.parser.cancel();
-    this.importStatus.set('cancelled');
+    this.playbackProgress.update((state) => ({ ...state, status: 'cancelled' }));
+    this.trainingProgress.update((state) => ({ ...state, status: 'cancelled' }));
     this.stopElapsedTimer();
     this.toastService.show('Import cancelled.', 'info');
   }
@@ -314,27 +378,25 @@ export class DataImportService {
   async writeTrainingSet(): Promise<WriteTrainingResult | null> {
     const rows = this.trainingSelectedValidRows();
     if (rows.length === 0) return null;
-    this.startImport('saving');
+    this.startTrainingImport('saving');
     try {
       const result = await this.api.writeTrainingSet(rows, this.duplicateMode());
       await new Promise((resolve) => setTimeout(resolve, 400));
-      this.importStatus.set('done');
-      this.toastService.show(
-        `${result.written} samples written to the training set.`,
-        'success',
-      );
+      this.trainingProgress.set({ ...this.trainingProgress(), status: 'done', percent: 100, stage: 'Import complete' });
+      this.toastService.show(`${result.written} samples written to the training set.`, 'success');
       this.trainingSelectedIds.set(new Set());
       return result;
     } catch (error) {
-      this.handleImportError(error);
+      this.handleImportError(error, 'training');
       return null;
     } finally {
       this.stopElapsedTimer();
     }
   }
 
-  downloadErrorReport(): void {
-    this.api.downloadErrorReport(this.importErrors());
+  downloadErrorReport(tab: ImportTab): void {
+    const errors = tab === 'training' ? this.trainingImportErrors() : this.playbackImportErrors();
+    this.api.downloadErrorReport(errors);
   }
 
   downloadTemplate(): void {
@@ -365,8 +427,114 @@ export class DataImportService {
   }
 
   loadMockTraining(): void {
-    this.trainingRows.set(generateMockTrainingRows());
+    const rows = this.revalidate(
+      generateMockTrainingRows().map((row) => ({ ...row, fileName: 'mock-training.csv', failureModeRaw: row.failureMode, edited: false })),
+    );
+    this.trainingRows.set(rows);
     this.trainingSelectedIds.set(new Set());
+  }
+
+  removeRow(id: string): void {
+    const rows = this.trainingRows();
+    if (!rows.some((row) => row.id === id)) return;
+    this.trainingRows.set(this.revalidate(rows.filter((row) => row.id !== id)));
+    this.trainingSelectedIds.update((set) => {
+      const next = new Set(set);
+      next.delete(id);
+      return next;
+    });
+    this.clampTrainingPage();
+    this.toastService.show('Row removed.', 'info');
+  }
+
+  removeRows(ids: string[]): void {
+    if (ids.length === 0) return;
+    const removed = new Set(ids);
+    const rows = this.trainingRows();
+    this.trainingRows.set(this.revalidate(rows.filter((row) => !removed.has(row.id))));
+    this.trainingSelectedIds.update((set) => {
+      const next = new Set(set);
+      ids.forEach((id) => next.delete(id));
+      return next;
+    });
+    this.clampTrainingPage();
+    this.toastService.show(`${ids.length} ${ids.length === 1 ? 'row' : 'rows'} removed.`, 'info');
+  }
+
+  clearAll(): void {
+    this.trainingRows.set([]);
+    this.trainingSelectedIds.set(new Set());
+    this.trainingImportErrors.set([]);
+    this.trainingFilter.set('all');
+    this.trainingPage.set(1);
+    this.toastService.show('All rows cleared.', 'info');
+  }
+
+  updateRow(id: string, changes: Partial<TrainingRow>): void {
+    const rows = this.trainingRows();
+    const index = rows.findIndex((row) => row.id === id);
+    if (index === -1) return;
+    const previous = rows[index];
+    const updated: TrainingRow = {
+      ...previous,
+      ...changes,
+      id: previous.id,
+      fileName: previous.fileName,
+      rowIndex: previous.rowIndex,
+      edited: true,
+    };
+    const next = [...rows];
+    next[index] = updated;
+    this.trainingRows.set(this.revalidate(next));
+    if (previous.status === 'Error' && updated.status !== 'Error') {
+      this.trainingSelectedIds.update((set) => {
+        const nextSet = new Set(set);
+        nextSet.add(id);
+        return nextSet;
+      });
+    }
+    this.toastService.show('Row updated.', 'info');
+  }
+
+  removeSource(fileName: string): void {
+    const rows = this.trainingRows();
+    const removedIds = rows.filter((row) => row.fileName === fileName).map((row) => row.id);
+    if (removedIds.length === 0) return;
+    const removed = new Set(removedIds);
+    this.trainingRows.set(this.revalidate(rows.filter((row) => !removed.has(row.id))));
+    this.trainingSelectedIds.update((set) => {
+      const next = new Set(set);
+      removedIds.forEach((id) => next.delete(id));
+      return next;
+    });
+    this.clampTrainingPage();
+    this.toastService.show(`${removedIds.length} ${removedIds.length === 1 ? 'row' : 'rows'} removed.`, 'info');
+  }
+
+  private revalidate(rows: TrainingRow[]): TrainingRow[] {
+    return rows.map((row) => {
+      const validation = validateTrainingRow(row, rows, row.id);
+      if (row.status === validation.status && row.reason === validation.reason) return row;
+      return { ...row, status: validation.status, reason: validation.reason };
+    });
+  }
+
+  private clampTrainingPage(): void {
+    const total = this.filteredTrainingRows().length;
+    const size = this.trainingPageSize();
+    const maxPage = Math.max(1, Math.ceil(total / size));
+    if (this.trainingPage() > maxPage) {
+      this.trainingPage.set(maxPage);
+    }
+  }
+
+  private clampPlaybackPage(): void {
+    const total = this.filteredPlaybackItems().length;
+    const size = this.playbackPageSize();
+    const maxPage = Math.max(1, Math.ceil(total / size));
+    if (this.playbackPage() > maxPage) {
+      this.playbackPage.set(maxPage);
+    }
   }
 
   private async loadBatches(): Promise<void> {
@@ -379,22 +547,43 @@ export class DataImportService {
     }
   }
 
-  private startImport(status: ImportStatus): void {
-    this.importStatus.set(status);
-    this.progressPercent.set(0);
-    this.currentStage.set('Preparing');
-    this.currentFileName.set('');
-    this.importElapsedMs.set(0);
-    this.importStartTime = performance.now();
+  private startPlaybackImport(status: ImportStatus = 'reading'): void {
+    this.playbackProgress.set({ status, percent: 0, stage: 'Preparing', fileName: '', elapsedMs: 0 });
+    this.playbackStartTime = performance.now();
+    this.startElapsedTimer('playback');
+  }
+
+  private startTrainingImport(status: ImportStatus = 'reading'): void {
+    this.trainingProgress.set({ status, percent: 0, stage: 'Preparing', fileName: '', elapsedMs: 0 });
+    this.trainingStartTime = performance.now();
+    this.startElapsedTimer('training');
+  }
+
+  private startElapsedTimer(tab: ImportTab): void {
     this.stopElapsedTimer();
     this.elapsedTimer = setInterval(() => {
-      this.importElapsedMs.set(Math.round(performance.now() - this.importStartTime));
-      const p = this.parser.progress();
-      if (p) {
-        this.importStatus.set(p.status);
-        this.progressPercent.set(p.percent);
-        this.currentStage.set(p.stage);
-        this.currentFileName.set(p.fileName);
+      const progress = this.parser.progress();
+      const elapsed = Math.round(performance.now() - (tab === 'playback' ? this.playbackStartTime : this.trainingStartTime));
+      if (tab === 'playback') {
+        const current = this.playbackProgress();
+        this.playbackProgress.set({
+          ...current,
+          elapsedMs: elapsed,
+          status: progress ? progress.status : current.status,
+          percent: progress ? progress.percent : current.percent,
+          stage: progress ? progress.stage : current.stage,
+          fileName: progress ? progress.fileName : current.fileName,
+        });
+      } else {
+        const current = this.trainingProgress();
+        this.trainingProgress.set({
+          ...current,
+          elapsedMs: elapsed,
+          status: progress ? progress.status : current.status,
+          percent: progress ? progress.percent : current.percent,
+          stage: progress ? progress.stage : current.stage,
+          fileName: progress ? progress.fileName : current.fileName,
+        });
       }
     }, 200);
   }
@@ -406,13 +595,21 @@ export class DataImportService {
     }
   }
 
-  private handleImportError(error: unknown): void {
+  private handleImportError(error: unknown, tab: ImportTab): void {
     const message = error instanceof Error ? error.message : 'Import failed.';
     if (message === 'cancelled') {
-      this.importStatus.set('cancelled');
+      if (tab === 'playback') {
+        this.playbackProgress.update((state) => ({ ...state, status: 'cancelled' }));
+      } else {
+        this.trainingProgress.update((state) => ({ ...state, status: 'cancelled' }));
+      }
       return;
     }
-    this.importStatus.set('failed');
+    if (tab === 'playback') {
+      this.playbackProgress.update((state) => ({ ...state, status: 'failed' }));
+    } else {
+      this.trainingProgress.update((state) => ({ ...state, status: 'failed' }));
+    }
     this.toastService.show('Import failed. Please check the file and try again.', 'error');
   }
 }

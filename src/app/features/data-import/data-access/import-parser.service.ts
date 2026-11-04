@@ -8,7 +8,7 @@ import type {
   WorkerResponse,
 } from './data-import.models';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ImportParserService {
   private readonly ngZone = inject(NgZone);
   private worker: Worker | null = null;

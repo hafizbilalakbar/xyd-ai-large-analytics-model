@@ -44,15 +44,47 @@ export interface PlaybackCurveItem {
 
 export interface TrainingRow {
   readonly id: string;
+  readonly fileName: string;
   readonly rowIndex: number;
   readonly sampleId: string;
   readonly lockingTime: string;
   readonly failureMode: string | null;
+  readonly failureModeRaw: string | null;
   readonly corrected: boolean;
   readonly confidence: number;
   readonly modelVersion: string;
   readonly status: TrainingRowStatus;
   readonly reason: string;
+  readonly edited: boolean;
+}
+
+export interface TrainingRowFieldErrors {
+  readonly sampleId?: string;
+  readonly lockingTime?: string;
+  readonly failureMode?: string;
+  readonly confidence?: string;
+  readonly modelVersion?: string;
+}
+
+export interface TrainingRowValidation {
+  readonly errors: TrainingRowFieldErrors;
+  readonly duplicateSampleId: boolean;
+  readonly status: TrainingRowStatus;
+  readonly reason: string;
+}
+
+export interface TrainingRowValues {
+  readonly sampleId: string;
+  readonly lockingTime: string;
+  readonly failureMode: string | null;
+  readonly failureModeRaw: string | null;
+  readonly confidence: number;
+  readonly modelVersion: string;
+}
+
+export interface TrainingSource {
+  readonly fileName: string;
+  readonly rowCount: number;
 }
 
 export interface ColumnMapping {
@@ -76,6 +108,14 @@ export interface FileParseResult {
 }
 
 export interface ImportProgress {
+  readonly status: ImportStatus;
+  readonly percent: number;
+  readonly stage: string;
+  readonly fileName: string;
+  readonly elapsedMs: number;
+}
+
+export interface ImportProgressState {
   readonly status: ImportStatus;
   readonly percent: number;
   readonly stage: string;

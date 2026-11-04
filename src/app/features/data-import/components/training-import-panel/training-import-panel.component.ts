@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { FileDropzoneComponent } from '../file-dropzone/file-dropzone.component';
 import { TrainingPreviewTableComponent } from '../training-preview-table/training-preview-table.component';
 import type { DuplicateMode, TrainingRow, TrainingRowStatus } from '../../data-access/data-import.models';
+import { IMPORT_FILE_EXTENSIONS } from '../../data-access/import-constants';
 
 @Component({
   selector: 'app-training-import-panel',
@@ -22,6 +23,7 @@ export class TrainingImportPanelComponent {
   readonly duplicateMode = input<DuplicateMode>('skip');
   readonly counts = input.required<{ total: number; valid: number; warning: number; error: number }>();
   readonly hasErrors = input(false);
+  readonly acceptedFileTypes = input<string>(IMPORT_FILE_EXTENSIONS.join(','));
 
   readonly fileDrop = output<File[]>();
   readonly filterChange = output<'all' | TrainingRowStatus>();
@@ -33,4 +35,14 @@ export class TrainingImportPanelComponent {
   readonly writeClick = output<void>();
   readonly downloadErrors = output<void>();
   readonly downloadTemplate = output<void>();
+  readonly removeRow = output<string>();
+  readonly editRow = output<string>();
+
+  onTrainingRemoveRow(id: string): void {
+    this.removeRow.emit(id);
+  }
+
+  onTrainingEditRow(id: string): void {
+    this.editRow.emit(id);
+  }
 }

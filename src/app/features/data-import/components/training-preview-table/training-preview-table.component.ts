@@ -23,6 +23,8 @@ export class TrainingPreviewTableComponent {
   readonly pageSizeChange = output<number>();
   readonly toggleRow = output<string>();
   readonly toggleSelectAll = output<boolean>();
+  readonly removeRow = output<string>();
+  readonly editRow = output<string>();
 
   protected readonly filters: { key: 'all' | TrainingRowStatus; label: string }[] = [
     { key: 'all', label: 'All' },

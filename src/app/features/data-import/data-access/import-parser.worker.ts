@@ -5,6 +5,7 @@ import {
   MAX_ZIP_ENTRIES,
   IMPORT_FILE_EXTENSIONS,
   FAILURE_CODES,
+  validateTrainingRow,
 } from './import-constants';
 import type {
   CurvePoint,
@@ -15,11 +16,12 @@ import type {
   PlaybackImportResult,
   TrainingImportResult,
   TrainingRow,
-  TrainingRowStatus,
   WorkerRequest,
 } from './data-import.models';
 
 let cancelled = false;
+let rowIdCounter = 0;
+let curveIdCounter = 0;
 
 self.onmessage = (event: MessageEvent<WorkerRequest>) => {
   cancelled = false;
@@ -226,7 +228,7 @@ async function parseSinglePlaybackFile(
     const result = judgeCurve(points);
 
     curves.push({
-      id: `${fileName}-${Date.now()}`,
+      id: `${fileName}-${curveIdCounter++}`,
       fileName,
       sampleId,
       batchId,
@@ -265,49 +267,36 @@ async function parseSingleTrainingFile(fileName: string, buffer: ArrayBuffer): P
       return { fileName, curves: [], rows, errors };
     }
 
-    const seenIds = new Set<string>();
-
     for (let i = 0; i < dataRows.length; i++) {
       if (cancelled) throw new Error('cancelled');
       const row = dataRows[i];
       const sampleId = row[sampleIdx]?.trim() ?? '';
       const lockingTime = timeIdx >= 0 ? parseDateToIso(row[timeIdx]) ?? '' : '';
-      const failureMode = failureIdx >= 0 ? normalizeFailureCode(row[failureIdx]) : null;
+      const failureModeRaw = failureIdx >= 0 ? row[failureIdx]?.trim() ?? '' : '';
+      const failureMode = failureModeRaw ? normalizeFailureCode(failureModeRaw) : null;
       const corrected = correctedIdx >= 0 ? parseCorrected(row[correctedIdx]) : false;
       const confidence = confidenceIdx >= 0 ? parseConfidence(row[confidenceIdx]) : null;
       const modelVersion = versionIdx >= 0 ? row[versionIdx]?.trim() ?? 'V3.0' : 'V3.0';
 
-      let status: TrainingRowStatus = 'Valid';
-      let reason = '';
-
-      if (!sampleId) {
-        status = 'Error';
-        reason = 'Missing Sample ID.';
-      } else if (seenIds.has(sampleId)) {
-        status = 'Warning';
-        reason = 'Duplicate Sample ID inside file.';
-      } else if (!lockingTime) {
-        status = 'Warning';
-        reason = 'Bad or missing locking time.';
-      } else if (failureIdx >= 0 && row[failureIdx] && !failureMode) {
-        status = 'Warning';
-        reason = `Unknown failure code: ${row[failureIdx]}.`;
-      }
-
-      seenIds.add(sampleId);
-
-      rows.push({
-        id: `${fileName}-${i}`,
+      const provisional: TrainingRow = {
+        id: `${fileName}-${rowIdCounter++}`,
+        fileName,
         rowIndex: i + 1,
         sampleId,
         lockingTime,
         failureMode,
+        failureModeRaw: failureModeRaw ? failureModeRaw : null,
         corrected,
         confidence: confidence ?? 0,
         modelVersion,
-        status,
-        reason,
-      });
+        status: 'Valid',
+        reason: '',
+        edited: false,
+      };
+
+      const validation = validateTrainingRow(provisional, rows, provisional.id);
+
+      rows.push({ ...provisional, status: validation.status, reason: validation.reason });
     }
   } catch (error) {
     errors.push({ fileName, message: error instanceof Error ? error.message : 'Parse error.' });

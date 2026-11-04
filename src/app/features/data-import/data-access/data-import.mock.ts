@@ -128,6 +128,7 @@ export function generateMockTrainingRows(): TrainingRow[] {
     const failureMode = i % 7 === 0 ? 'F01' : null;
     rows.push({
       id: `mock-row-${i}`,
+      fileName: 'mock-training.csv',
       rowIndex: i,
       sampleId: `XYD-20261103-${String(i).padStart(3, '0')}`,
       lockingTime: `2026-11-03 ${String(8 + Math.floor(i / 6)).padStart(2, '0')}:${String((i * 5) % 60).padStart(2, '0')}`,
@@ -137,6 +138,8 @@ export function generateMockTrainingRows(): TrainingRow[] {
       modelVersion: 'V3.0',
       status: i % 10 === 0 ? 'Warning' : 'Valid',
       reason: i % 10 === 0 ? 'Duplicate Sample ID inside file.' : '',
+      edited: false,
+      failureModeRaw: failureMode,
     });
   }
   return rows;
