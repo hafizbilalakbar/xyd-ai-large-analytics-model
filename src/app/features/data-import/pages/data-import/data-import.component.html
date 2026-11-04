@@ -1,5 +1,132 @@
-<app-feature-placeholder
-  title="Data Import"
-  description="Bring sample batches into the platform for validation and analysis."
-  icon="download"
-/>
+<div class="data-import-page">
+  <div class="subtitle-bar">
+    <span>{{ subtitle() }}</span>
+  </div>
+
+  <div class="tabs-bar">
+    <button class="tab-btn" [class.active]="activeTab() === 'training'" (click)="setActiveTab('training')">
+      Import Training Data
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'playback'" (click)="setActiveTab('playback')">
+      Import Playback Data
+    </button>
+  </div>
+
+  <div class="main-content">
+    @if (activeTab() === 'training') {
+      <div class="training-tab">
+        <div class="upload-area">
+          <button class="select-file-btn">Select File</button>
+          <button class="download-template-btn">Download Template</button>
+        </div>
+        <div class="summary-bar">
+          <div class="summary-line">
+            <span class="valid-badge">{{ trainingValidCount() }} Valid</span>
+            <span class="warning-badge">{{ trainingWarningCount() }} Warning{{ trainingWarningCount() !== 1 ? 's' : '' }}</span>
+            <span class="error-badge">{{ trainingErrorCount() }} Error{{ trainingErrorCount() !== 1 ? 's' : '' }}</span>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th>Sample ID</th>
+                <th>Locking Time</th>
+                <th>Failure Mode</th>
+                <th>Corrected</th>
+                <th>Confidence</th>
+                <th>Model Version</th>
+                <th>Status</th>
+                <th class="actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of service.trainingRows(); track row.sampleId) {
+                <tr>
+                  <td>{{ row.sampleId }}</td>
+                  <td>{{ row.lockingTime }}</td>
+                  <td>{{ row.failureMode || '—' }}</td>
+                  <td>{{ row.corrected ? 'Yes' : 'No' }}</td>
+                  <td>{{ row.confidence || '—' }}</td>
+                  <td>{{ row.modelVersion || '—' }}</td>
+                  <td>{{ row._status }}</td>
+                  <td class="actions">
+                    <button class="action-btn">R</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          @if (trainingTotal() > 0) {
+            <div class="pagination">
+              <button class="pagination-btn">Prev</button>
+              <span>Page {{ trainingFrom() }}-{{ trainingTo() }} of {{ trainingPages() }}</span>
+              <button class="pagination-btn">Next</button>
+            </div>
+          } @else {
+            <p class="empty-state">No data loaded. Select a file to import.</p>
+          }
+        </div>
+
+        @if (selectedCount() > 0) {
+          <div class="selection-bar">
+            <span>{{ selectedCount() }} selected</span>
+            <button class="selection-clear">Clear selection</button>
+            <button class="selection-remove">Remove selected</button>
+          </div>
+        }
+      </div>
+    }
+
+    @if (activeTab() === 'playback') {
+      <div class="playback-tab">
+        <div class="upload-area">
+          <button class="select-file-btn">Select File</button>
+          <button class="download-template-btn">Download Template</button>
+        </div>
+        <div class="table-container">
+          @if (service.playbackCurves().length > 0) {
+            <table class="preview-table">
+              <thead>
+                <tr>
+                  <th>Curve Name</th>
+                  <th>Result</th>
+                  <th class="actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (curve of service.playbackCurves(); track curve.id) {
+                  <tr>
+                    <td>{{ curve.name }}</td>
+                    <td>{{ curve.result }}</td>
+                    <td class="actions">
+                      <button class="action-btn">R</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+
+            @if (playbackCurves().length > 0) {
+              <div class="pagination">
+                <button class="pagination-btn">Prev</button>
+                <span>Page 1-10 of 10</span>
+                <button class="pagination-btn">Next</button>
+              </div>
+            } @else {
+              <p class="empty-state">No data loaded. Select a file to import.</p>
+            }
+          }
+        </div>
+
+        @if (selectedCount() > 0 && activeTab() === 'playback') {
+          <div class="selection-bar">
+            <span>{{ selectedCount() }} selected</span>
+            <button class="selection-clear">Clear selection</button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
