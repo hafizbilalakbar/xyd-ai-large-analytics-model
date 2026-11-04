@@ -14,8 +14,18 @@
         type="button"
         class="btn btn-reset"
         (click)="onSelectFile()">
-        Select File
+        Select file
       </button>
+      @if (rows().length > 0) {
+        <button type="button" class="btn btn-reset" (click)="clearAll.emit()">
+          Clear All
+        </button>
+      }
+      @if (selectedCount() > 0) {
+        <button type="button" class="btn btn-query" [disabled]="selectedCount() === 0">
+          Write to Training Set ({{ selectedCount() }})
+        </button>
+      }
     </div>
   </header>
 
@@ -24,6 +34,7 @@
       icon="document"
       label="Select the corrected data file, preview it, and then write it to the training set."
       (fileSelect)="fileDrop.emit($event)">
+      <span class="dropzone__helper">Accepted files: ZIP, CSV, TSV, TXT, XLSX, XLS, JSON. Maximum size 100 MB.</span>
     </app-file-dropzone>
   } @else {
     <div class="panel__summary">
@@ -59,4 +70,4 @@
     </app-training-preview-table>
   }
 </section>
-<input #fileInput type="file" class="dropzone__input" [accept]="acceptedFileTypes()" multiple (change)="onFileChange($event.target.files)" />
+<input #fileInput type="file" class="dropzone__input hidden" [accept]="acceptedFileTypes()" multiple (change)="onFileChange($event.target.files)" />

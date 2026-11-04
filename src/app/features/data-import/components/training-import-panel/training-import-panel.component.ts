@@ -37,6 +37,7 @@ export class TrainingImportPanelComponent {
   readonly downloadTemplate = output<void>();
   readonly removeRow = output<string>();
   readonly editRow = output<string>();
+  readonly clearAll = output<void>();
 
   @ViewChild('fileInput') fileInput!: ElementRef;
 
@@ -59,5 +60,9 @@ export class TrainingImportPanelComponent {
     if (files) {
       this.fileDrop.emit(Array.from(files));
     }
+  }
+
+  onClearAll(): void {
+    this.clearAll.emit();
   }
 }

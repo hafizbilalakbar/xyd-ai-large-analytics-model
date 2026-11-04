@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, computed } from '@angular/core';
 import { TablePaginationComponent } from '../../../sample-search/components/table-pagination/table-pagination.component';
 import type { TrainingRow, TrainingRowStatus } from '../../data-access/data-import.models';
 
@@ -18,6 +18,20 @@ export class TrainingPreviewTableComponent {
   readonly selectedIds = input.required<Set<string>>();
   readonly filter = input<'all' | TrainingRowStatus>('all');
 
+  readonly trainingCounts = computed(() => {
+    const rows = this.rows();
+    return {
+      total: rows.length,
+      valid: rows.filter((r) => r.status === 'Valid').length,
+      warning: rows.filter((r) => r.status === 'Warning').length,
+      error: rows.filter((r) => r.status === 'Error').length,
+    };
+  });
+
+  readonly trainingSelectedValidRows = computed(() =>
+    this.rows().filter((row) => row.status !== 'Error' && this.selectedIds().has(row.id)),
+  );
+
   readonly filterChange = output<'all' | TrainingRowStatus>();
   readonly pageChange = output<number>();
   readonly pageSizeChange = output<number>();
@@ -25,6 +39,8 @@ export class TrainingPreviewTableComponent {
   readonly toggleSelectAll = output<boolean>();
   readonly removeRow = output<string>();
   readonly editRow = output<string>();
+  readonly clearSelection = output<void>();
+  readonly removeSelected = output<void>();
 
   protected readonly filters: { key: 'all' | TrainingRowStatus; label: string }[] = [
     { key: 'all', label: 'All' },
@@ -33,19 +49,12 @@ export class TrainingPreviewTableComponent {
     { key: 'Error', label: 'Error' },
   ];
 
-  protected readonly allSelected = () => {
-    const valid = this.rows().filter((r) => r.status !== 'Error');
-    return valid.length > 0 && valid.every((r) => this.selectedIds().has(r.id));
-  };
-
-  protected readonly someSelected = () => {
-    const valid = this.rows().filter((r) => r.status !== 'Error');
-    const selectedCount = valid.filter((r) => this.selectedIds().has(r.id)).length;
-    return selectedCount > 0 && selectedCount < valid.length;
-  };
-
   onHeaderCheckboxChange(event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
     this.toggleSelectAll.emit(checked);
   }
+
+  protected readonly allSelected = computed(() => this.rows().length > 0 && this.rows().every((row) => this.selectedIds().has(row.id)));
+
+  protected readonly someSelected = computed(() => this.rows().some((row) => this.selectedIds().has(row.id)) && !this.allSelected());
 }

@@ -4,20 +4,23 @@ import { Router } from '@angular/router';
 import { ToastService } from '../../../shared/services/toast.service';
 import { ImportApiService } from './import-api.service';
 import { ImportParserService } from './import-parser.service';
-import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB, IMPORT_FILE_EXTENSIONS, validateTrainingRow } from './import-constants';
-import { generateMockPlaybackItems, generateMockTrainingRows } from './data-import.mock';
-import type {
-  BatchOption,
-  DuplicateMode,
+import {
+  MAX_FILE_SIZE_BYTES,
+  MAX_FILE_SIZE_MB,
+  IMPORT_FILE_EXTENSIONS,
+  ImportTab,
   ImportProgressState,
   ImportStatus,
-  ImportTab,
+  BatchOption,
   PlaybackCurveItem,
   TrainingRow,
   TrainingRowStatus,
+  DuplicateMode,
   TrainingSource,
   WriteTrainingResult,
 } from './data-import.models';
+import { validateTrainingRow } from './import-constants';
+import { generateMockPlaybackItems, generateMockTrainingRows } from './data-import.mock';
 
 const BUSY_STATUSES: readonly ImportStatus[] = [
   'reading',
@@ -306,25 +309,52 @@ export class DataImportService {
     try {
       const result = await this.parser.parsePlayback(files, batchId);
       await new Promise((resolve) => setTimeout(resolve, 400));
-      this.playbackProgress.set({ ...this.playbackProgress(), status: 'done', percent: 100, stage: 'Import complete' });
-      this.playbackItems.set([...result.items]);
-      this.playbackImportErrors.set([...result.errors]);
-      this.selectedPlaybackId.set(result.items[0]?.id ?? null);
-      this.playbackPage.set(1);
+      const totalItems = result.items.length;
       const totalErrors = result.errors.length;
       const totalWarnings = result.items.filter((i) => i.warning).length;
-      if (totalErrors > 0) {
+
+      // Show progress done state
+      this.playbackProgress.set({ ...this.playbackProgress(), status: 'done', percent: 100, stage: 'Import complete' });
+
+      if (totalItems === 0 && totalErrors > 0) {
+        // Nothing imported, show error with reason from first error
+        this.playbackItems.set([]);
+        this.playbackImportErrors.set([...result.errors]);
+        this.playbackPage.set(1);
         this.toastService.show(
-          `Import finished with ${totalErrors} ${totalErrors === 1 ? 'error' : 'errors'} and ${result.items.length} ${result.items.length === 1 ? 'curve' : 'curves'} imported. Download the error report.`,
-          'info',
+          `Import failed. ${result.errors[0]?.message || 'Import failed. Please check the file and try again.'}`,
+          'error',
         );
-      } else if (totalWarnings > 0) {
+      } else if (totalItems > 0 && totalErrors > 0) {
+        // Some curves imported, some with warnings/errors
+        this.playbackItems.set([...result.items]);
+        this.playbackImportErrors.set([...result.errors]);
+        this.playbackPage.set(1);
         this.toastService.show(
-          `Import finished with ${totalWarnings} ${totalWarnings === 1 ? 'warning' : 'warnings'}. Review the highlighted rows.`,
+          `${totalItems} curves imported, ${totalErrors} file(s) failed. Download the error report.`,
+          'warning',
+        );
+      } else if (totalItems > 0 && totalErrors === 0 && totalWarnings === 0) {
+        // All good
+        this.playbackItems.set([...result.items]);
+        this.playbackImportErrors.set([]);
+        this.playbackPage.set(1);
+        this.toastService.show(`Import complete. ${totalItems} curves imported.`, 'success');
+      } else if (totalItems > 0 && totalWarnings > 0 && totalErrors === 0) {
+        // Some warnings
+        this.playbackItems.set([...result.items]);
+        this.playbackImportErrors.set([...result.errors]);
+        this.playbackPage.set(1);
+        this.toastService.show(
+          `${totalItems} curves imported, ${totalWarnings} warning(s). Review the highlighted rows.`,
           'info',
         );
       } else {
-        this.toastService.show(`Import complete. ${result.items.length} curves imported.`, 'success');
+        // Fallback
+        this.playbackItems.set([...result.items]);
+        this.playbackImportErrors.set([...result.errors]);
+        this.playbackPage.set(1);
+        this.toastService.show('Import completed.', 'info');
       }
     } catch (error) {
       this.handleImportError(error, 'playback');
@@ -339,6 +369,7 @@ export class DataImportService {
       const result = await this.parser.parseTraining(files);
       await new Promise((resolve) => setTimeout(resolve, 400));
       this.trainingProgress.set({ ...this.trainingProgress(), status: 'done', percent: 100, stage: 'Import complete' });
+
       const existing = this.trainingRows();
       const startIndex = existing.length + 1;
       const incoming = result.rows.map((row, i) => ({
@@ -352,17 +383,29 @@ export class DataImportService {
       this.trainingPage.set(1);
       const totalErrors = result.errors.length;
       const totalWarnings = merged.filter((r) => r.status === 'Warning').length;
-      if (totalErrors > 0) {
+      const totalValid = merged.filter((r) => r.status === 'Valid').length;
+
+      if (incoming.length === 0 && totalErrors > 0) {
+        // Nothing imported, show error with reason
+        this.trainingImportErrors.set([...result.errors]);
         this.toastService.show(
-          `Import finished with ${totalErrors} ${totalErrors === 1 ? 'error' : 'errors'} and ${incoming.length} ${incoming.length === 1 ? 'row' : 'rows'} imported. Download the error report.`,
-          'info',
+          `Import failed. ${result.errors[0]?.message || 'Import failed. Please check the file and try again.'}`,
+          'error',
+        );
+      } else if (totalErrors > 0) {
+        // Some errors
+        this.toastService.show(
+          `${totalValid} rows imported, ${totalErrors} file(s) failed. Download the error report.`,
+          'warning',
         );
       } else if (totalWarnings > 0) {
+        // Some warnings
         this.toastService.show(
-          `Import finished with ${totalWarnings} ${totalWarnings === 1 ? 'warning' : 'warnings'}. Review the highlighted rows.`,
+          `${totalValid} rows imported, ${totalWarnings} warning(s). Review the highlighted rows.`,
           'info',
         );
       } else {
+        // All good
         this.toastService.show(`Import complete. ${incoming.length} rows loaded. Review them, then write to the training set.`, 'success');
       }
     } catch (error) {

@@ -55,6 +55,7 @@ export class PlaybackImportModalComponent {
   protected readonly canConfirm = computed(() => {
     if (!this.selectedBatchId()) return false;
     if (this.selectedFiles().length === 0) return false;
+    if (this.validationError()) return false;
     return this.selectedFiles().every((f) => this.isValidFile(f));
   });
 
@@ -118,6 +119,45 @@ export class PlaybackImportModalComponent {
     if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) return false;
     if (!IMPORT_FILE_EXTENSIONS.includes(ext)) return false;
     return true;
+  }
+
+  private async validateCurveData(file: File): Promise<boolean> {
+    const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
+
+    if (ext === '.zip') {
+      return false; // ZIP validation deferred to import parser
+    }
+
+    // Check first 50 lines for angle and torque columns
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        const text = e.target.result;
+        const lines = text.split(/\r?\n/).filter((line: string) => line.trim().length > 0);
+        if (lines.length < 2) {
+          resolve(false);
+          return;
+        }
+        const headerLine = lines[0];
+        const headers = headerLine.split(/[,\t;]/).map((h: string) => h.trim().toLowerCase().replace(/[\s_\-]/g, ''));
+        const hasAngle = headers.some((h: string) => h.includes('angle') || h.includes('deg') || h.includes('degree') || h.includes('角度'));
+        const hasTorque = headers.some((h: string) => h.includes('torque') || h.includes('nm') || h.includes('n.m') || h.includes('扭矩') || h.includes('扭力'));
+        resolve(hasAngle && hasTorque);
+      };
+      reader.onerror = () => resolve(false);
+      reader.readAsText(file.slice(0, 5000));
+    });
+  }
+
+  async onFilesValidated(files: File[]): Promise<void> {
+    if (files.length === 0) return;
+    const firstFile = files[0];
+    const hasData = await this.validateCurveData(firstFile);
+    if (!hasData) {
+      this.validationError.set('This file does not contain curve data (angle and torque columns). Use a curve file or a ZIP of curve files.');
+    } else {
+      this.validationError.set('');
+    }
   }
 
   removeFile(): void {

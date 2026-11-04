@@ -33,13 +33,14 @@
           <span class="required">*</span>
         </label>
         @if (selectedFiles().length > 0) {
-          <div class="file-info">
-            <span class="file-name">{{ fileName() }}</span>
-            <span class="file-size">{{ fileSize() }}</span>
+          <div class="file-row" style="display: flex; align-items: center; gap: 8px;">
+            <span class="file-name" style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-text); font-size: 13px;">{{ fileName() }}</span>
+            <span class="file-size" style="color: var(--color-text-muted); font-size: 12px;">{{ fileSize() }}</span>
             <button
               type="button"
               class="btn btn-reset btn--small file-remove"
-              (click)="removeFile(); validationError.set('');"
+              style="height: 32px; padding: 0 8px; font-size: 12px;"
+              (click)="removeFile(); validationError.set('')"
               title="Remove file">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path d="M3 6h18"></path>
@@ -49,28 +50,34 @@
             </button>
           </div>
         } @else {
-          <div class="file-picker">
+          <div class="file-row" style="display: flex; align-items: center; gap: 8px; min-height: 34px;">
+            <span class="file-name" style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-text-muted); font-size: 13px;">No file selected.</span>
             <input
               #fileInput
               type="file"
-              class="file-picker__input"
+              class="file-picker__input hidden"
               [accept]="acceptedTypes"
               multiple
               (change)="onFileSelect($event)" />
             <button
               type="button"
-              class="btn btn-query"
-              (click)="fileInput.click(); $event.stopPropagation()">
-              Select file
-            </button>
+              class="btn btn-reset btn--small"
+              style="height: 32px; padding: 0 8px; font-size: 12px;"
+              (click)="fileInput.click(); $event.stopPropagation()"
+              title="Select file"
+              aria-label="Select file">Select file</button>
           </div>
         }
         @if (validationError()) {
-          <p class="form-error">{{ validationError() }}</p>
+          <p class="form-error" style="margin: 4px 0 0; color: var(--color-danger); font-size: 12px;">{{ validationError() }}</p>
         }
       </div>
 
-      <div class="template-link">
+      <div class="form-helper" style="margin: 4px 0 0; color: var(--color-text-muted); font-size: 12px;">
+        Accepted: ZIP, CSV, TSV, TXT, XLSX, XLS, JSON. Maximum size 100 MB.
+      </div>
+
+      <div class="template-link" style="margin-top: 8px;">
         <button type="button" class="link-button" (click)="downloadTemplate.emit()">Download Template</button>
       </div>
     }

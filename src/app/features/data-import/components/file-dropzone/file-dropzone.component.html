@@ -5,13 +5,12 @@
   [attr.aria-label]="label()"
   (dragover)="onDragOver($event)"
   (drop)="onDrop($event)"
-  (keydown)="onKeyDown($event)"
-  (click)="fileInput.click()">
+  (keydown)="onKeyDown($event)">
   <input
     #fileInput
     id="file-dropzone-input"
     type="file"
-    class="dropzone__input"
+    class="dropzone__input hidden"
     [accept]="accept()"
     [multiple]="multiple()"
     (change)="onFileChange($event)" />
