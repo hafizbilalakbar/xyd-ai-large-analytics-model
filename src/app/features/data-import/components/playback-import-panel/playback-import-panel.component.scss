@@ -1,0 +1,129 @@
+.panel {
+  background: var(--color-surface);
+  border: 1px solid #e3e7ee;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 6%);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.panel__title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.panel__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.panel__summary-text {
+  color: var(--color-text);
+  font-size: 13px;
+}
+
+.panel__summary-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.panel__content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.panel__list {
+  min-width: 0;
+}
+
+.panel__viewer {
+  min-width: 0;
+}
+
+.btn {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-query {
+  background: var(--color-primary-600);
+  color: var(--color-text-inverse);
+  font-weight: 600;
+}
+
+.btn-query:hover {
+  background: var(--color-primary-500);
+}
+
+.btn-reset {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid #d9dee7;
+}
+
+.btn-reset:hover {
+  border-color: var(--color-primary-400);
+  color: var(--color-primary-600);
+}
+
+@media (max-width: 1024px) {
+  .panel__content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .panel__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .panel__header .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .panel__summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .panel__summary-actions {
+    width: 100%;
+  }
+
+  .panel__summary-actions .btn {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+  }
+}

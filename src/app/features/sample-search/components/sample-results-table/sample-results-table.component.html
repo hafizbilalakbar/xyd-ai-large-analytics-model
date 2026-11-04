@@ -7,17 +7,17 @@
   <div class="table-scroll">
     <table class="results-table">
       <colgroup>
-        <col style="width: 6%;">
-        <col style="width: 10%;">
-        <col style="width: 12%;">
-        <col style="width: 15%;">
-        <col style="width: 14%;">
-        <col style="width: 6%;">
-        <col style="width: 9%;">
-        <col style="width: 7%;">
-        <col style="width: 6%;">
-        <col style="width: 8%;">
-        <col style="width: 7%;">
+        <col style="width: 6%;" />
+        <col style="width: 10%;" />
+        <col style="width: 12%;" />
+        <col style="width: 15%;" />
+        <col style="width: 14%;" />
+        <col style="width: 6%;" />
+        <col style="width: 9%;" />
+        <col style="width: 7%;" />
+        <col style="width: 6%;" />
+        <col style="width: 8%;" />
+        <col style="width: 7%;" />
       </colgroup>
       <thead>
         <tr>
@@ -36,106 +36,104 @@
       </thead>
       <tbody>
         @if (loading()) {
-          <tr class="state-row">
-            <td colspan="11">
-              <div class="skeleton-rows">
-                @for (i of [1, 2, 3, 4, 5]; track i) {
-                  <div class="skeleton-row">
-                    <div class="skeleton-cell" style="width: 6%;"></div>
-                    <div class="skeleton-cell" style="width: 10%;"></div>
-                    <div class="skeleton-cell" style="width: 12%;"></div>
-                    <div class="skeleton-cell" style="width: 15%;"></div>
-                    <div class="skeleton-cell" style="width: 14%;"></div>
-                    <div class="skeleton-cell" style="width: 6%;"></div>
-                    <div class="skeleton-cell" style="width: 9%;"></div>
-                    <div class="skeleton-cell" style="width: 7%;"></div>
-                    <div class="skeleton-cell" style="width: 6%;"></div>
-                    <div class="skeleton-cell" style="width: 8%;"></div>
-                    <div class="skeleton-cell" style="width: 7%;"></div>
-                  </div>
-                }
+        <tr class="state-row">
+          <td colspan="11">
+            <div class="skeleton-rows">
+              @for (i of [1, 2, 3, 4, 5]; track i) {
+              <div class="skeleton-row">
+                <div class="skeleton-cell" style="width: 6%;"></div>
+                <div class="skeleton-cell" style="width: 10%;"></div>
+                <div class="skeleton-cell" style="width: 12%;"></div>
+                <div class="skeleton-cell" style="width: 15%;"></div>
+                <div class="skeleton-cell" style="width: 14%;"></div>
+                <div class="skeleton-cell" style="width: 6%;"></div>
+                <div class="skeleton-cell" style="width: 9%;"></div>
+                <div class="skeleton-cell" style="width: 7%;"></div>
+                <div class="skeleton-cell" style="width: 6%;"></div>
+                <div class="skeleton-cell" style="width: 8%;"></div>
+                <div class="skeleton-cell" style="width: 7%;"></div>
               </div>
-            </td>
-          </tr>
+              }
+            </div>
+          </td>
+        </tr>
         } @else if (errorMessage()) {
-          <tr class="state-row">
-            <td colspan="11">
-              <div class="error-state">
-                <p class="error-message">Failed to load data.</p>
-                <button class="retry-btn" type="button" (click)="retry.emit()" aria-label="Retry loading data">Retry</button>
-              </div>
-            </td>
-          </tr>
+        <tr class="state-row">
+          <td colspan="11">
+            <div class="error-state">
+              <p class="error-message">Failed to load data.</p>
+              <button class="retry-btn" type="button" (click)="retry.emit()" aria-label="Retry loading data">
+                Retry
+              </button>
+            </div>
+          </td>
+        </tr>
         } @else if (results().length === 0) {
-          <tr class="state-row">
-            <td colspan="11">
-              <div class="empty-state">
-                <svg class="empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
-                  <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
-                </svg>
-                <p class="empty-text">No data available.</p>
-              </div>
-            </td>
-          </tr>
+        <tr class="state-row">
+          <td colspan="11">
+            <div class="empty-state">
+              <svg class="empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.5" aria-hidden="true">
+                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+                <path
+                  d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z">
+                </path>
+              </svg>
+              <p class="empty-text">No data available.</p>
+            </div>
+          </td>
+        </tr>
         } @else {
-          @for (row of results(); track row.serialNo) {
-            <tr>
-              <td>{{ row.serialNo }}</td>
-              <td>{{ row.sampleId }}</td>
-              <td>{{ row.lockingTime }}</td>
-              <td>{{ row.electricScrewdriverModel }}</td>
-              <td>{{ row.screwSpecification }}</td>
-              <td>
-                <span class="result-tag" [class.result-tag--pass]="row.result === 'PASS'" [class.result-tag--fail]="row.result === 'FAIL'">
-                  {{ row.result }}
-                </span>
-              </td>
-              <td>{{ row.failureMode ?? '-' }}</td>
-              <td>
-                @if (row.confidence !== null) {
-                  <span [class.confidence-low]="isLowConfidence(row.confidence)">
-                    {{ row.confidence }}%
-                  </span>
-                } @else {
-                  <span>-</span>
-                }
-              </td>
-              <td>
-                @if (row.corrected) {
-                  <span class="tag tag--yes">Yes</span>
-                } @else {
-                  <span class="tag tag--no">No</span>
-                }
-              </td>
-              <td>{{ row.modelVersion }}</td>
-              <td class="actions-cell">
-                <button
-                  class="action-btn"
-                  type="button"
-                  title="View details"
-                  [attr.aria-label]="'View details for sample ' + row.sampleId"
-                  (click)="$event.stopPropagation()">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                </button>
-              </td>
-            </tr>
-          }
+        @for (row of results(); track row.serialNo) {
+        <tr>
+          <td>{{ row.serialNo }}</td>
+          <td>{{ row.sampleId }}</td>
+          <td>{{ row.lockingTime }}</td>
+          <td>{{ row.electricScrewdriverModel }}</td>
+          <td>{{ row.screwSpecification }}</td>
+          <td>
+            <span class="result-tag" [class.result-tag--pass]="row.result === 'PASS'"
+              [class.result-tag--fail]="row.result === 'FAIL'">
+              {{ row.result }}
+            </span>
+          </td>
+          <td>{{ row.failureMode ?? '-' }}</td>
+          <td>
+            @if (row.confidence !== null) {
+            <span [class.confidence-low]="isLowConfidence(row.confidence)">
+              {{ row.confidence }}%
+            </span>
+            } @else {
+            <span>-</span>
+            }
+          </td>
+          <td>
+            @if (row.corrected) {
+            <span class="tag tag--yes">Yes</span>
+            } @else {
+            <span class="tag tag--no">No</span>
+            }
+          </td>
+          <td>{{ row.modelVersion }}</td>
+          <td class="actions-cell">
+            <button class="action-btn" type="button" title="View details"
+              [attr.aria-label]="'View details for sample ' + row.sampleId" (click)="$event.stopPropagation()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </td>
+        </tr>
+        }
         }
       </tbody>
     </table>
   </div>
 
   <div class="results-card__footer">
-    <app-table-pagination
-      [totalCount]="totalCount()"
-      [currentPage]="currentPage()"
-      [pageSize]="pageSize()"
-      (pageChange)="pageChange.emit($event)"
-      (pageSizeChange)="pageSizeChange.emit($event)">
-    </app-table-pagination>
+    <app-table-pagination [totalCount]="totalCount()" [currentPage]="currentPage()" [pageSize]="pageSize()"
+      (pageChange)="pageChange.emit($event)" (pageSizeChange)="pageSizeChange.emit($event)" />
   </div>
 </div>

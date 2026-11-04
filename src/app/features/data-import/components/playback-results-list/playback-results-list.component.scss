@@ -1,0 +1,122 @@
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.results-list__toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1 1 200px;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #d9dee7;
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.filter-select {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid #d9dee7;
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 13px;
+  min-width: 120px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.results-table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.results-table th {
+  position: sticky;
+  top: 0;
+  background: #f3f5f9;
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.results-table td {
+  color: var(--color-text);
+  font-size: 13px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.results-table__row:hover {
+  background: #f8fafc;
+}
+
+.results-table__row--selected {
+  background: #f0f5ff;
+}
+
+.cell-file {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.warning-icon {
+  color: var(--color-warning);
+  flex-shrink: 0;
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: var(--color-text-muted);
+}
+
+.tag--pass {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.tag--fail {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.tag--pending {
+  background: #f1f5f9;
+  color: var(--color-text-muted);
+}
+
+.results-list__footer {
+  border-top: 1px solid var(--color-border);
+  padding-top: 12px;
+}

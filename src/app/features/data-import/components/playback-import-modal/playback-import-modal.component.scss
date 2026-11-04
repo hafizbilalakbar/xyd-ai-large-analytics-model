@@ -1,0 +1,139 @@
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.form-field:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.required {
+  color: var(--color-danger);
+  margin-left: 2px;
+}
+
+.form-input {
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #d9dee7;
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.form-input--static {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-muted);
+  background: #f3f5f9;
+}
+
+.file-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px dashed #d9dee7;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.file-picker:hover {
+  border-color: var(--color-primary-400);
+  background: #f8fafc;
+}
+
+.file-picker__input {
+  display: none;
+}
+
+.file-picker__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.form-helper {
+  margin: 4px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.form-error {
+  margin: 4px 0 0;
+  color: var(--color-danger);
+  font-size: 12px;
+}
+
+.template-link {
+  margin-top: 8px;
+}
+
+.link-button {
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--color-primary-600);
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.link-button:hover {
+  color: var(--color-primary-500);
+}
+
+.btn {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-query {
+  background: var(--color-primary-600);
+  color: var(--color-text-inverse);
+  font-weight: 600;
+}
+
+.btn-query:hover:not(:disabled) {
+  background: var(--color-primary-500);
+}
+
+.btn-query:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-reset {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid #d9dee7;
+}
+
+.btn-reset:hover {
+  border-color: var(--color-primary-400);
+  color: var(--color-primary-600);
+}

@@ -1,0 +1,83 @@
+<div class="preview-table">
+  <div class="preview-table__filters">
+    @for (f of filters; track f.key) {
+      <button
+        type="button"
+        class="filter-chip"
+        [class.filter-chip--active]="filter() === f.key"
+        (click)="filterChange.emit(f.key)">
+        {{ f.label }}
+      </button>
+    }
+  </div>
+
+  <div class="table-scroll">
+    <table class="preview-table__table">
+      <thead>
+        <tr>
+          <th class="col-checkbox">
+            <input
+              type="checkbox"
+              [checked]="allSelected()"
+              [indeterminate]="someSelected()"
+              (change)="onHeaderCheckboxChange($event)"
+              aria-label="Select all valid rows" />
+          </th>
+          <th>Row</th>
+          <th>Sample ID</th>
+          <th>Locking Time</th>
+          <th>Failure Mode</th>
+          <th>Corrected</th>
+          <th>Confidence</th>
+          <th>Model Version</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.id) {
+          <tr [class.preview-table__row--error]="row.status === 'Error'">
+            <td class="col-checkbox">
+              <input
+                type="checkbox"
+                [checked]="selectedIds().has(row.id)"
+                [disabled]="row.status === 'Error'"
+                (change)="toggleRow.emit(row.id)"
+                [attr.aria-label]="'Select row ' + row.rowIndex" />
+            </td>
+            <td>{{ row.rowIndex }}</td>
+            <td>{{ row.sampleId }}</td>
+            <td>{{ row.lockingTime }}</td>
+            <td>{{ row.failureMode ?? '—' }}</td>
+            <td>
+              <span class="tag" [class.tag--yes]="row.corrected" [class.tag--no]="!row.corrected">
+                {{ row.corrected ? 'Yes' : 'No' }}
+              </span>
+            </td>
+            <td>{{ row.confidence }}%</td>
+            <td>{{ row.modelVersion }}</td>
+            <td>
+              <span
+                class="tag"
+                [class.tag--valid]="row.status === 'Valid'"
+                [class.tag--warning]="row.status === 'Warning'"
+                [class.tag--error]="row.status === 'Error'"
+                [attr.title]="row.reason">
+                {{ row.status }}
+              </span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="preview-table__footer">
+    <app-table-pagination
+      [totalCount]="totalCount()"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="pageChange.emit($event)"
+      (pageSizeChange)="pageSizeChange.emit($event)">
+    </app-table-pagination>
+  </div>
+</div>

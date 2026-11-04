@@ -23,7 +23,7 @@ export class SampleResultsTableComponent {
   readonly pageChange = output<number>();
   readonly pageSizeChange = output<number>();
 
-  protected readonly lowThreshold = LOW_CONFIDENCE_THRESHOLD;
-
-  protected readonly isLowConfidence = (confidence: number | null) => (confidence ?? 100) < this.lowThreshold;
+  protected isLowConfidence(confidence: number | null): boolean {
+    return (confidence ?? 100) < LOW_CONFIDENCE_THRESHOLD;
+  }
 }

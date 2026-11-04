@@ -1,0 +1,118 @@
+<app-toast-container></app-toast-container>
+
+<div class="data-import-page">
+  <header class="page-header">
+    <div class="page-header__copy">
+      <h1 class="page-header__title">Import Data</h1>
+      <p class="page-header__description page-header__description--bar">Temporarily view curves and make judgments.</p>
+    </div>
+  </header>
+
+  <app-import-tabs
+    [activeTab]="activeTab()"
+    [busy]="isImporting()"
+    (tabChange)="onTabChange($event)">
+  </app-import-tabs>
+
+  <div class="tab-panel" role="tabpanel">
+    @switch (activeTab()) {
+      @case ('playback') {
+        <app-playback-import-panel
+          [items]="playbackItems()"
+          [selectedItem]="selectedPlaybackItem()"
+          [totalCount]="playbackTotalCount()"
+          [currentPage]="playbackPage()"
+          [pageSize]="playbackPageSize()"
+          [search]="playbackSearch()"
+          [filter]="playbackFilter()"
+          [sort]="playbackSort()"
+          [counts]="playbackCounts()"
+          [hasErrors]="importErrors().length > 0"
+          (importClick)="openPlaybackImport()"
+          (fileDrop)="onPlaybackFileDrop($event)"
+          (searchChange)="service.setPlaybackSearch($event)"
+          (filterChange)="onFilterChange($event)"
+          (sortChange)="onSortChange($event)"
+          (pageChange)="onPlaybackPageChange($event)"
+          (pageSizeChange)="onPlaybackPageSizeChange($event)"
+          (selectItem)="onSelectPlayback($event)"
+          (clear)="onClearPlayback()"
+          (downloadErrors)="onDownloadPlaybackErrors()"
+          (previous)="onPreviousPlayback()"
+          (next)="onNextPlayback()"
+          (reJudge)="onReJudge()">
+        </app-playback-import-panel>
+      }
+      @case ('training') {
+        <app-training-import-panel
+          [rows]="trainingRows()"
+          [totalCount]="trainingTotalCount()"
+          [currentPage]="trainingPage()"
+          [pageSize]="trainingPageSize()"
+          [selectedIds]="trainingSelectedIds()"
+          [selectedCount]="trainingSelectedCount()"
+          [filter]="trainingFilter()"
+          [duplicateMode]="duplicateMode()"
+          [counts]="trainingCounts()"
+          [hasErrors]="importErrors().length > 0"
+          (fileDrop)="onTrainingFileDrop($event)"
+          (filterChange)="onTrainingFilterChange($event)"
+          (pageChange)="onTrainingPageChange($event)"
+          (pageSizeChange)="onTrainingPageSizeChange($event)"
+          (toggleRow)="onToggleTrainingRow($event)"
+          (toggleSelectAll)="onToggleTrainingSelectAll($event)"
+          (duplicateModeChange)="onDuplicateModeChange($event)"
+          (writeClick)="onWriteTraining()"
+          (downloadErrors)="onDownloadTrainingErrors()"
+          (downloadTemplate)="onDownloadTemplate()">
+        </app-training-import-panel>
+      }
+    }
+  </div>
+</div>
+
+<app-playback-import-modal
+  [open]="playbackImportModalOpen"
+  [batches]="batches()"
+  [isImporting]="isImporting()"
+  [progressPercent]="progressPercent()"
+  [currentStage]="currentStage()"
+  [currentFileName]="currentFileName()"
+  [importElapsedMs]="importElapsedMs()"
+  [importStatus]="importStatus()"
+  (confirm)="onPlaybackImport($event)"
+  (cancel)="closePlaybackImport()"
+  (cancelImport)="onCancelImport()"
+  (downloadTemplate)="onDownloadTemplate()">
+</app-playback-import-modal>
+
+<app-confirm-dialog
+  [open]="clearPlaybackConfirmOpen"
+  title="Clear imported curves?"
+  message="All imported playback curves will be removed."
+  confirmLabel="Clear"
+  [danger]="true"
+  [autofocusCancel]="true"
+  (confirm)="confirmClearPlayback()"
+  (cancel)="clearPlaybackConfirmOpen = false">
+</app-confirm-dialog>
+
+<app-confirm-dialog
+  [open]="writeTrainingConfirmOpen"
+  title="Write {{ trainingSelectedCount() }} samples to the training set?"
+  message="This changes the data used to train the model."
+  confirmLabel="Write"
+  [autofocusCancel]="true"
+  (confirm)="confirmWriteTraining()"
+  (cancel)="writeTrainingConfirmOpen = false">
+</app-confirm-dialog>
+
+<app-confirm-dialog
+  [open]="tabSwitchPending !== null"
+  title="Import is running"
+  message="An import is currently running. Switching tabs will not stop it. Are you sure?"
+  confirmLabel="Switch"
+  [autofocusCancel]="true"
+  (confirm)="confirmTabSwitch()"
+  (cancel)="cancelTabSwitch()">
+</app-confirm-dialog>

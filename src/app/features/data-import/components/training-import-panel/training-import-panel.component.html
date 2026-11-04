@@ -1,0 +1,63 @@
+<section class="panel">
+  <header class="panel__header">
+    <h2 class="panel__title">Import and Browse Training Data</h2>
+    <div class="panel__actions">
+      <button type="button" class="btn btn-reset" (click)="downloadTemplate.emit()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M12 15V3"></path>
+          <path d="M7.5 7.5 12 3l4.5 4.5"></path>
+          <path d="M4 17v3h16v-3"></path>
+        </svg>
+        Select File
+      </button>
+      <button
+        type="button"
+        class="btn btn-query"
+        [disabled]="selectedCount() === 0"
+        [class.btn--dimmed]="selectedCount() === 0"
+        (click)="writeClick.emit()">
+        Write to Training Set ({{ selectedCount() }})
+      </button>
+    </div>
+  </header>
+
+  @if (rows().length === 0) {
+    <app-file-dropzone
+      icon="document"
+      label="Select the corrected data file, preview it, and then write it to the training set."
+      (fileSelect)="fileDrop.emit($event)">
+    </app-file-dropzone>
+  } @else {
+    <div class="panel__summary">
+      <span class="panel__summary-text">
+        {{ counts().total }} rows read, {{ counts().valid }} valid, {{ counts().warning }} warnings, {{ counts().error }} errors
+      </span>
+      <div class="panel__summary-actions">
+        <label class="duplicate-rule">
+          Duplicates:
+          <select [value]="duplicateMode()" (change)="duplicateModeChange.emit($any($event.target).value)">
+            <option value="skip">Skip duplicates</option>
+            <option value="overwrite">Overwrite existing</option>
+          </select>
+        </label>
+        @if (hasErrors()) {
+          <button type="button" class="btn btn-reset" (click)="downloadErrors.emit()">Download Error Report</button>
+        }
+      </div>
+    </div>
+
+    <app-training-preview-table
+      [rows]="rows()"
+      [totalCount]="totalCount()"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      [selectedIds]="selectedIds()"
+      [filter]="filter()"
+      (filterChange)="filterChange.emit($event)"
+      (pageChange)="pageChange.emit($event)"
+      (pageSizeChange)="pageSizeChange.emit($event)"
+      (toggleRow)="toggleRow.emit($event)"
+      (toggleSelectAll)="toggleSelectAll.emit($event)">
+    </app-training-preview-table>
+  }
+</section>
