@@ -32,24 +32,39 @@
           Select file
           <span class="required">*</span>
         </label>
-        <div
-          class="file-picker"
-          (dragover)="onDragOver($event)"
-          (drop)="onDrop($event)"
-          (click)="fileInput.click()">
-          <input
-            #fileInput
-            type="file"
-            class="file-picker__input"
-            [accept]="acceptedTypes"
-            multiple
-            (change)="onFileSelect($event)" />
-          <span class="file-picker__name">{{ fileName() }}</span>
-          <button type="button" class="btn btn-query" (click)="fileInput.click(); $event.stopPropagation()">Select file</button>
-        </div>
-        <p class="form-helper">
-          Accepted: ZIP (multiple curve files), CSV, TSV, TXT, XLSX, XLS, JSON. Maximum size {{ maxSizeText }} MB.
-        </p>
+        @if (selectedFiles().length > 0) {
+          <div class="file-info">
+            <span class="file-name">{{ fileName() }}</span>
+            <span class="file-size">{{ fileSize() }}</span>
+            <button
+              type="button"
+              class="btn btn-reset btn--small file-remove"
+              (click)="removeFile(); validationError.set('');"
+              title="Remove file">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        } @else {
+          <div class="file-picker">
+            <input
+              #fileInput
+              type="file"
+              class="file-picker__input"
+              [accept]="acceptedTypes"
+              multiple
+              (change)="onFileSelect($event)" />
+            <button
+              type="button"
+              class="btn btn-query"
+              (click)="fileInput.click(); $event.stopPropagation()">
+              Select file
+            </button>
+          </div>
+        }
         @if (validationError()) {
           <p class="form-error">{{ validationError() }}</p>
         }
@@ -63,7 +78,13 @@
   @if (!isImporting()) {
     <div modalFooter>
       <button type="button" class="btn btn-reset" (click)="onClose()">Cancel</button>
-      <button type="button" class="btn btn-query" [disabled]="!canConfirm()" (click)="onConfirm()">Confirm</button>
+      <button
+        type="button"
+        class="btn btn-query"
+        [disabled]="!canConfirm() || isImporting()"
+        (click)="onConfirm()">
+        Confirm
+      </button>
     </div>
   }
 </app-modal>

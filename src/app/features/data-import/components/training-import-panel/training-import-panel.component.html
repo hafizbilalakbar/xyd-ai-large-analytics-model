@@ -8,15 +8,13 @@
           <path d="M7.5 7.5 12 3l4.5 4.5"></path>
           <path d="M4 17v3h16v-3"></path>
         </svg>
-        Select File
+        Download Template
       </button>
       <button
         type="button"
-        class="btn btn-query"
-        [disabled]="selectedCount() === 0"
-        [class.btn--dimmed]="selectedCount() === 0"
-        (click)="writeClick.emit()">
-        Write to Training Set ({{ selectedCount() }})
+        class="btn btn-reset"
+        (click)="onSelectFile()">
+        Select File
       </button>
     </div>
   </header>
@@ -61,3 +59,4 @@
     </app-training-preview-table>
   }
 </section>
+<input #fileInput type="file" class="dropzone__input" [accept]="acceptedFileTypes()" multiple (change)="onFileChange($event.target.files)" />

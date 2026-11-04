@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, ViewChild, ElementRef } from '@angular/core';
 import { FileDropzoneComponent } from '../file-dropzone/file-dropzone.component';
 import { TrainingPreviewTableComponent } from '../training-preview-table/training-preview-table.component';
 import type { DuplicateMode, TrainingRow, TrainingRowStatus } from '../../data-access/data-import.models';
@@ -38,11 +38,26 @@ export class TrainingImportPanelComponent {
   readonly removeRow = output<string>();
   readonly editRow = output<string>();
 
+  @ViewChild('fileInput') fileInput!: ElementRef;
+
   onTrainingRemoveRow(id: string): void {
     this.removeRow.emit(id);
   }
 
   onTrainingEditRow(id: string): void {
     this.editRow.emit(id);
+  }
+
+  onSelectFile(): void {
+    const input = this.fileInput?.nativeElement;
+    if (input) {
+      input.click();
+    }
+  }
+
+  onFileChange(files: FileList | null): void {
+    if (files) {
+      this.fileDrop.emit(Array.from(files));
+    }
   }
 }

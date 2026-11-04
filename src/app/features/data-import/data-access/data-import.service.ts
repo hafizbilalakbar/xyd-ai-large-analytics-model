@@ -315,12 +315,12 @@ export class DataImportService {
       const totalWarnings = result.items.filter((i) => i.warning).length;
       if (totalErrors > 0) {
         this.toastService.show(
-          `Import finished with ${totalErrors} ${totalErrors === 1 ? 'error' : 'errors'}. Download the error report.`,
+          `Import finished with ${totalErrors} ${totalErrors === 1 ? 'error' : 'errors'} and ${result.items.length} ${result.items.length === 1 ? 'curve' : 'curves'} imported. Download the error report.`,
           'info',
         );
       } else if (totalWarnings > 0) {
         this.toastService.show(
-          `Import finished with ${totalWarnings} ${totalWarnings === 1 ? 'warning' : 'warnings'}.`,
+          `Import finished with ${totalWarnings} ${totalWarnings === 1 ? 'warning' : 'warnings'}. Review the highlighted rows.`,
           'info',
         );
       } else {
@@ -340,7 +340,12 @@ export class DataImportService {
       await new Promise((resolve) => setTimeout(resolve, 400));
       this.trainingProgress.set({ ...this.trainingProgress(), status: 'done', percent: 100, stage: 'Import complete' });
       const existing = this.trainingRows();
-      const incoming = result.rows.map((row) => ({ ...row, edited: false }));
+      const startIndex = existing.length + 1;
+      const incoming = result.rows.map((row, i) => ({
+        ...row,
+        edited: false,
+        rowIndex: startIndex + i,
+      }));
       const merged = this.revalidate([...existing, ...incoming]);
       this.trainingRows.set(merged);
       this.trainingImportErrors.set([...result.errors]);
@@ -349,16 +354,16 @@ export class DataImportService {
       const totalWarnings = merged.filter((r) => r.status === 'Warning').length;
       if (totalErrors > 0) {
         this.toastService.show(
-          `Import finished with ${totalErrors} ${totalErrors === 1 ? 'error' : 'errors'}. Download the error report.`,
+          `Import finished with ${totalErrors} ${totalErrors === 1 ? 'error' : 'errors'} and ${incoming.length} ${incoming.length === 1 ? 'row' : 'rows'} imported. Download the error report.`,
           'info',
         );
       } else if (totalWarnings > 0) {
         this.toastService.show(
-          `Import finished with ${totalWarnings} ${totalWarnings === 1 ? 'warning' : 'warnings'}.`,
+          `Import finished with ${totalWarnings} ${totalWarnings === 1 ? 'warning' : 'warnings'}. Review the highlighted rows.`,
           'info',
         );
       } else {
-        this.toastService.show(`Import complete. ${incoming.length} rows imported.`, 'success');
+        this.toastService.show(`Import complete. ${incoming.length} rows loaded. Review them, then write to the training set.`, 'success');
       }
     } catch (error) {
       this.handleImportError(error, 'training');

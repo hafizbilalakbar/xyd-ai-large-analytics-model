@@ -16,11 +16,11 @@ export class PlaybackImportModalComponent {
   readonly open = input.required<boolean>();
   readonly batches = input.required<BatchOption[]>();
   readonly isImporting = input(false);
-  readonly progressPercent = input(0);
-  readonly currentStage = input('');
-  readonly currentFileName = input('');
-  readonly importElapsedMs = input(0);
-  readonly importStatus = input('reading');
+  readonly progressPercent = input.required<number>();
+  readonly currentStage = input.required<string>();
+  readonly currentFileName = input.required<string>();
+  readonly importElapsedMs = input.required<number>();
+  readonly importStatus = input.required<string>();
 
   readonly confirm = output<{ batchId: string; files: File[] }>();
   readonly cancel = output<void>();
@@ -30,6 +30,7 @@ export class PlaybackImportModalComponent {
   readonly selectedBatchId = signal<string>('');
   readonly selectedFiles = signal<File[]>([]);
   readonly validationError = signal<string>('');
+  readonly importInProgress = signal<boolean>(false);
 
   protected readonly acceptedTypes = IMPORT_FILE_EXTENSIONS.join(',');
   protected readonly maxSizeText = `${MAX_FILE_SIZE_MB}`;
@@ -41,6 +42,16 @@ export class PlaybackImportModalComponent {
         ? this.selectedFiles()[0].name
         : `${this.selectedFiles().length} files selected`,
   );
+  protected readonly fileSize = computed(() => {
+    if (this.selectedFiles().length === 0) return '';
+    if (this.selectedFiles().length === 1) {
+      const size = this.selectedFiles()[0].size;
+      if (size < 1024) return `${size} bytes`;
+      if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+      return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+    }
+    return `${this.selectedFiles().length} files selected`;
+  });
   protected readonly canConfirm = computed(() => {
     if (!this.selectedBatchId()) return false;
     if (this.selectedFiles().length === 0) return false;
@@ -48,7 +59,8 @@ export class PlaybackImportModalComponent {
   });
 
   onBatchChange(event: Event): void {
-    this.selectedBatchId.set((event.target as HTMLSelectElement).value);
+    const value = (event.target as HTMLSelectElement).value;
+    this.selectedBatchId.set(value);
     this.validationError.set('');
   }
 
@@ -72,11 +84,13 @@ export class PlaybackImportModalComponent {
   onConfirm(): void {
     if (!this.canConfirm()) return;
     this.validationError.set('');
+    this.importInProgress.set(true);
     this.confirm.emit({ batchId: this.selectedBatchId(), files: this.selectedFiles() });
   }
 
   onClose(): void {
     if (this.isImporting()) return;
+    if (this.importInProgress() && !confirm('Discard changes?')) return;
     this.reset();
     this.cancel.emit();
   }
@@ -85,7 +99,13 @@ export class PlaybackImportModalComponent {
     const valid = files.filter((f) => this.isValidFile(f));
     const invalid = files.filter((f) => !this.isValidFile(f));
     if (invalid.length > 0) {
-      this.validationError.set('Unsupported file type or file too large.');
+      if (invalid.some((f) => f.size > MAX_FILE_SIZE_MB * 1024 * 1024)) {
+        this.validationError.set('File is too large. Maximum size is 100 MB.');
+      } else if (invalid.some((f) => !IMPORT_FILE_EXTENSIONS.includes(f.name.slice(f.name.lastIndexOf('.')).toLowerCase()))) {
+        this.validationError.set('Unsupported file type.');
+      } else {
+        this.validationError.set('Invalid file.');
+      }
     } else {
       this.validationError.set('');
     }
@@ -94,15 +114,21 @@ export class PlaybackImportModalComponent {
 
   private isValidFile(file: File): boolean {
     const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
-    if (!IMPORT_FILE_EXTENSIONS.includes(ext)) return false;
-    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) return false;
     if (file.size === 0) return false;
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) return false;
+    if (!IMPORT_FILE_EXTENSIONS.includes(ext)) return false;
     return true;
+  }
+
+  removeFile(): void {
+    this.selectedFiles.set([]);
+    this.validationError.set('');
   }
 
   private reset(): void {
     this.selectedBatchId.set('');
     this.selectedFiles.set([]);
     this.validationError.set('');
+    this.importInProgress.set(false);
   }
 }
