@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, HostListener, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { zipSync, strToU8 } from 'fflate';
 import { SampleService } from '../../../sample-search/data-access/sample.service';
@@ -41,7 +41,7 @@ function csvEscape(value: unknown): string {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DataExportComponent {
-  private readonly service: SampleService = inject(SampleService);
+  private readonly service = inject(SampleService);
   private readonly authService = inject(AuthService);
   private readonly logService = inject(OperationLogService);
   private readonly toast = inject(ToastService);
@@ -55,15 +55,24 @@ export class DataExportComponent {
   readonly to = this.service.to;
   readonly totalPages = this.service.totalPages;
   readonly isLoading = this.service.isLoading;
+  readonly errorMessage = this.service.errorMessage;
   readonly filterOptions = this.service.filterOptions;
   readonly allRecords = this.service.allFilteredResults;
 
   readonly exportFormat = signal<'both' | 'csv' | 'json'>('both');
   readonly archiveMode = signal(false);
   readonly showArchiveConfirm = signal(false);
+  readonly showDeleteConfirm = signal(false);
+  readonly deleteConfirmText = signal('');
   readonly exporting = signal(false);
   readonly progress = signal(0);
   readonly cancelFlag = signal(false);
+  readonly exportStarted = signal(false);
+  readonly showExportResult = signal(false);
+  readonly exportResult = signal<{ count: number; format: string; fileName: string; size: number } | null>(null);
+  readonly filtersChanged = signal(false);
+
+  readonly pageSizes = [20, 50, 100];
 
   readonly dateError = computed(() => {
     const f = this.filters();
@@ -74,7 +83,7 @@ export class DataExportComponent {
   });
 
   readonly canQuery = computed(() => !this.isLoading() && !this.dateError());
-  readonly exportDisabled = computed(() => this.isLoading() || this.exporting());
+  readonly exportDisabled = computed(() => this.isLoading() || this.exporting() || (this.filtersChanged() && this.totalCount() > 0));
   readonly estimatedCount = computed(() => this.totalCount());
   readonly operator = computed(() => this.authService.user()?.name ?? 'Administrator');
 
@@ -88,33 +97,75 @@ export class DataExportComponent {
     return `Will export ${count} sample(s) and pack them into a ZIP. After successful export, these ${count} sample(s) will be permanently deleted from your local machine and cannot be recovered. This operation cannot be undone and will be recorded in the operation log.`;
   });
 
+  readonly exportResultMessage = computed(() => {
+    const r = this.exportResult();
+    if (!r) {
+      return '';
+    }
+    return `Exported ${r.count} record(s) as ${r.format.toUpperCase()}. File: ${r.fileName} (${r.size} bytes).`;
+  });
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.exporting()) {
+      event.preventDefault();
+    }
+  }
+
   setFilter<K extends keyof ReturnType<typeof this.filters>>(key: K, value: ReturnType<typeof this.filters>[K]): void {
+    this.filtersChanged.set(true);
     this.service.setFilter(key, value);
+  }
+
+  setExportFormat(value: string): void {
+    this.exportFormat.set(value as 'both' | 'csv' | 'json');
+  }
+
+  setPageSize(value: string): void {
+    this.service.setPageSize(Number(value));
   }
 
   onQuery(): void {
     if (this.dateError() || this.isLoading()) {
       return;
     }
+    this.filtersChanged.set(false);
     this.service.query();
   }
 
+  onReset(): void {
+    this.filtersChanged.set(false);
+    this.exportFormat.set('both');
+    this.service.resetFilters();
+  }
+
   onExport(): void {
+    if (this.exportStarted()) {
+      return;
+    }
     if (this.archiveMode()) {
       this.showArchiveConfirm.set(true);
       return;
     }
-    this.performExport(false);
-  }
-
-  toggleArchive(): void {
-    this.archiveMode.update(m => !m);
+    this.startExport(false);
   }
 
   onArchiveConfirm(confirm: boolean): void {
     this.showArchiveConfirm.set(false);
     if (confirm) {
-      this.performExport(true);
+      this.showDeleteConfirm.set(true);
+      this.deleteConfirmText.set('');
+    }
+  }
+
+  onDeleteInput(event: Event): void {
+    this.deleteConfirmText.set((event.target as HTMLInputElement).value);
+  }
+
+  onDeleteConfirm(confirm: boolean): void {
+    this.showDeleteConfirm.set(false);
+    if (confirm) {
+      this.startExport(true);
     }
   }
 
@@ -122,10 +173,32 @@ export class DataExportComponent {
     this.cancelFlag.set(true);
   }
 
+  onToggleKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.toggleArchive();
+    }
+  }
+
+  toggleArchive(): void {
+    this.archiveMode.update((m) => !m);
+  }
+
+  private startExport(deleted: boolean): void {
+    if (this.exportStarted()) {
+      return;
+    }
+    this.exportStarted.set(true);
+    this.performExport(deleted).finally(() => {
+      this.exportStarted.set(false);
+    });
+  }
+
   private async performExport(deleted: boolean): Promise<void> {
     const records = this.allRecords();
     if (records.length === 0) {
       this.toast.show('No data to export. Please run a query first.', 'warning');
+      this.exportStarted.set(false);
       return;
     }
     this.exporting.set(true);
@@ -140,6 +213,7 @@ export class DataExportComponent {
         if (this.cancelFlag()) {
           this.exporting.set(false);
           this.progress.set(0);
+          this.exportStarted.set(false);
           this.toast.show('Export cancelled.', 'info');
           return;
         }
@@ -149,11 +223,12 @@ export class DataExportComponent {
         }
         processed = Math.min(records.length, i + chunkSize);
         this.progress.set(Math.round((processed / records.length) * 90));
-        await new Promise(resolve => setTimeout(resolve, 20));
+        await new Promise((resolve) => setTimeout(resolve, 20));
       }
       if (this.cancelFlag()) {
         this.exporting.set(false);
         this.progress.set(0);
+        this.exportStarted.set(false);
         this.toast.show('Export cancelled.', 'info');
         return;
       }
@@ -174,14 +249,17 @@ export class DataExportComponent {
       anchor.click();
       URL.revokeObjectURL(url);
       this.progress.set(100);
+      const fileName = zipFileName();
+      const size = blob.size;
       if (deleted) {
-        this.deleteSamples(records);
+        this.deleteSamples(records, format, fileName, size);
       } else {
-        this.finishExport(records.length, format, false);
+        this.finishExport(records.length, format, fileName, size, false);
       }
     } catch {
       this.exporting.set(false);
       this.progress.set(0);
+      this.exportStarted.set(false);
       this.toast.show('Export failed.', 'error');
     }
   }
@@ -200,20 +278,22 @@ export class DataExportComponent {
     ].join(',');
   }
 
-  private deleteSamples(records: SampleResult[]): void {
-    const ids = new Set(records.map(r => r.sampleId));
+  private deleteSamples(records: SampleResult[], format: 'both' | 'csv' | 'json', fileName: string, size: number): void {
+    const ids = new Set(records.map((r) => r.sampleId));
     const remaining = MOCK_RESULTS.filter((r: SampleResult) => !ids.has(r.sampleId));
     MOCK_RESULTS.splice(0, MOCK_RESULTS.length, ...remaining);
     this.service.query();
-    this.finishExport(records.length, this.exportFormat(), true);
+    this.finishExport(records.length, format, fileName, size, true);
   }
 
-  private finishExport(recordCount: number, format: 'both' | 'csv' | 'json', deleted: boolean): void {
+  private finishExport(recordCount: number, format: 'both' | 'csv' | 'json', fileName: string, size: number, deleted: boolean): void {
     this.exporting.set(false);
     this.progress.set(0);
+    this.exportStarted.set(false);
     const scope = this.scopeText();
     this.logService.add({ operator: this.operator(), format, scope, recordCount, deleted });
-    this.toast.show(deleted ? `Archive export completed: ${recordCount} record(s) deleted.` : `Export completed: ${recordCount} record(s) exported.`, 'success');
+    this.exportResult.set({ count: recordCount, format, fileName, size });
+    this.showExportResult.set(true);
   }
 
   private scopeText(): string {
@@ -226,6 +306,11 @@ export class DataExportComponent {
     if (f.startDate) parts.push(`start=${f.startDate}`);
     if (f.endDate) parts.push(`end=${f.endDate}`);
     return parts.length ? parts.join('; ') : 'all';
+  }
+
+  closeExportResult(): void {
+    this.showExportResult.set(false);
+    this.exportResult.set(null);
   }
 
   prevPage(): void {
