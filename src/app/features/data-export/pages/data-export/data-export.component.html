@@ -1,5 +1,201 @@
-<app-feature-placeholder
-  title="Data Export"
-  description="Prepare and export locked sample data and analysis results."
-  icon="upload"
-/>
+<app-page-header title="Data export" description="Exporting samples and judgment results" />
+
+<div class="export-card">
+  <div class="card-title">Export conditions</div>
+  <div class="filter-grid" role="group" aria-label="Export filters">
+    <div class="field">
+      <label for="electricBatchNumber">Electricity batch number</label>
+      <input
+        id="electricBatchNumber"
+        type="text"
+        placeholder="all"
+        [ngModel]="filters().electricBatchNumber"
+        (ngModelChange)="setFilter('electricBatchNumber', $event)"
+        aria-label="Electricity batch number">
+    </div>
+    <div class="field">
+      <label for="resultStatus">Result Status</label>
+      <select
+        id="resultStatus"
+        [ngModel]="filters().resultStatus"
+        (ngModelChange)="setFilter('resultStatus', $event)"
+        aria-label="Result Status">
+        @for (opt of filterOptions().resultStatuses; track opt.key) {
+          <option [value]="opt.key">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label>Failure Modes (Multiple Selection)</label>
+      <app-multi-select-dropdown
+        [value]="filters().failureModes"
+        [options]="filterOptions().failureModes"
+        placeholder="All"
+        (valueChange)="setFilter('failureModes', $event)"
+        aria-label="Failure Modes (Multiple Selection)">
+      </app-multi-select-dropdown>
+    </div>
+    <div class="field">
+      <label for="labelingCorrection">Labeling correction</label>
+      <select
+        id="labelingCorrection"
+        [ngModel]="filters().labelingCorrection"
+        (ngModelChange)="setFilter('labelingCorrection', $event)"
+        aria-label="Labeling correction">
+        @for (opt of labelingOptions(); track opt.key) {
+          <option [value]="opt.key">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="field">
+      <label for="startDate">Start Date</label>
+      <input
+        id="startDate"
+        type="date"
+        [ngModel]="filters().startDate"
+        (ngModelChange)="setFilter('startDate', $event)"
+        placeholder="mm/dd/yyyy"
+        aria-label="Start Date">
+      @if (dateError()) {
+        <span class="field-error">End date cannot be earlier than start date.</span>
+      }
+    </div>
+    <div class="field">
+      <label for="endDate">End Date</label>
+      <input
+        id="endDate"
+        type="date"
+        [ngModel]="filters().endDate"
+        (ngModelChange)="setFilter('endDate', $event)"
+        placeholder="mm/dd/yyyy"
+        aria-label="End Date">
+    </div>
+    <div class="field">
+      <label for="exportFormat">Export format</label>
+      <select
+        id="exportFormat"
+        [(ngModel)]="exportFormat"
+        aria-label="Export format">
+        <option value="both">CSV + JSON</option>
+        <option value="csv">CSV only</option>
+        <option value="json">JSON only</option>
+      </select>
+    </div>
+    <div class="field toggle-field">
+      <label class="toggle-label" id="archiveToggleLabel">After successful export , the original sample is deleted from the local machine (unrecoverable).</label>
+      <button
+        type="button"
+        id="archiveToggle"
+        class="toggle"
+        [class.on]="archiveMode()"
+        (click)="toggleArchive()"
+        [attr.aria-pressed]="archiveMode()"
+        [attr.aria-labelledby]="'archiveToggleLabel archiveToggle'"
+        aria-label="Archive Export">
+        <span class="toggle-knob"></span>
+      </button>
+      <span class="toggle-state">{{ archiveMode() ? 'Enabled: Exported samples will be permanently deleted from local storage and cannot be recovered.' : 'Closed: Normal export, retain original sample' }}</span>
+    </div>
+  </div>
+
+  <div class="hint-bar">
+    <span class="hint">If no date is entered, all historical samples will be exported; leave the filter criteria blank as needed.</span>
+    <button type="button" class="btn-query" [disabled]="!canQuery()" (click)="onQuery()">
+      @if (isLoading()) {
+        <span class="spinner"></span>
+      }
+      Query
+    </button>
+  </div>
+</div>
+
+<div class="action-bar">
+  <span class="action-hint">The export operation will record the operator, scope, and time in the operation log.</span>
+  <div class="action-right">
+    <span class="est-count">Estimated output: <b>{{ estimatedCount() }}</b> records</span>
+    <button
+      type="button"
+      class="btn-export"
+      [class.danger]="archiveMode()"
+      [disabled]="exportDisabled()"
+      (click)="onExport()">
+      <app-icon name="upload" />
+      {{ archiveMode() ? 'Export & Delete (package as a ZIP file)' : 'Export (package as a ZIP file)' }}
+    </button>
+  </div>
+</div>
+
+@if (archiveMode()) {
+  <div class="archive-msg">
+    <span class="dot" aria-hidden="true">●</span>
+    <span>{{ archiveMessage }}</span>
+  </div>
+}
+
+<div class="preview-card">
+  <div class="card-header">
+    <span class="card-title">Export Range Preview</span>
+    <span class="readonly">(Read-only)</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Serial Number</th>
+          <th>Sample number</th>
+          <th>Locking time</th>
+          <th>Electric screwdriver model</th>
+          <th>Screw specifications</th>
+          <th>result</th>
+          <th>Failure Mode</th>
+          <th style="text-align: right">Confidence</th>
+          <th>Model version</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (results().length === 0) {
+          <tr>
+            <td colspan="9" class="empty">No data available.</td>
+          </tr>
+        } @else {
+          @for (r of results(); track r.serialNo) {
+            <tr>
+              <td>{{ r.serialNo }}</td>
+              <td>{{ r.sampleId }}</td>
+              <td>{{ r.lockingTime }}</td>
+              <td>{{ r.electricScrewdriverModel }}</td>
+              <td>{{ r.screwSpecification }}</td>
+              <td class="result-cell" [class.result-pass]="r.result === 'PASS'" [class.result-fail]="r.result === 'FAIL'">{{ r.result }}</td>
+              <td>{{ r.failureMode ?? '—' }}</td>
+              <td style="text-align: right">{{ r.confidence == null ? '—' : r.confidence }}</td>
+              <td>{{ r.modelVersion }}</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer">
+    <span class="footer-text">There are {{ totalCount() }} items in total, items {{ from() }}–{{ to() }}.</span>
+    <div class="pagination">
+      <button type="button" class="page-btn" [disabled]="currentPage() === 1" (click)="prevPage()">&#8249;</button>
+      @for (p of pages(); track p) {
+        <button type="button" class="page-btn" [class.active]="p === currentPage()" (click)="goPage(p)">{{ p }}</button>
+      }
+      <button type="button" class="page-btn" [disabled]="currentPage() >= totalPages()" (click)="nextPage()">&#8250;</button>
+    </div>
+  </div>
+</div>
+
+<app-confirm-dialog
+  [open]="showArchiveConfirm()"
+  title="Confirm archive export"
+  [message]="archiveConfirmMessage()"
+  confirmLabel="Confirm export and delete"
+  cancelLabel="Cancel"
+  [danger]="true"
+  (confirm)="onArchiveConfirm(true)"
+  (cancel)="onArchiveConfirm(false)">
+</app-confirm-dialog>
+
+<app-toast-container />

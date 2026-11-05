@@ -9,6 +9,7 @@ export interface SampleFilter {
   toothType: string;
   resultStatus: string;
   failureModes: string[];
+  labelingCorrection: string;
   confidenceMode: 'none' | 'low' | 'range';
   confidenceMin: number;
   confidenceMax: number;
@@ -19,6 +20,8 @@ export interface SampleFilter {
 export interface SampleResult {
   serialNo: number;
   sampleId: string;
+  batchNumber: string;
+  labelingCorrection: string;
   lockingTime: string;
   electricScrewdriverModel: string;
   screwSpecification: string;
@@ -45,6 +48,7 @@ export interface SampleFilterOptions {
   toothTypes: FilterOption[];
   resultStatuses: FilterOption[];
   failureModes: FilterOption[];
+  labelingCorrectionOptions: FilterOption[];
   confidenceOptions: FilterOption[];
 }
 
@@ -59,6 +63,7 @@ export const SAMPLE_FILTER_DEFAULTS: SampleFilter = {
   toothType: 'all',
   resultStatus: 'all',
   failureModes: [],
+  labelingCorrection: 'all',
   confidenceMode: 'none',
   confidenceMin: 0,
   confidenceMax: 100,

@@ -34,7 +34,7 @@
         class="nav-item"
         [routerLink]="item.route"
         routerLinkActive="nav-item--active"
-        [attr.title]="collapsed() ? item.label : null"
+        [attr.title]="item.label"
         (click)="closeMobile.emit()"
       >
         <span class="nav-item__icon">

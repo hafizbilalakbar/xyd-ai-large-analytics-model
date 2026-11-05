@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, Signal } from '@angular/core';
 import { SampleFilter, SampleResult, SampleFilterOptions, SAMPLE_FILTER_DEFAULTS } from './sample-models';
 import { MOCK_FILTER_OPTIONS, MOCK_RESULTS, USE_SAMPLE_MOCK } from './sample.mock';
 
@@ -9,7 +9,8 @@ export class SampleService {
   readonly filters = signal<SampleFilter>({ ...SAMPLE_FILTER_DEFAULTS });
   readonly filterOptions = signal<SampleFilterOptions>(MOCK_FILTER_OPTIONS);
 
-  private readonly _allFilteredResults = signal<SampleResult[]>(USE_SAMPLE_MOCK ? this.applyFilters([...MOCK_RESULTS]) : []);
+  private readonly _allFilteredResults = signal<SampleResult[]>([]);
+  readonly allFilteredResults: Signal<SampleResult[]> = this._allFilteredResults;
 
   readonly results = computed(() => {
     const all = this._allFilteredResults();
@@ -100,7 +101,8 @@ export class SampleService {
     let filtered = [...data];
 
     if (f.electricBatchNumber && f.electricBatchNumber !== 'all') {
-      filtered = filtered.filter(r => r.sampleId.includes(f.electricBatchNumber));
+      const batch = f.electricBatchNumber.toLowerCase();
+      filtered = filtered.filter(r => r.batchNumber.toLowerCase() === batch);
     }
 
     if (f.modelName.length > 0) {
@@ -134,6 +136,10 @@ export class SampleService {
 
     if (f.failureModes.length > 0) {
       filtered = filtered.filter(r => r.failureMode !== null && f.failureModes.includes(r.failureMode));
+    }
+
+    if (f.labelingCorrection && f.labelingCorrection !== 'all') {
+      filtered = filtered.filter(r => r.labelingCorrection === f.labelingCorrection);
     }
 
     if (f.confidenceMode === 'low') {
