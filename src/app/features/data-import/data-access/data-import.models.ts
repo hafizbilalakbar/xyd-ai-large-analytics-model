@@ -17,7 +17,8 @@ export type ImportStatus =
 
 export type PlaybackResultStatus = 'PASS' | 'FAIL' | 'Pending';
 export type TrainingRowStatus = 'Valid' | 'Warning' | 'Error';
-export type DuplicateMode = 'skip' | 'overwrite';
+export type DuplicateMode = 'skip' | 'overwrite' | 'rename' | 'newest' | 'error';
+export type DuplicateTag = 'overwrite' | 'rename';
 export type MatchConfidence = 'High' | 'Medium' | 'Low';
 
 export interface BatchOption {
@@ -58,6 +59,7 @@ export interface TrainingRow {
   readonly modelVersion: string;
   readonly status: TrainingRowStatus;
   readonly reason: string;
+  readonly duplicateTag?: DuplicateTag;
   readonly edited: boolean;
 }
 

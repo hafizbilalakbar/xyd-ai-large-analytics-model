@@ -80,6 +80,13 @@
   background: #f0f5ff;
 }
 
+.results-table__empty {
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--color-text-muted);
+  cursor: default;
+}
+
 .cell-file {
   display: flex;
   align-items: center;

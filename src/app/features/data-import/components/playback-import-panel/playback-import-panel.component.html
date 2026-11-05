@@ -11,7 +11,7 @@
     </button>
   </header>
 
-  @if (items().length === 0) {
+  @if (allCount() === 0) {
     <app-file-dropzone
       icon="monitor"
       label="View the curves and judgment results after importing the file."

@@ -9,7 +9,7 @@ import { TrainingImportPanelComponent } from '../../components/training-import-p
 import { ImportTabsComponent } from '../../components/import-tabs/import-tabs.component';
 import { DataImportService } from '../../data-access/data-import.service';
 import { FAILURE_CODES, fromDateTimeLocalValue, toDateTimeLocalValue, validateTrainingRow, isKnownFailureCode } from '../../data-access/import-constants';
-import type { ImportTab, TrainingRowStatus } from '../../data-access/data-import.models';
+import type { DuplicateMode, ImportTab, TrainingRowStatus } from '../../data-access/data-import.models';
 
 interface TrainingEditDraft {
   readonly sampleId: string;
@@ -44,7 +44,6 @@ export class DataImportPageComponent implements OnInit, OnDestroy {
   readonly subtitle = this.service.subtitle;
   readonly batches = this.service.batches;
   readonly playbackItems = this.service.pagedPlaybackItems;
-  readonly playbackTotalItems = computed(() => this.service.playbackCounts().total);
   readonly playbackTotalCount = this.service.playbackTotalCount;
   readonly playbackPage = this.service.playbackPage;
   readonly playbackPageSize = this.service.playbackPageSize;
@@ -69,8 +68,6 @@ export class DataImportPageComponent implements OnInit, OnDestroy {
   readonly trainingCounts = this.service.trainingCounts;
   readonly trainingSources = this.service.trainingSources;
   readonly trainingImportErrors = this.service.trainingImportErrors;
-  readonly trainingProgress = this.service.trainingProgress;
-  readonly trainingIsImporting = this.service.trainingIsImporting;
 
   readonly isImporting = this.service.isImporting;
 
@@ -105,7 +102,7 @@ export class DataImportPageComponent implements OnInit, OnDestroy {
         confidence: draft.confidence,
         modelVersion: draft.modelVersion,
       },
-      this.service.trainingRows(),
+      [],
       id,
     );
   });
@@ -116,8 +113,6 @@ export class DataImportPageComponent implements OnInit, OnDestroy {
     if (!validation) return messages;
     if (validation.errors['sampleId']) {
       messages['sampleId'] = validation.errors['sampleId'];
-    } else if (validation.duplicateSampleId) {
-      messages['sampleId'] = 'Sample ID already exists in the loaded rows.';
     }
     if (validation.errors['lockingTime']) messages['lockingTime'] = validation.errors['lockingTime'];
     if (validation.errors['failureMode']) messages['failureMode'] = validation.errors['failureMode'];
@@ -249,6 +244,10 @@ export class DataImportPageComponent implements OnInit, OnDestroy {
     this.service.downloadTemplate();
   }
 
+  onDownloadPlaybackTemplate(): void {
+    this.service.downloadPlaybackTemplate();
+  }
+
   onTrainingRemoveRow(id: string): void {
     this.service.removeRow(id);
   }
@@ -369,6 +368,10 @@ export class DataImportPageComponent implements OnInit, OnDestroy {
     this.service.cancelImport();
   }
 
+  onPlaybackSearchChange(value: string): void {
+    this.service.setPlaybackSearch(value);
+  }
+
   onFilterChange(value: 'all' | 'PASS' | 'FAIL' | 'Pending'): void {
     this.service.setPlaybackFilter(value);
   }
@@ -385,10 +388,8 @@ export class DataImportPageComponent implements OnInit, OnDestroy {
     return isKnownFailureCode(code);
   }
 
-  onDuplicateModeChange(value: string): void {
-    if (value === 'skip' || value === 'overwrite') {
-      this.service.setDuplicateMode(value);
-    }
+  onDuplicateModeChange(value: DuplicateMode): void {
+    this.service.setDuplicateMode(value);
   }
 
   onToggleTrainingRow(id: string): void {

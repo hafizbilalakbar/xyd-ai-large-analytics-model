@@ -1,7 +1,19 @@
-import { ChangeDetectionStrategy, Component, input, output, ViewChild, ElementRef } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  ViewChild,
+  input,
+  output,
+} from '@angular/core';
 import { FileDropzoneComponent } from '../file-dropzone/file-dropzone.component';
 import { TrainingPreviewTableComponent } from '../training-preview-table/training-preview-table.component';
-import type { DuplicateMode, TrainingRow, TrainingRowStatus } from '../../data-access/data-import.models';
+import type {
+  DuplicateMode,
+  TrainingRow,
+  TrainingRowStatus,
+  TrainingSource,
+} from '../../data-access/data-import.models';
 import { IMPORT_FILE_EXTENSIONS } from '../../data-access/import-constants';
 
 @Component({
@@ -14,6 +26,7 @@ import { IMPORT_FILE_EXTENSIONS } from '../../data-access/import-constants';
 })
 export class TrainingImportPanelComponent {
   readonly rows = input.required<TrainingRow[]>();
+  readonly rowCount = input.required<number>();
   readonly totalCount = input.required<number>();
   readonly currentPage = input.required<number>();
   readonly pageSize = input.required<number>();
@@ -22,6 +35,7 @@ export class TrainingImportPanelComponent {
   readonly filter = input<'all' | TrainingRowStatus>('all');
   readonly duplicateMode = input<DuplicateMode>('skip');
   readonly counts = input.required<{ total: number; valid: number; warning: number; error: number }>();
+  readonly sources = input<TrainingSource[]>([]);
   readonly hasErrors = input(false);
   readonly acceptedFileTypes = input<string>(IMPORT_FILE_EXTENSIONS.join(','));
 
@@ -37,9 +51,31 @@ export class TrainingImportPanelComponent {
   readonly downloadTemplate = output<void>();
   readonly removeRow = output<string>();
   readonly editRow = output<string>();
+  readonly removeSource = output<string>();
+  readonly clearSelection = output<void>();
+  readonly removeSelected = output<void>();
   readonly clearAll = output<void>();
+  readonly cancelImport = output<void>();
 
-  @ViewChild('fileInput') fileInput!: ElementRef;
+  @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
+
+  onSelectFile(): void {
+    this.fileInput?.nativeElement.click();
+  }
+
+  onFileChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = input.files ? Array.from(input.files) : [];
+    input.value = '';
+    if (files.length > 0) {
+      this.fileDrop.emit(files);
+    }
+  }
+
+  onDuplicateModeChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value as DuplicateMode;
+    this.duplicateModeChange.emit(value);
+  }
 
   onTrainingRemoveRow(id: string): void {
     this.removeRow.emit(id);
@@ -49,17 +85,8 @@ export class TrainingImportPanelComponent {
     this.editRow.emit(id);
   }
 
-  onSelectFile(): void {
-    const input = this.fileInput?.nativeElement;
-    if (input) {
-      input.click();
-    }
-  }
-
-  onFileChange(files: FileList | null): void {
-    if (files) {
-      this.fileDrop.emit(Array.from(files));
-    }
+  onRemoveSource(fileName: string): void {
+    this.removeSource.emit(fileName);
   }
 
   onClearAll(): void {

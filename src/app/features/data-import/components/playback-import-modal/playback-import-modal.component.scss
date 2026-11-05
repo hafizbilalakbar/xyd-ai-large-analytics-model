@@ -38,6 +38,16 @@
   background: #f3f5f9;
 }
 
+.file-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px dashed #d9dee7;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
 .file-row {
   display: flex;
   align-items: center;
@@ -53,6 +63,22 @@
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--color-text);
+}
+
+.file-name--empty {
+  color: var(--color-text-muted);
+}
+
+.file-help {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.btn--small {
+  height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
 .file-size {

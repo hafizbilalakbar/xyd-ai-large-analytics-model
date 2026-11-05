@@ -57,6 +57,16 @@ export class ImportApiService {
     downloadCsv('import-template.csv', [headers, ...rows]);
   }
 
+  downloadPlaybackTemplate(): void {
+    const headers = ['time', 'angle', 'torque'];
+    const rows = Array.from({ length: 10 }, (_, index) => [
+      String(index * 100),
+      String(index * 2),
+      (Math.sin(index / 2) * 2 + 3).toFixed(3),
+    ]);
+    downloadCsv('playback-curve-template.csv', [headers, ...rows]);
+  }
+
   downloadErrorReport(errors: { fileName: string; rowIndex?: number; message: string }[]): void {
     const headers = ['File', 'Row', 'Reason'];
     const rows = errors.map((e) => [e.fileName, String(e.rowIndex ?? ''), e.message]);

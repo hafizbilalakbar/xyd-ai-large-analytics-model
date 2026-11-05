@@ -1,3 +1,11 @@
+<input
+  #fileInput
+  type="file"
+  hidden
+  [accept]="acceptedTypes"
+  multiple
+  (change)="onFileSelect($event)" />
+
 <app-modal [open]="open()" title="Import Playback Data" (close)="onClose()">
   <div modalBody>
     @if (isImporting()) {
@@ -32,52 +40,42 @@
           Select file
           <span class="required">*</span>
         </label>
-        @if (selectedFiles().length > 0) {
-          <div class="file-row" style="display: flex; align-items: center; gap: 8px;">
-            <span class="file-name" style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-text); font-size: 13px;">{{ fileName() }}</span>
-            <span class="file-size" style="color: var(--color-text-muted); font-size: 12px;">{{ fileSize() }}</span>
-            <button
-              type="button"
-              class="btn btn-reset btn--small file-remove"
-              style="height: 32px; padding: 0 8px; font-size: 12px;"
-              (click)="removeFile(); validationError.set('')"
-              title="Remove file">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="M3 6h18"></path>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
-                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
+        <div class="file-picker" (dragover)="onDragOver($event)" (drop)="onDrop($event)">
+          <div class="file-row">
+            <span class="file-name" [class.file-name--empty]="selectedFiles().length === 0">{{ fileName() }}</span>
+            @if (fileSize()) {
+              <span class="file-size">{{ fileSize() }}</span>
+            }
+            <button type="button" class="btn btn-reset btn--small" (click)="onSelectFile()">
+              Select file
             </button>
+            @if (selectedFiles().length > 0) {
+              <button
+                type="button"
+                class="btn btn-reset btn--small file-remove"
+                (click)="removeFile()"
+                title="Remove file"
+                aria-label="Remove file">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            }
           </div>
-        } @else {
-          <div class="file-row" style="display: flex; align-items: center; gap: 8px; min-height: 34px;">
-            <span class="file-name" style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-text-muted); font-size: 13px;">No file selected.</span>
-            <input
-              #fileInput
-              type="file"
-              class="file-picker__input hidden"
-              [accept]="acceptedTypes"
-              multiple
-              (change)="onFileSelect($event)" />
-            <button
-              type="button"
-              class="btn btn-reset btn--small"
-              style="height: 32px; padding: 0 8px; font-size: 12px;"
-              (click)="fileInput.click(); $event.stopPropagation()"
-              title="Select file"
-              aria-label="Select file">Select file</button>
-          </div>
-        }
+          <span class="file-help">Drag and drop a curve file or a ZIP of curve files here.</span>
+        </div>
         @if (validationError()) {
-          <p class="form-error" style="margin: 4px 0 0; color: var(--color-danger); font-size: 12px;">{{ validationError() }}</p>
+          <p class="form-error">{{ validationError() }}</p>
         }
       </div>
 
-      <div class="form-helper" style="margin: 4px 0 0; color: var(--color-text-muted); font-size: 12px;">
-        Accepted: ZIP, CSV, TSV, TXT, XLSX, XLS, JSON. Maximum size 100 MB.
+      <div class="form-helper">
+        Accepted: ZIP, CSV, TSV, TXT, XLSX, XLS, JSON. Maximum size {{ maxSizeText }} MB.
       </div>
 
-      <div class="template-link" style="margin-top: 8px;">
+      <div class="template-link">
         <button type="button" class="link-button" (click)="downloadTemplate.emit()">Download Template</button>
       </div>
     }

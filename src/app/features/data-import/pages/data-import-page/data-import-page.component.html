@@ -19,6 +19,7 @@
         <app-playback-import-panel
           [items]="playbackItems()"
           [selectedItem]="selectedPlaybackItem()"
+          [allCount]="playbackCounts().total"
           [totalCount]="playbackTotalCount()"
           [currentPage]="playbackPage()"
           [pageSize]="playbackPageSize()"
@@ -29,7 +30,7 @@
           [hasErrors]="playbackImportErrors().length > 0"
           (importClick)="openPlaybackImport()"
           (fileDrop)="onPlaybackFileDrop($event)"
-          (searchChange)="service.setPlaybackSearch($event)"
+          (searchChange)="onPlaybackSearchChange($event)"
           (filterChange)="onFilterChange($event)"
           (sortChange)="onSortChange($event)"
           (pageChange)="onPlaybackPageChange($event)"
@@ -46,6 +47,7 @@
       @case ('training') {
         <app-training-import-panel
           [rows]="trainingRows()"
+          [rowCount]="trainingRowCount()"
           [totalCount]="trainingTotalCount()"
           [currentPage]="trainingPage()"
           [pageSize]="trainingPageSize()"
@@ -54,7 +56,8 @@
           [filter]="trainingFilter()"
           [duplicateMode]="duplicateMode()"
           [counts]="trainingCounts()"
-          [hasErrors]="trainingImportErrors().length > 0"
+          [sources]="trainingSources()"
+          [hasErrors]="trainingImportErrors().length > 0 || trainingCounts().error > 0"
           (fileDrop)="onTrainingFileDrop($event)"
           (filterChange)="onTrainingFilterChange($event)"
           (pageChange)="onTrainingPageChange($event)"
@@ -67,6 +70,7 @@
           (downloadTemplate)="onDownloadTemplate()"
           (removeRow)="onTrainingRemoveRow($event)"
           (editRow)="onTrainingEditRow($event)"
+          (removeSource)="onRemoveSource($event)"
           (clearSelection)="onClearTrainingSelection()"
           (removeSelected)="onRemoveSelected()"
           (clearAll)="onClearAll()"
@@ -89,7 +93,7 @@
   (confirm)="onPlaybackImport($event)"
   (cancel)="closePlaybackImport()"
   (cancelImport)="onCancelImport()"
-  (downloadTemplate)="onDownloadTemplate()">
+  (downloadTemplate)="onDownloadPlaybackTemplate()">
 </app-playback-import-modal>
 
 <app-modal [open]="editOpen()" title="Edit Row" (close)="onEditCancel()">

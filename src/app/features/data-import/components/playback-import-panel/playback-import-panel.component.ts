@@ -19,6 +19,7 @@ import type { PlaybackCurveItem } from '../../data-access/data-import.models';
 export class PlaybackImportPanelComponent {
   readonly items = input.required<PlaybackCurveItem[]>();
   readonly selectedItem = input<PlaybackCurveItem | null>(null);
+  readonly allCount = input.required<number>();
   readonly totalCount = input.required<number>();
   readonly currentPage = input.required<number>();
   readonly pageSize = input.required<number>();
@@ -41,4 +42,5 @@ export class PlaybackImportPanelComponent {
   readonly previous = output<void>();
   readonly next = output<void>();
   readonly reJudge = output<void>();
+  readonly cancelImport = output<void>();
 }
