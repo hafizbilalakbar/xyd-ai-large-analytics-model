@@ -8,13 +8,15 @@
   @include mixins.surface-card;
 
   display: flex;
-  min-height: 9.5rem;
+  min-height: 8.5rem;
   flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-5);
+  padding: var(--space-4);
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .stat-card:hover {
@@ -30,12 +32,12 @@
 
 .stat-card__icon {
   display: grid;
-  width: 2.375rem;
-  height: 2.375rem;
+  width: 2.25rem;
+  height: 2.25rem;
   flex: none;
   place-items: center;
   border-radius: var(--radius-md);
-  --icon-size: 1.125rem;
+  --icon-size: 1rem;
 }
 
 .stat-card__icon[data-tone='primary'] {
@@ -58,18 +60,45 @@
   color: var(--color-warning);
 }
 
+.stat-card__icon-skeleton {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border-radius: var(--radius-md);
+  background: #eef2f6;
+  animation: skeleton-pulse 1.2s ease-in-out infinite;
+}
+
 .stat-card__label {
   color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
+  font-size: 12px;
   font-weight: 600;
+}
+
+.stat-card__label-skeleton {
+  width: 40%;
+  height: 14px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  background: #eef2f6;
+  animation: skeleton-pulse 1.2s ease-in-out infinite;
 }
 
 .stat-card__value {
   color: var(--color-text);
-  font-size: var(--font-size-3xl);
+  font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1;
+}
+
+.stat-card__value-skeleton {
+  width: 60%;
+  height: 34px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  background: #eef2f6;
+  animation: skeleton-pulse 1.2s ease-in-out infinite;
 }
 
 .stat-card__delta {
@@ -78,11 +107,15 @@
   gap: var(--space-1);
   margin-top: auto;
   color: var(--color-success);
-  font-size: var(--font-size-xs);
+  font-size: 12px;
 }
 
 .stat-card__delta--negative {
   color: var(--color-danger);
+}
+
+.stat-card__delta--neutral {
+  color: var(--color-text-muted);
 }
 
 .stat-card__delta strong {
@@ -103,4 +136,10 @@
 
 .stat-card__trend--down {
   transform: rotate(180deg);
+}
+
+@keyframes skeleton-pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
 }

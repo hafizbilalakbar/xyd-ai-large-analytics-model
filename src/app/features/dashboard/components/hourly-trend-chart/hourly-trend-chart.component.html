@@ -7,51 +7,23 @@
     <span class="trend-card__unit">Locked items</span>
   </header>
 
-  @if (points().length > 0) {
-    <div class="trend-card__chart">
-      <svg viewBox="0 0 720 260" role="img" aria-label="Hourly locked items trend">
-        <defs>
-          <linearGradient id="trend-area" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.2"></stop>
-            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"></stop>
-          </linearGradient>
-        </defs>
-
-        @for (tick of geometry().ticks; track tick.value) {
-          <line
-            class="trend-grid"
-            [attr.x1]="geometry().plotLeft"
-            [attr.y1]="tick.y"
-            [attr.x2]="geometry().plotRight"
-            [attr.y2]="tick.y"
-          ></line>
-          <text
-            class="trend-axis"
-            [attr.x]="geometry().plotLeft - 10"
-            [attr.y]="tick.y + 4"
-            text-anchor="end"
-          >
-            {{ tick.value }}
-          </text>
-        }
-
-        <path [attr.d]="geometry().areaPath" fill="url(#trend-area)"></path>
-        <path class="trend-line" [attr.d]="geometry().linePath"></path>
-
-        @for (point of geometry().points; track point.hour) {
-          <circle class="trend-dot" [attr.cx]="point.x" [attr.cy]="point.y" r="4"></circle>
-          <text
-            class="trend-axis"
-            [attr.x]="point.x"
-            [attr.y]="geometry().plotBottom + 24"
-            text-anchor="middle"
-          >
-            {{ point.hour }}
-          </text>
-        }
-      </svg>
-    </div>
-  } @else {
-    <div class="trend-card__empty">No trend data available for today.</div>
-  }
+  <div class="trend-card__chart" #chartContainer style="width:100%;height:280px">
+    @if (loading()) {
+      <div class="chart-skeleton">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+      </div>
+    } @else if (points().length === 0) {
+      <div class="chart-empty">
+        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 13l3-7h12l3 7"></path>
+          <path d="M3 13v5a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-5h-5l-1.5 2h-5L8 13H3Z"></path>
+        </svg>
+        <span class="empty-text">No locked item data for today.</span>
+      </div>
+    } @else {
+      <!-- ECharts draws directly into #chartContainer -->
+    }
+  </div>
 </article>

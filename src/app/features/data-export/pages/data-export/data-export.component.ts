@@ -261,6 +261,9 @@ export class DataExportComponent {
       this.progress.set(0);
       this.exportStarted.set(false);
       this.toast.show('Export failed.', 'error');
+      if (this.archiveMode()) {
+        this.logService.addAlarm('export', 'Archive verification failed.');
+      }
     }
   }
 

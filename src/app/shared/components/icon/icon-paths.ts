@@ -16,7 +16,8 @@ export type IconName =
   | 'user'
   | 'close'
   | 'check'
-  | 'alert';
+  | 'alert'
+  | 'refresh';
 
 export const ICON_PATHS: Record<IconName, readonly string[]> = {
   home: ['M3 10.5 12 3l9 7.5', 'M5 9.5V21h14V9.5', 'M9.5 21v-6h5v6'],
@@ -53,4 +54,5 @@ export const ICON_PATHS: Record<IconName, readonly string[]> = {
   close: ['M6 6l12 12', 'M18 6 6 18'],
   check: ['M5 12.5 9.5 17 19 7.5'],
   alert: ['M12 3 2.5 20h19L12 3Z', 'M12 9v5', 'M12 17.5h.01'],
+  refresh: ['M1 12a11 11 0 0 0 8.595 10.69l-.447 2.237A13 13 0 0 1 1 12zM22.405 12a11 11 0 0 0-8.595-10.69l.447-2.237A13 13 0 0 1 23 12z'],
 };

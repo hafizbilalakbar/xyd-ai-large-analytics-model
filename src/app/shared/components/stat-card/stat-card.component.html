@@ -1,14 +1,23 @@
-<article class="stat-card">
+<article class="stat-card" [class.stat-card--loading]="loading()">
   <div class="stat-card__head">
-    <span class="stat-card__icon" [attr.data-tone]="tone()">
-      <app-icon [name]="icon()" />
-    </span>
-    <span class="stat-card__label">{{ label() }}</span>
+    @if (loading()) {
+      <div class="stat-card__icon-skeleton"></div>
+      <span class="stat-card__label-skeleton"></span>
+    } @else {
+      <span class="stat-card__icon" [attr.data-tone]="tone()">
+        <app-icon [name]="icon()" />
+      </span>
+      <span class="stat-card__label">{{ label() }}</span>
+    }
   </div>
 
-  <p class="stat-card__value">{{ value() }}</p>
+  @if (loading()) {
+    <p class="stat-card__value-skeleton"></p>
+  } @else {
+    <p class="stat-card__value">{{ value() }}</p>
+  }
 
-  @if (delta()) {
+  @if (delta() && !isNeutralDelta(delta()) && !loading()) {
     <p class="stat-card__delta" [class.stat-card__delta--negative]="deltaTone() === 'negative'">
       <span
         class="stat-card__trend"
@@ -17,6 +26,12 @@
       ></span>
       <strong>{{ delta() }}</strong>
       <span class="stat-card__delta-label">vs. yesterday</span>
+    </p>
+  }
+  @if (isNeutralDelta(delta()) && !loading()) {
+    <p class="stat-card__delta stat-card__delta--neutral">
+      <strong>0.0%</strong>
+      <span class="stat-card__delta-label">No change vs. yesterday</span>
     </p>
   }
 </article>

@@ -1,27 +1,49 @@
-<section class="dashboard">
-  <app-page-header
-    title="Homepage Overview"
-    description="Real-time overview of locking quality, throughput, and platform health."
+<app-page-header
+  title="Homepage Overview"
+  description="Real-time overview of locking quality, throughput, and platform health."
+>
+  <div class="page-header-actions">
+    <span class="refresh-info">Refreshes automatically every 60 seconds</span>
+    <button
+      type="button"
+      class="btn-refresh"
+      [disabled]="refreshing()"
+      (click)="onRefresh()"
+    >
+      <app-icon name="refresh" [class.spin]="refreshing()" />
+      <span>Refresh</span>
+    </button>
+    <span class="last-updated">Last updated: {{ lastUpdated() }}</span>
+  </div>
+</app-page-header>
+
+<div class="kpi-grid">
+  @for (kpi of kpis(); track kpi.label) {
+    <app-stat-card
+      [loading]="loading()"
+      [label]="kpi.label"
+      [value]="displayValue(kpi)"
+      [icon]="kpi.icon"
+      [tone]="kpi.tone"
+      [delta]="kpi.delta"
+      [deltaDirection]="kpi.deltaDirection"
+      [deltaTone]="kpi.deltaTone"
+    />
+  }
+</div>
+
+<div class="chart-grid">
+  <app-hourly-trend-chart
+    class="line-chart-card"
+    [points]="hourlyTrend()"
+    [loading]="loading()"
   />
+  <app-failure-mode-chart [modes]="failureModes()" [loading]="loading()" />
+</div>
 
-  <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-    @for (kpi of kpis(); track kpi.label) {
-      <app-stat-card
-        [label]="kpi.label"
-        [value]="kpi.value"
-        [icon]="kpi.icon"
-        [tone]="kpi.tone"
-        [delta]="kpi.delta"
-        [deltaDirection]="kpi.deltaDirection"
-        [deltaTone]="kpi.deltaTone"
-      />
-    }
-  </div>
-
-  <div class="grid grid-cols-1 gap-5 xl:grid-cols-3">
-    <app-hourly-trend-chart class="xl:col-span-2" [points]="hourlyTrend()" />
-    <app-failure-mode-chart [modes]="failureModes()" />
-  </div>
-
-  <app-system-monitoring-table [warnings]="warnings()" />
-</section>
+<app-recent-warning
+  [alarms]="alarms()"
+  [loading]="loading()"
+  (markRead)="onAlarmMarkRead($event)"
+  (remove)="onAlarmRemove($event)"
+/>

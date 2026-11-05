@@ -1,31 +1,32 @@
 <article class="failure-card">
   <header class="failure-card__head">
     <div>
-      <h2 class="failure-card__title">Failure Mode Distribution</h2>
-      <p class="failure-card__subtitle">Today</p>
+      <h2 class="failure-card__title">Failure Mode Distribution (Today)</h2>
     </div>
-    <span class="failure-card__total">{{ total() }} failures</span>
+    <span class="failure-card__total">NG total {{ total() }}</span>
   </header>
 
-  @if (items().length > 0) {
-    <ul class="failure-card__list">
-      @for (mode of items(); track mode.label) {
-        <li class="failure-mode">
-          <div class="failure-mode__meta">
-            <span class="failure-mode__label">{{ mode.label }}</span>
-            <span class="failure-mode__value">{{ mode.count }} · {{ mode.share }}%</span>
-          </div>
-          <div class="failure-mode__track">
-            <span
-              class="failure-mode__bar"
-              [attr.data-tone]="mode.tone"
-              [style.width.%]="mode.share"
-            ></span>
-          </div>
-        </li>
-      }
-    </ul>
-  } @else {
-    <div class="failure-card__empty">No failures recorded today.</div>
-  }
+  <div class="failure-card__chart" #chartContainer style="width:100%;height:280px">
+    @if (loading()) {
+      <div class="chart-skeleton">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+      </div>
+    } @else if (modes().length === 0) {
+      <div class="chart-empty">
+        <div class="empty-bars">
+          <div class="empty-bar empty-bar-1"></div>
+          <div class="empty-bar empty-bar-2"></div>
+          <div class="empty-bar empty-bar-3"></div>
+          <div class="empty-bar empty-bar-4"></div>
+          <div class="empty-bar empty-bar-5"></div>
+        </div>
+        <span class="empty-text">No failure mode distribution data available.</span>
+      </div>
+    } @else {
+      <!-- ECharts draws directly into #chartContainer -->
+    }
+  </div>
 </article>

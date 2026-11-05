@@ -9,7 +9,7 @@ export interface DashboardKpi {
   readonly value: string;
   readonly icon: IconName;
   readonly tone: StatTone;
-  readonly delta: string;
+  readonly delta: string | null;
   readonly deltaDirection: DeltaDirection;
   readonly deltaTone: DeltaTone;
 }
@@ -25,6 +25,16 @@ export interface FailureMode {
   readonly label: string;
   readonly count: number;
   readonly tone: FailureModeTone;
+}
+
+export type AlarmLevel = 'Critical' | 'Warning' | 'Info';
+
+export interface Alarm {
+  readonly id: number;
+  readonly time: string;
+  readonly type: 'storage' | 'model' | 'training' | 'export';
+  readonly details: string;
+  readonly read: boolean;
 }
 
 export type WarningLevel = 'Critical' | 'Warning' | 'Info';

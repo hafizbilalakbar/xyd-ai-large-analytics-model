@@ -2,7 +2,53 @@ import { SampleFilterOptions, SampleResult } from './sample-models';
 
 export const USE_SAMPLE_MOCK = true;
 
-export const MOCK_RESULTS: SampleResult[] = [
+function pad(n: number): string {
+  return n.toString().padStart(2, '0');
+}
+
+function dateKey(offsetDays: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+const today = dateKey(0);
+const yesterday = dateKey(-1);
+
+function makeRecord(
+  serialNo: number,
+  sampleId: string,
+  batchNumber: string,
+  labelingCorrection: string,
+  hour: number,
+  minute: number,
+  model: string,
+  spec: string,
+  result: 'PASS' | 'FAIL',
+  failureMode: string | null,
+  confidence: number,
+  corrected: boolean,
+  modelVersion: string,
+  dateKey: string,
+): SampleResult {
+  return {
+    serialNo,
+    sampleId,
+    batchNumber,
+    labelingCorrection,
+    lockingTime: `${dateKey} ${pad(hour)}:${pad(minute)}`,
+    electricScrewdriverModel: model,
+    screwSpecification: spec,
+    result,
+    failureMode,
+    confidence,
+    corrected,
+    modelVersion,
+  };
+}
+
+// Historical records (Nov 1-5)
+const HISTORICAL: SampleResult[] = [
   {
     serialNo: 1,
     sampleId: 'XYD-B001-001',
@@ -425,6 +471,36 @@ export const MOCK_RESULTS: SampleResult[] = [
   },
 ];
 
+// Today's records - generated dynamically relative to current date
+const TODAY: SampleResult[] = [
+  makeRecord(31, 'XYD-B006-001', 'B006', 'none', 8, 10, 'XYD Model', 'M2', 'PASS', null, 94, true, 'V3.1', today),
+  makeRecord(32, 'XYD-B006-002', 'B006', 'none', 9, 5, 'XYD Pro', 'P2', 'FAIL', 'F03', 62, false, 'V3.1', today),
+  makeRecord(33, 'XYD-B006-003', 'B006', 'result', 10, 0, 'XYD Model', 'M2', 'PASS', null, 89, true, 'V3.1', today),
+  makeRecord(34, 'XYD-B006-004', 'B006', 'seating', 11, 15, 'XYD Pro', 'P2', 'FAIL', 'F05', 58, false, 'V3.1', today),
+  makeRecord(35, 'XYD-B006-005', 'B006', 'none', 12, 30, 'XYD Model', 'M2', 'PASS', null, 91, true, 'V3.1', today),
+  makeRecord(36, 'XYD-B006-006', 'B006', 'result', 13, 45, 'XYD Pro', 'P2', 'FAIL', 'F01', 66, false, 'V3.1', today),
+  makeRecord(37, 'XYD-B006-007', 'B006', 'none', 14, 20, 'XYD Model', 'M2', 'PASS', null, 87, true, 'V3.1', today),
+  makeRecord(38, 'XYD-B006-008', 'B006', 'seating', 15, 10, 'XYD Pro', 'P2', 'FAIL', 'F07', 54, false, 'V3.1', today),
+  makeRecord(39, 'XYD-B006-009', 'B006', 'result', 16, 0, 'XYD Model', 'M2', 'PASS', null, 93, true, 'V3.1', today),
+  makeRecord(40, 'XYD-B006-010', 'B006', 'none', 17, 15, 'XYD Pro', 'P2', 'FAIL', 'F13', 51, false, 'V3.1', today),
+];
+
+// Yesterday's records - generated dynamically relative to current date
+const YESTERDAY: SampleResult[] = [
+  makeRecord(41, 'XYD-B007-001', 'B007', 'none', 8, 0, 'XYD Model', 'M2', 'PASS', null, 95, true, 'V3.1', yesterday),
+  makeRecord(42, 'XYD-B007-002', 'B007', 'none', 9, 10, 'XYD Pro', 'P2', 'FAIL', 'F01', 70, false, 'V3.1', yesterday),
+  makeRecord(43, 'XYD-B007-003', 'B007', 'result', 10, 0, 'XYD Model', 'M2', 'PASS', null, 85, true, 'V3.1', yesterday),
+  makeRecord(44, 'XYD-B007-004', 'B007', 'seating', 10, 45, 'XYD Pro', 'P2', 'FAIL', 'F03', 60, false, 'V3.1', yesterday),
+  makeRecord(45, 'XYD-B007-005', 'B007', 'none', 11, 30, 'XYD Model', 'M2', 'PASS', null, 92, true, 'V3.1', yesterday),
+  makeRecord(46, 'XYD-B007-006', 'B007', 'result', 12, 15, 'XYD Pro', 'P2', 'FAIL', 'F05', 55, false, 'V3.1', yesterday),
+  makeRecord(47, 'XYD-B007-007', 'B007', 'none', 13, 0, 'XYD Model', 'M2', 'PASS', null, 88, true, 'V3.1', yesterday),
+  makeRecord(48, 'XYD-B007-008', 'B007', 'seating', 13, 45, 'XYD Pro', 'P2', 'FAIL', 'F07', 52, false, 'V3.1', yesterday),
+  makeRecord(49, 'XYD-B007-009', 'B007', 'result', 14, 30, 'XYD Model', 'M2', 'PASS', null, 89, true, 'V3.1', yesterday),
+  makeRecord(50, 'XYD-B007-010', 'B007', 'none', 15, 15, 'XYD Pro', 'P2', 'FAIL', 'F09', 59, false, 'V3.1', yesterday),
+];
+
+export const MOCK_RESULTS: SampleResult[] = [...HISTORICAL, ...TODAY, ...YESTERDAY];
+
 export const MOCK_FILTER_OPTIONS: SampleFilterOptions = {
   electricBatchNumbers: [
     { key: 'all', label: 'All' },
@@ -433,6 +509,8 @@ export const MOCK_FILTER_OPTIONS: SampleFilterOptions = {
     { key: 'B003', label: 'B003' },
     { key: 'B004', label: 'B004' },
     { key: 'B005', label: 'B005' },
+    { key: 'B006', label: 'B006' },
+    { key: 'B007', label: 'B007' },
   ],
   modelNames: [
     { key: 'XYD-2024', label: 'XYD Model' },
