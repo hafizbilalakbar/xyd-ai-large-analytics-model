@@ -54,7 +54,7 @@
 
 .data-table {
   width: 100%;
-  min-width: 900px;
+  min-width: 760px;
   border-collapse: collapse;
   text-align: left;
   font-size: 13px;
@@ -112,6 +112,7 @@
 .td-actions {
   text-align: right;
   white-space: nowrap;
+  width: 150px;
 }
 
 .action-link {

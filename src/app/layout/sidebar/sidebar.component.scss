@@ -21,7 +21,7 @@
 .sidebar--animate {
   transition:
     width 240ms cubic-bezier(0.4, 0, 0.2, 1),
-    transform 240ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 240ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -305,7 +305,7 @@
 .sidebar--collapsed .sidebar__head {
   justify-content: center;
   gap: 0;
-  padding: 0;
+  padding: 12px;
 }
 
 .sidebar--collapsed .sidebar__heading {
@@ -396,8 +396,17 @@
     position: fixed;
     top: var(--header-height);
     left: 0;
-    z-index: 35;
+    z-index: 45;
     height: calc(100dvh - var(--header-height));
+  }
+
+  .sidebar--collapsed {
+    position: static;
+    width: 60px;
+  }
+
+  .sidebar--drawer-open .sidebar__head {
+    height: 44px;
   }
 
   .sidebar--tablet.sidebar--drawer-open,
@@ -410,10 +419,6 @@
   width: min(264px, 85vw);
   padding-bottom: env(safe-area-inset-bottom);
   transform: translateX(-100%);
-}
-
-.sidebar--tablet {
-  width: min(264px, 85vw);
 }
 
 .sidebar--mobile .sidebar__head {
@@ -495,5 +500,64 @@
   .rail-tooltip {
     animation: none;
     transition: none;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .sidebar--tablet.sidebar--collapsed {
+    position: static;
+    width: 60px;
+    overflow: hidden;
+  }
+
+  .sidebar--tablet.sidebar--collapsed .sidebar__head {
+    height: 52px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .sidebar--tablet.sidebar--collapsed .sidebar__collapse {
+    width: 32px;
+    height: 32px;
+  }
+
+  .sidebar--tablet.sidebar--collapsed .sidebar__nav {
+    padding: 8px 0;
+    gap: 4px;
+  }
+
+  .sidebar--tablet.sidebar--collapsed .nav-item {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    justify-content: center;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  .sidebar--tablet.sidebar--collapsed .nav-item__icon {
+    --icon-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sidebar--tablet.sidebar--collapsed .sidebar__foot {
+    height: 44px;
+    padding: 0;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sidebar--tablet.sidebar--collapsed .sidebar__status {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background-color: transparent;
+    justify-content: center;
   }
 }

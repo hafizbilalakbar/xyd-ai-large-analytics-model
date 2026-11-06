@@ -23,14 +23,14 @@
   position: relative;
   background: transparent;
   border: none;
-  height: 44px;
-  padding: 0 16px;
-  font-size: 14px;
+  height: 42px;
+  padding: 0 14px;
+  font-size: 13px;
   color: var(--color-text-secondary);
   font-weight: 500;
   cursor: pointer;
   transition: color 0.15s ease;
-  min-height: 44px;
+  min-height: 42px;
   white-space: nowrap;
 
   &:hover {
@@ -68,6 +68,6 @@
 @include mixins.media-down(640px) {
   .config-tab-item {
     font-size: 13px;
-    padding: 0 12px;
+    padding: 0 14px;
   }
 }

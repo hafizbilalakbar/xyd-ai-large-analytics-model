@@ -11,7 +11,7 @@
   flex-wrap: wrap;
   gap: 12px 16px;
   min-height: 56px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .page-header__copy {
@@ -22,9 +22,10 @@
   margin: 0;
   color: #0b2f5e;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.25;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+  -webkit-font-smoothing: antialiased;
 }
 
 .page-header__description {
@@ -54,17 +55,17 @@
 
 @include mixins.media-down(1024px) {
   .page-header__title {
-    font-size: 18px;
+    font-size: 19px;
   }
 }
 
 @include mixins.media-down(640px) {
   .page-header {
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
 
   .page-header__title {
-    font-size: 17px;
+    font-size: 18px;
   }
 
   .page-header__description-bar {

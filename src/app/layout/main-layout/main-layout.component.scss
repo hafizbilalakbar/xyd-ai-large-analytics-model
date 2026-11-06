@@ -54,26 +54,27 @@
 }
 
 @media (min-width: 640px) and (max-width: 1023px) {
+  .app-shell__body {
+    display: grid;
+    grid-template-columns: 60px minmax(0, 1fr);
+  }
+
+  app-sidebar {
+    grid-column: 1 / 2;
+  }
+
   .app-shell__content {
-    margin-left: var(--sidebar-width-collapsed);
+    grid-column: 2 / 3;
+    padding: 24px 20px;
   }
 }
 
-@media (max-width: 1439px) {
+@media (max-width: 639px) {
   .app-shell__content {
-    padding: 16px;
-  }
-}
-
-@media (max-width: 767px) {
-  .app-shell__content {
-    padding: 12px;
-  }
-}
-
-@media (max-width: 479px) {
-  .app-shell__content {
-    padding: 10px;
+    padding-top: 20px;
+    padding-right: calc(16px + env(safe-area-inset-right, 0px));
+    padding-bottom: 24px;
+    padding-left: calc(16px + env(safe-area-inset-left, 0px));
   }
 }
 
