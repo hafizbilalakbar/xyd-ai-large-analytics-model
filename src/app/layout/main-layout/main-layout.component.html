@@ -1,20 +1,24 @@
 <div class="app-shell">
-  <app-header (toggleMobile)="openMobileSidebar()" />
+  <app-header (toggleMobile)="openDrawer()" />
+
+  <span class="app-shell__live" aria-live="polite">{{ announcement() }}</span>
 
   <div class="app-shell__body">
     <app-sidebar
       [collapsed]="sidebarCollapsed()"
-      [mobileOpen]="mobileSidebarOpen()"
+      [mode]="mode()"
+      [drawerOpen]="drawerOpen()"
+      [animate]="sidebarAnimated()"
       (toggleCollapse)="toggleSidebar()"
-      (closeMobile)="closeMobileSidebar()"
+      (closeDrawer)="closeDrawer()"
     />
 
-    @if (mobileSidebarOpen()) {
+    @if (drawerOpen() && mode() !== 'desktop') {
       <button
         class="app-shell__scrim"
         type="button"
         aria-label="Close navigation"
-        (click)="closeMobileSidebar()"
+        (click)="closeDrawer()"
       ></button>
     }
 
