@@ -28,17 +28,26 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  align-items: flex-start;
 }
 
-.refresh-info {
+.status-line {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   color: var(--color-text-muted);
   font-size: 12px;
-  line-height: 1;
-  white-space: normal;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.icon-slot {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .status-dot {
@@ -47,6 +56,10 @@
   flex: none;
   border-radius: var(--radius-full);
   background-color: #16a34a;
+}
+
+.clock-icon {
+  color: var(--color-text-muted);
 }
 
 .btn-refresh {
@@ -295,11 +308,7 @@ app-recent-warning {
     font-size: 11px;
   }
 
-  .refresh-info {
-    font-size: 12px;
-  }
-
-  .last-updated {
+  .status-line {
     font-size: 12px;
   }
 }
@@ -310,9 +319,22 @@ app-recent-warning {
   }
 }
 
+@media (max-width: 399px) {
+  .status-line {
+    font-size: 11px;
+    white-space: normal;
+  }
+
+  .icon-slot {
+    align-items: flex-start;
+  }
+}
+
 @media (max-width: 359px) {
-  .refresh-info,
-  .last-updated,
+  .status-line {
+    font-size: 11px;
+  }
+
   .btn-refresh {
     font-size: 11px;
   }
