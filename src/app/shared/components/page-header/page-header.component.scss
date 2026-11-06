@@ -6,10 +6,11 @@
 
 .page-header {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px 16px;
+  min-height: 56px;
   margin-bottom: 14px;
 }
 

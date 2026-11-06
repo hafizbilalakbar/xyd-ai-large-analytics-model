@@ -1,26 +1,12 @@
-@use 'mixins' as mixins;
-
 :host {
   display: block;
 }
 
 .config-page {
-  display: flex;
-  flex-direction: column;
-  padding: 0;
+  display: block;
   width: 100%;
-  box-sizing: border-box;
   min-width: 0;
-}
-
-@include mixins.media-down(768px) {
-  .config-page {
-    padding: 1rem;
-  }
-}
-
-@include mixins.media-down(480px) {
-  .config-page {
-    padding: 0.75rem;
-  }
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }

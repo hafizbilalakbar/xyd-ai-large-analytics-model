@@ -3,6 +3,9 @@
 }
 
 .low-confidence-review-page {
-  display: flex;
-  flex-direction: column;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
 }

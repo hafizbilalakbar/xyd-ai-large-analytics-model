@@ -3,8 +3,10 @@
 }
 
 .data-import-page {
-  display: flex;
-  flex-direction: column;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
   padding: 0;
   background: var(--color-bg);
   min-height: calc(100dvh - var(--header-height));

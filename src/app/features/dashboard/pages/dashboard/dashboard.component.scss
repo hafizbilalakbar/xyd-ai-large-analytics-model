@@ -1,6 +1,9 @@
 :host {
   display: block;
   min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .dashboard {
@@ -187,10 +190,6 @@ app-recent-warning {
 }
 
 @media (max-width: 768px) {
-  :host {
-    padding: 16px;
-  }
-
   .page-header-actions {
     width: 100%;
     flex: 1 1 auto;
@@ -230,10 +229,6 @@ app-recent-warning {
 }
 
 @media (max-width: 480px) {
-  :host {
-    padding: 12px;
-  }
-
   .kpi-grid ::ng-deep .stat-card__value {
     font-size: 24px;
   }
