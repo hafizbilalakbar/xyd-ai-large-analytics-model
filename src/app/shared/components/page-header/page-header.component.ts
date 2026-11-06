@@ -8,5 +8,5 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 })
 export class PageHeaderComponent {
   readonly title = input.required<string>();
-  readonly description = input('');
+  readonly subtitle = input('');
 }

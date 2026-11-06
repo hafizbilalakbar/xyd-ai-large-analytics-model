@@ -1,14 +1,10 @@
 <div class="config-page">
   <app-toast-container />
 
-  <header class="page-header">
-    <div class="page-header__copy">
-      <h1 class="page-header__title">Parameter and Formula Configuration</h1>
-      <p class="page-header__description">
-        Electric screwdriver parameters, formula thresholds, and process references.
-      </p>
-    </div>
-  </header>
+  <app-page-header
+    title="Parameter and Formula Configuration"
+    subtitle="Electric screwdriver parameters, formula thresholds, and process references."
+  />
 
   <div class="page-tabs-wrap">
     <app-config-tabs [activeTab]="activeTab()" (tabChange)="onTabChange($event)" />

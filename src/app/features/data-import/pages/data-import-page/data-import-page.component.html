@@ -1,14 +1,10 @@
 <app-toast-container></app-toast-container>
 
 <div class="data-import-page">
-  <header class="page-header">
-    <div class="page-header__copy">
-      <h1 class="page-header__title">Import Data</h1>
-      <p class="page-header__description page-header__description--bar">
-        {{ subtitle() }}
-      </p>
-    </div>
-  </header>
+  <app-page-header
+    title="Import Data"
+    [subtitle]="subtitle()"
+  ></app-page-header>
 
   <app-import-tabs [activeTab]="activeTab()" (tabChange)="onTabChange($event)">
   </app-import-tabs>

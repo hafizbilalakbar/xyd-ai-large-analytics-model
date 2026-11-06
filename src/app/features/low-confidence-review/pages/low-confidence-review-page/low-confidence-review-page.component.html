@@ -1,12 +1,10 @@
 <div class="low-confidence-review-page">
   <app-toast-container></app-toast-container>
 
-  <header class="page-header">
-    <div class="page-header__copy">
-      <h1 class="page-header__title">Low Confidence Review</h1>
-      <p class="page-header__description">Filter results that require manual confirmation.</p>
-    </div>
-  </header>
+  <app-page-header
+    title="Low Confidence Review"
+    subtitle="Filter results that require manual confirmation."
+  ></app-page-header>
 
   <app-review-summary-cards
     [pendingCount]="pendingCount()"

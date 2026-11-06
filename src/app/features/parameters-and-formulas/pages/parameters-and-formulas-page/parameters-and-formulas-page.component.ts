@@ -8,6 +8,7 @@ import { ExecutionConfigDialogComponent } from '../../components/execution-confi
 import { FailureModePanelComponent } from '../../components/failure-mode-panel/failure-mode-panel.component';
 import { FailureModeDialogComponent } from '../../components/failure-mode-dialog/failure-mode-dialog.component';
 import { SystemSettingsPanelComponent } from '../../components/system-settings-panel/system-settings-panel.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ToastContainerComponent } from '../../../../shared/components/toast-container/toast-container.component';
 
@@ -15,6 +16,7 @@ import { ToastContainerComponent } from '../../../../shared/components/toast-con
   selector: 'app-parameters-and-formulas-page',
   standalone: true,
   imports: [
+    PageHeaderComponent,
     ConfigTabsComponent,
     ExecutionConfigPanelComponent,
     ExecutionConfigDialogComponent,

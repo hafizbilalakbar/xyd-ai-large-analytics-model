@@ -3,11 +3,13 @@ import { MonitoringEmptyStateComponent } from '../../components/monitoring-empty
 import { MonitoringLiveResultComponent } from '../../components/monitoring-live-result/monitoring-live-result.component';
 import { MonitoringStatusBadgesComponent } from '../../components/monitoring-status-badges/monitoring-status-badges.component';
 import { MonitoringStatusBarComponent } from '../../components/monitoring-status-bar/monitoring-status-bar.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { MonitoringService } from '../../data-access/monitoring.service';
 
 @Component({
   selector: 'app-realtime-monitoring-page',
   imports: [
+    PageHeaderComponent,
     MonitoringStatusBadgesComponent,
     MonitoringEmptyStateComponent,
     MonitoringLiveResultComponent,

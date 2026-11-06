@@ -8,6 +8,7 @@ import { PlaybackImportPanelComponent } from '../../components/playback-import-p
 import { TrainingImportPanelComponent } from '../../components/training-import-panel/training-import-panel.component';
 import { ImportTabsComponent } from '../../components/import-tabs/import-tabs.component';
 import { DataImportService } from '../../data-access/data-import.service';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { FAILURE_CODES, fromDateTimeLocalValue, toDateTimeLocalValue, validateTrainingRow, isKnownFailureCode } from '../../data-access/import-constants';
 import type { DuplicateMode, ImportTab, TrainingRowStatus } from '../../data-access/data-import.models';
 
@@ -24,6 +25,7 @@ interface TrainingEditDraft {
   selector: 'app-data-import-page',
   standalone: true,
   imports: [
+    PageHeaderComponent,
     ToastContainerComponent,
     ConfirmDialogComponent,
     ModalComponent,

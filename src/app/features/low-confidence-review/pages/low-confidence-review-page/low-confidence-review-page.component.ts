@@ -5,11 +5,13 @@ import { ReviewSummaryCardsComponent } from '../../components/review-summary-car
 import { ReviewFilterPanelComponent } from '../../components/review-filter-panel/review-filter-panel.component';
 import { ReviewChecklistTableComponent } from '../../components/review-checklist-table/review-checklist-table.component';
 import { ToastContainerComponent } from '../../../../shared/components/toast-container/toast-container.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-low-confidence-review-page',
   standalone: true,
   imports: [
+    PageHeaderComponent,
     ReviewSummaryCardsComponent,
     ReviewFilterPanelComponent,
     ReviewChecklistTableComponent,

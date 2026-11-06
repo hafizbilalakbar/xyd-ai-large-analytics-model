@@ -2,11 +2,12 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { SampleService } from '../../data-access/sample.service';
 import { SampleFilterPanelComponent } from '../../components/sample-filter-panel/sample-filter-panel.component';
 import { SampleResultsTableComponent } from '../../components/sample-results-table/sample-results-table.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-sample-search-page',
   standalone: true,
-  imports: [SampleFilterPanelComponent, SampleResultsTableComponent],
+  imports: [SampleFilterPanelComponent, SampleResultsTableComponent, PageHeaderComponent],
   templateUrl: './sample-search-page.component.html',
   styleUrl: './sample-search-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -27,7 +27,7 @@
 .app-shell__content {
   min-width: 0;
   flex: 1;
-  padding: var(--space-6) var(--space-7) var(--space-10);
+  padding: 20px;
 }
 
 .app-shell__scrim {
@@ -58,9 +58,21 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1439px) {
   .app-shell__content {
-    padding: var(--space-5) var(--space-4) var(--space-8);
+    padding: 16px;
+  }
+}
+
+@media (max-width: 767px) {
+  .app-shell__content {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 479px) {
+  .app-shell__content {
+    padding: 10px;
   }
 }
 

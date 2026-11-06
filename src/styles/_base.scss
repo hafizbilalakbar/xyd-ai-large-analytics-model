@@ -80,8 +80,15 @@
     --shadow-raised: 0 16px 40px -20px rgb(15 23 42 / 30%);
 
     --header-height: 4.25rem;
-    --sidebar-width: 264px;
-    --sidebar-width-collapsed: 72px;
+    --sidebar-width: 248px;
+    --sidebar-width-collapsed: 64px;
+  }
+
+  @media (min-width: 1024px) and (max-width: 1439px) {
+    :root {
+      --sidebar-width: 224px;
+      --sidebar-width-collapsed: 60px;
+    }
   }
 
   *,

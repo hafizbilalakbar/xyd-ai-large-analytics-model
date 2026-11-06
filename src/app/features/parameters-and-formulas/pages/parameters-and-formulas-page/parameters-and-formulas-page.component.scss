@@ -7,58 +7,15 @@
 .config-page {
   display: flex;
   flex-direction: column;
-  gap: var(--page-gap, 16px);
-  padding: 1.5rem;
+  padding: 0;
   width: 100%;
   box-sizing: border-box;
   min-width: 0;
 }
 
-.page-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-
-  &__copy {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-  }
-
-  &__title {
-    font-size: 28px;
-    font-weight: 700;
-    color: #0b2f5e;
-    line-height: 1.25;
-  }
-
-  &__description {
-    font-size: 13px;
-    color: var(--color-text-secondary);
-    border-left: 3px solid #f97316;
-    padding-left: 8px;
-    margin: 0 0 18px;
-    line-height: 1.4;
-  }
-}
-
-.page-tabs-wrap {
-  margin-top: 0.5rem;
-}
-
-.page-content {
-  margin-top: 0.5rem;
-}
-
 @include mixins.media-down(768px) {
   .config-page {
     padding: 1rem;
-  }
-}
-
-@include mixins.media-down(640px) {
-  .page-header__title {
-    font-size: 22px;
   }
 }
 
