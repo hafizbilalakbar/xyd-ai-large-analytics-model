@@ -4,6 +4,11 @@
   padding: 24px;
 }
 
+app-page-header {
+  display: block;
+  margin-bottom: 18px;
+}
+
 .dashboard {
   display: flex;
   min-width: 0;
@@ -25,10 +30,10 @@
 .refresh-info {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: var(--color-text-muted);
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1;
   white-space: nowrap;
 }
 
@@ -42,19 +47,21 @@
 
 .btn-refresh {
   display: inline-flex;
-  min-width: 102px;
-  height: 34px;
+  min-width: 104px;
+  height: 36px;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 0 12px;
+  padding: 0 14px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 8px;
   background-color: var(--color-surface);
   color: var(--color-text);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1;
+  overflow: visible;
   transition:
     border-color 0.15s ease,
     background-color 0.15s ease,
@@ -63,28 +70,31 @@
 
 .btn-refresh:hover:not(:disabled) {
   border-color: var(--color-primary-400);
-  background-color: var(--color-primary-50);
-  color: var(--color-primary-600);
+  background-color: #f1f5f9;
+}
+
+.btn-refresh:focus-visible {
+  outline: 2px solid var(--color-primary-400);
+  outline-offset: 2px;
 }
 
 .btn-refresh:disabled {
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.75;
 }
 
 .btn-refresh__icon {
   --icon-size: 16px;
 
-  display: inline-flex;
+  display: block;
   width: 16px;
   height: 16px;
   flex: none;
-  align-items: center;
-  justify-content: center;
   overflow: visible;
 }
 
 .btn-refresh__icon.spin {
+  transform-origin: center;
   animation: refresh-spin 0.8s linear infinite;
 }
 
@@ -95,7 +105,7 @@
 .last-updated {
   color: var(--color-text-muted);
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1;
   white-space: nowrap;
 }
 
@@ -168,7 +178,7 @@ app-recent-warning {
   }
 }
 
-@media (min-width: 769px) and (max-width: 1199px) {
+@media (min-width: 769px) and (max-width: 1023px) {
   :host ::ng-deep .page-header {
     flex-wrap: wrap;
   }
@@ -177,6 +187,7 @@ app-recent-warning {
     width: 100%;
     flex: 1 1 auto;
     justify-content: flex-start;
+    gap: 10px 12px;
     margin-left: 0;
   }
 }
@@ -190,6 +201,7 @@ app-recent-warning {
     width: 100%;
     flex: 1 1 auto;
     justify-content: flex-start;
+    gap: 10px 12px;
     margin-left: 0;
   }
 }
@@ -199,6 +211,28 @@ app-recent-warning {
   .chart-grid app-failure-mode-chart {
     min-height: 280px;
   }
+
+  .page-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .btn-refresh {
+    order: 1;
+    width: 100%;
+    height: 40px;
+  }
+
+  .refresh-info {
+    order: 2;
+    justify-content: flex-start;
+  }
+
+  .last-updated {
+    order: 3;
+    text-align: left;
+  }
 }
 
 @media (max-width: 480px) {
@@ -206,27 +240,15 @@ app-recent-warning {
     padding: 12px;
   }
 
-  .page-header-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  .refresh-info {
-    order: 1;
-    white-space: normal;
-  }
-
-  .last-updated {
-    order: 2;
-  }
-
-  .btn-refresh {
-    order: 3;
-    width: 100%;
-  }
-
   .kpi-grid ::ng-deep .stat-card__value {
     font-size: 24px;
+  }
+}
+
+@media (max-width: 359px) {
+  .refresh-info,
+  .last-updated,
+  .btn-refresh {
+    font-size: 11px;
   }
 }
