@@ -25,30 +25,56 @@
 }
 
 .filter-card__fields {
-  padding: 18px;
-}
-
-.filter-row {
+  padding: 12px;
   display: grid;
+  gap: 12px 12px;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
 }
 
-.filter-row:not(:last-child) {
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 16px;
-  margin-bottom: 16px;
+.field--corrected {
+  grid-column: 1;
 }
 
-@media (max-width: 1024px) {
-  .filter-row {
+.field--failure-modes {
+  grid-column: 2;
+}
+
+.field--confidence {
+  grid-column: 3;
+}
+
+.field--start-date {
+  grid-column: 1;
+}
+
+.field--end-date {
+  grid-column: 2;
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .filter-card__fields {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .field--confidence {
+    grid-column: 1 / 3;
   }
 }
 
-@media (max-width: 480px) {
-  .filter-row {
-    grid-template-columns: 1fr;
+@media (max-width: 639px) {
+  .filter-card__fields {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .field--confidence {
+    grid-column: 1 / 3;
+  }
+}
+
+@media (max-width: 359px) {
+  .field--start-date,
+  .field--end-date {
+    grid-column: 1 / 3;
   }
 }
 
@@ -74,12 +100,19 @@
   color: var(--color-text);
   font-size: 13px;
   width: 100%;
+  min-width: 0;
   box-sizing: border-box;
   font-family: inherit;
 }
 
 .field__input::placeholder {
   color: var(--color-text-muted);
+}
+
+@media (max-width: 639px) {
+  .field__input {
+    height: 36px;
+  }
 }
 
 .field__error {
@@ -95,9 +128,8 @@
 }
 
 .range-input {
-  width: 68px;
-  padding: 0 6px;
-  text-align: center;
+  flex: 1;
+  min-width: 0;
 }
 
 .range-sep {
@@ -107,17 +139,17 @@
 
 .filter-card__actions {
   display: flex;
-  gap: var(--space-3);
-  padding: 14px 18px;
+  gap: 10px;
+  padding: 12px 18px 18px;
   justify-content: flex-end;
   border-top: 1px solid var(--color-border);
 }
 
 .btn {
-  height: 34px;
+  height: 36px;
   padding: 0 16px;
   border-radius: 6px;
-  font-size: var(--font-size-sm);
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   border: none;
@@ -167,13 +199,24 @@
   to { transform: rotate(360deg); }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 639px) {
+  .filter-card__actions {
+    flex-direction: row;
+  }
+
+  .btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 339px) {
   .filter-card__actions {
     flex-direction: column;
-    align-items: stretch;
   }
+
   .btn {
     width: 100%;
-    justify-content: center;
+    flex: none;
   }
 }

@@ -4,84 +4,80 @@
   </div>
 
   <div class="filter-card__fields">
-    <div class="filter-row">
-      <div class="field">
-        <label class="field__label" for="correctedStatus">Corrected status</label>
-        <select
-          id="correctedStatus"
-          class="field__input"
-          [ngModel]="filters().correctedStatus"
-          (ngModelChange)="setFilter('correctedStatus', $event)"
-          aria-label="Corrected status">
-          @for (opt of filterOptions().correctedStatuses; track opt.key) {
-            <option [value]="opt.key">{{ opt.label }}</option>
-          }
-        </select>
-      </div>
-
-      <div class="field">
-        <label class="field__label">Failure modes</label>
-        <app-multi-select-dropdown
-          [value]="filters().failureModes"
-          [options]="filterOptions().failureModes"
-          (valueChange)="setFilter('failureModes', $event)">
-        </app-multi-select-dropdown>
-      </div>
-
-      <div class="field">
-        <label class="field__label">Confidence range (%)</label>
-        <div class="range-inputs">
-          <input
-            type="number"
-            class="field__input range-input"
-            min="0"
-            max="100"
-            [value]="filters().confidenceMin"
-            (input)="setConfidenceMin($event)"
-            aria-label="Minimum confidence">
-          <span class="range-sep">~</span>
-          <input
-            type="number"
-            class="field__input range-input"
-            min="0"
-            max="100"
-            [value]="filters().confidenceMax"
-            (input)="setConfidenceMax($event)"
-            aria-label="Maximum confidence">
-        </div>
-        @if (rangeError()) {
-          <span class="field__error">Range must be 0–100 and Min cannot exceed Max.</span>
+    <div class="field field--corrected">
+      <label class="field__label" for="correctedStatus">Corrected status</label>
+      <select
+        id="correctedStatus"
+        class="field__input"
+        [ngModel]="filters().correctedStatus"
+        (ngModelChange)="setFilter('correctedStatus', $event)"
+        aria-label="Corrected status">
+        @for (opt of filterOptions().correctedStatuses; track opt.key) {
+          <option [value]="opt.key">{{ opt.label }}</option>
         }
-      </div>
+      </select>
     </div>
 
-    <div class="filter-row">
-      <div class="field">
-        <label class="field__label" for="startDate">Start date</label>
-        <input
-          type="date"
-          id="startDate"
-          class="field__input"
-          [ngModel]="filters().startDate"
-          (ngModelChange)="setFilter('startDate', $event)"
-          placeholder="mm/dd/yyyy"
-          aria-label="Start date">
-        @if (dateError()) {
-          <span class="field__error">Start date cannot be later than end date.</span>
-        }
-      </div>
+    <div class="field field--failure-modes">
+      <label class="field__label">Failure modes</label>
+      <app-multi-select-dropdown
+        [value]="filters().failureModes"
+        [options]="filterOptions().failureModes"
+        (valueChange)="setFilter('failureModes', $event)">
+      </app-multi-select-dropdown>
+    </div>
 
-      <div class="field">
-        <label class="field__label" for="endDate">End date</label>
+    <div class="field field--confidence">
+      <label class="field__label">Confidence range (%)</label>
+      <div class="range-inputs">
         <input
-          type="date"
-          id="endDate"
-          class="field__input"
-          [ngModel]="filters().endDate"
-          (ngModelChange)="setFilter('endDate', $event)"
-          placeholder="mm/dd/yyyy"
-          aria-label="End date">
+          type="number"
+          class="field__input range-input"
+          min="0"
+          max="100"
+          [value]="filters().confidenceMin"
+          (input)="setConfidenceMin($event)"
+          aria-label="Minimum confidence">
+        <span class="range-sep">~</span>
+        <input
+          type="number"
+          class="field__input range-input"
+          min="0"
+          max="100"
+          [value]="filters().confidenceMax"
+          (input)="setConfidenceMax($event)"
+          aria-label="Maximum confidence">
       </div>
+      @if (rangeError()) {
+        <span class="field__error">Range must be 0–100 and Min cannot exceed Max.</span>
+      }
+    </div>
+
+    <div class="field field--start-date">
+      <label class="field__label" for="startDate">Start date</label>
+      <input
+        type="date"
+        id="startDate"
+        class="field__input"
+        [ngModel]="filters().startDate"
+        (ngModelChange)="setFilter('startDate', $event)"
+        placeholder="mm/dd/yyyy"
+        aria-label="Start date">
+      @if (dateError()) {
+        <span class="field__error">Start date cannot be later than end date.</span>
+      }
+    </div>
+
+    <div class="field field--end-date">
+      <label class="field__label" for="endDate">End date</label>
+      <input
+        type="date"
+        id="endDate"
+        class="field__input"
+        [ngModel]="filters().endDate"
+        (ngModelChange)="setFilter('endDate', $event)"
+        placeholder="mm/dd/yyyy"
+        aria-label="End date">
     </div>
   </div>
 

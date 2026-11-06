@@ -70,7 +70,7 @@ export class DataImportService {
   readonly playbackFilter = signal<'all' | 'PASS' | 'FAIL' | 'Pending'>('all');
   readonly playbackSort = signal<'name' | 'time'>('time');
   readonly playbackPage = signal(1);
-  readonly playbackPageSize = signal(20);
+  readonly playbackPageSize = signal(5);
   readonly playbackProgress = signal<ImportProgressState>(idleProgress());
   readonly playbackImportErrors = signal<{ fileName: string; rowIndex?: number; message: string }[]>([]);
 
@@ -79,7 +79,7 @@ export class DataImportService {
   readonly trainingFilter = signal<'all' | TrainingRowStatus>('all');
   readonly duplicateMode = signal<DuplicateMode>('skip');
   readonly trainingPage = signal(1);
-  readonly trainingPageSize = signal(20);
+  readonly trainingPageSize = signal(5);
   readonly trainingProgress = signal<ImportProgressState>(idleProgress());
   readonly trainingImportErrors = signal<{ fileName: string; rowIndex?: number; message: string }[]>([]);
 

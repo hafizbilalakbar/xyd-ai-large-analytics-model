@@ -29,7 +29,7 @@ export class SampleService {
 
   readonly totalCount = computed(() => this._allFilteredResults().length);
   readonly currentPage = signal(1);
-  readonly pageSize = signal(20);
+  readonly pageSize = signal(5);
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
 
@@ -73,7 +73,7 @@ export class SampleService {
     this.filters.set({ ...SAMPLE_FILTER_DEFAULTS });
     this._allFilteredResults.set([]);
     this.currentPage.set(1);
-    this.pageSize.set(20);
+    this.pageSize.set(5);
     this.isLoading.set(false);
     this.errorMessage.set(null);
   }
