@@ -32,4 +32,7 @@
   }
 
   <span class="dropzone__label">{{ label() }}</span>
+  @if (format()) {
+    <span class="dropzone__format">{{ format() }}</span>
+  }
 </div>

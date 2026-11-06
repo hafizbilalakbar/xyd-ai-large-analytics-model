@@ -2,26 +2,26 @@
   <header class="panel__header">
     <h2 class="panel__title">Import and Browse Training Data</h2>
     <div class="panel__actions">
-      <button type="button" class="btn btn-reset" (click)="downloadTemplate.emit()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <button type="button" class="btn btn-reset btn-download-template" (click)="downloadTemplate.emit()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M12 15V3"></path>
           <path d="M7.5 7.5 12 3l4.5 4.5"></path>
           <path d="M4 17v3h16v-3"></path>
         </svg>
         Download Template
       </button>
-      <button type="button" class="btn btn-reset" (click)="onSelectFile()">Select file</button>
-      @if (rowCount() > 0) {
-        <button type="button" class="btn btn-reset" (click)="onClearAll()">Clear All</button>
-      }
+      <button type="button" class="btn btn-reset btn-select-file" (click)="onSelectFile()">Select file</button>
       <button
         type="button"
-        class="btn btn-query"
+        class="btn btn-query btn-write-training"
         [class.actions--write-full]="rowCount() === 0"
         [disabled]="selectedCount() === 0"
         (click)="writeClick.emit()">
         Write to Training Set ({{ selectedCount() }})
       </button>
+      @if (rowCount() > 0) {
+        <button type="button" class="btn btn-reset btn-clear-all" (click)="onClearAll()">Clear All</button>
+      }
     </div>
   </header>
 
@@ -37,8 +37,8 @@
     <app-file-dropzone
       icon="document"
       label="Select the corrected data file, preview it, and then write it to the training set."
+      format="Supported formats: .zip, .csv, .tsv, .txt, .xlsx, .xls, .json. Max size: 100 MB"
       (fileSelect)="fileDrop.emit($event)">
-      <span class="dropzone__helper">Accepted files: ZIP, CSV, TSV, TXT, XLSX, XLS, JSON. Maximum size 100 MB.</span>
     </app-file-dropzone>
   } @else {
     @if (sources().length > 0) {

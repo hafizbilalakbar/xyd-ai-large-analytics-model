@@ -15,6 +15,7 @@
     <app-file-dropzone
       icon="monitor"
       label="View the curves and judgment results after importing the file."
+      format="Supported formats: .zip, .csv, .tsv, .txt, .xlsx, .xls, .json. Max size: 100 MB"
       (fileSelect)="fileDrop.emit($event)">
     </app-file-dropzone>
   } @else {

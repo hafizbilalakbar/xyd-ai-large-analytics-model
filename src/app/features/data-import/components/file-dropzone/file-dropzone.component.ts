@@ -11,6 +11,7 @@ export class FileDropzoneComponent {
   readonly icon = input<'monitor' | 'document'>('monitor');
   readonly label = input.required<string>();
   readonly accept = input<string>('');
+  readonly format = input<string>('');
   readonly multiple = input(false);
 
   readonly fileSelect = output<File[]>();
