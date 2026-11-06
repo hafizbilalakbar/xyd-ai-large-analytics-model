@@ -2,7 +2,6 @@ import { Injectable, computed, signal, inject } from '@angular/core';
 import { MOCK_RESULTS } from '../../sample-search/data-access/sample.mock';
 import { OperationLogService, Alarm } from '../../../shared/services/operation-log.service';
 import type { DashboardKpi, FailureMode, HourlyTrendPoint } from './dashboard.models';
-import type { SampleResult } from '../../sample-search/data-access/sample-models';
 
 function pad(n: number): string {
   return n.toString().padStart(2, '0');
@@ -17,14 +16,6 @@ function dateKey(offsetDays: number): string {
 const todayKey = dateKey(0);
 const yesterdayKey = dateKey(-1);
 
-function todayOnlyRecords(): SampleResult[] {
-  return MOCK_RESULTS.filter((r: { lockingTime: string }) => r.lockingTime.startsWith(todayKey));
-}
-
-function yesterdayOnlyRecords(): SampleResult[] {
-  return MOCK_RESULTS.filter((r: { lockingTime: string }) => r.lockingTime.startsWith(yesterdayKey));
-}
-
 function hourKey(dt: string): string {
   const match = dt.match(/ (\d{2}):/);
   return match ? match[1] + ':00' : '';
@@ -34,8 +25,17 @@ function hourKey(dt: string): string {
 export class DashboardStore {
   private readonly logService = inject(OperationLogService);
 
-  private readonly todayResults = signal(todayOnlyRecords());
-  private readonly yesterdayResults = signal(yesterdayOnlyRecords());
+  private readonly refreshCounter = signal(0);
+
+  private readonly todayResults = computed(() => {
+    this.refreshCounter();
+    return MOCK_RESULTS.filter((r: { lockingTime: string }) => r.lockingTime.startsWith(todayKey));
+  });
+
+  private readonly yesterdayResults = computed(() => {
+    this.refreshCounter();
+    return MOCK_RESULTS.filter((r: { lockingTime: string }) => r.lockingTime.startsWith(yesterdayKey));
+  });
 
   readonly kpis = computed<readonly DashboardKpi[]>(() => {
     const today = this.todayResults();
@@ -100,12 +100,12 @@ export class DashboardStore {
   });
 
   readonly hourlyTrend = computed<readonly HourlyTrendPoint[]>(() => {
+    this.refreshCounter();
     const today = this.todayResults();
     const now = new Date();
     const currentHour = now.getHours();
     const byHour = new Map<string, number>();
 
-    // Only include hours from 00:00 to current hour
     for (let h = 0; h <= currentHour; h++) {
       byHour.set(pad(h) + ':00', 0);
     }
@@ -121,6 +121,7 @@ export class DashboardStore {
   });
 
   readonly failureModes = computed<readonly FailureMode[]>(() => {
+    this.refreshCounter();
     const today = this.todayResults();
     const byMode = new Map<string, number>();
     for (const r of today) {
@@ -153,5 +154,9 @@ export class DashboardStore {
 
   removeAlarm(id: number) {
     this.logService.removeAlarm(id);
+  }
+
+  refreshData(): void {
+    this.refreshCounter.update(c => c + 1);
   }
 }

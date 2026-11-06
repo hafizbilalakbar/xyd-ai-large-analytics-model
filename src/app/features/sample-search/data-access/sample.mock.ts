@@ -472,18 +472,47 @@ const HISTORICAL: SampleResult[] = [
 ];
 
 // Today's records - generated dynamically relative to current date
-const TODAY: SampleResult[] = [
-  makeRecord(31, 'XYD-B006-001', 'B006', 'none', 8, 10, 'XYD Model', 'M2', 'PASS', null, 94, true, 'V3.1', today),
-  makeRecord(32, 'XYD-B006-002', 'B006', 'none', 9, 5, 'XYD Pro', 'P2', 'FAIL', 'F03', 62, false, 'V3.1', today),
-  makeRecord(33, 'XYD-B006-003', 'B006', 'result', 10, 0, 'XYD Model', 'M2', 'PASS', null, 89, true, 'V3.1', today),
-  makeRecord(34, 'XYD-B006-004', 'B006', 'seating', 11, 15, 'XYD Pro', 'P2', 'FAIL', 'F05', 58, false, 'V3.1', today),
-  makeRecord(35, 'XYD-B006-005', 'B006', 'none', 12, 30, 'XYD Model', 'M2', 'PASS', null, 91, true, 'V3.1', today),
-  makeRecord(36, 'XYD-B006-006', 'B006', 'result', 13, 45, 'XYD Pro', 'P2', 'FAIL', 'F01', 66, false, 'V3.1', today),
-  makeRecord(37, 'XYD-B006-007', 'B006', 'none', 14, 20, 'XYD Model', 'M2', 'PASS', null, 87, true, 'V3.1', today),
-  makeRecord(38, 'XYD-B006-008', 'B006', 'seating', 15, 10, 'XYD Pro', 'P2', 'FAIL', 'F07', 54, false, 'V3.1', today),
-  makeRecord(39, 'XYD-B006-009', 'B006', 'result', 16, 0, 'XYD Model', 'M2', 'PASS', null, 93, true, 'V3.1', today),
-  makeRecord(40, 'XYD-B006-010', 'B006', 'none', 17, 15, 'XYD Pro', 'P2', 'FAIL', 'F13', 51, false, 'V3.1', today),
-];
+const now = new Date();
+const currentHour = now.getHours();
+
+const TODAY: SampleResult[] = [];
+let serial = 31;
+
+const todayFailModes = ['F01', 'F03', 'F05', 'F07', 'F13'];
+const todayModels = ['XYD Model', 'XYD Pro'];
+const todaySpecs = ['M2', 'P2'];
+
+// Generate records for today across hours 0 to currentHour
+const hourCount = currentHour + 1;
+const recordsPerHour = Math.ceil(30 / hourCount);
+
+for (let h = 0; h <= currentHour; h++) {
+  const hourCountRecords = Math.floor(Math.random() * 3) + recordsPerHour;
+  for (let i = 0; i < hourCountRecords; i++) {
+    const minute = Math.floor(Math.random() * 60);
+    const isFail = Math.random() < 0.15; // ~15% fail rate
+    const isLowConf = Math.random() < 0.1; // ~10% low confidence
+    const failMode = isFail ? todayFailModes[Math.floor(Math.random() * todayFailModes.length)] : null;
+    const confidence = isLowConf ? Math.floor(Math.random() * 50) + 30 : Math.floor(Math.random() * 30) + 70;
+
+    TODAY.push(makeRecord(
+      serial++,
+      `XYD-B008-${serial.toString().padStart(3, '0')}`,
+      'B008',
+      ['none', 'result', 'seating'][Math.floor(Math.random() * 3)] as any,
+      h,
+      minute,
+      todayModels[Math.floor(Math.random() * 2)],
+      todaySpecs[Math.floor(Math.random() * 2)],
+      isFail ? 'FAIL' : 'PASS',
+      failMode,
+      confidence,
+      Math.random() > 0.5,
+      'V3.1',
+      today
+    ));
+  }
+}
 
 // Yesterday's records - generated dynamically relative to current date
 const YESTERDAY: SampleResult[] = [

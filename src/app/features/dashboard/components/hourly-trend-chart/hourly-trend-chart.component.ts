@@ -57,7 +57,7 @@ export class HourlyTrendChartComponent implements AfterViewInit, OnDestroy {
       yAxis: {
         type: 'value',
         min: 0,
-        max: maxCount > 0 ? maxCount : 100,
+        max: maxCount > 0 ? Math.ceil(maxCount * 1.2) : 100,
         minInterval: 1,
         splitLine: { show: true, lineStyle: { color: '#e2e8f0', type: 'dashed' } },
         axisLine: { show: false },
@@ -68,16 +68,25 @@ export class HourlyTrendChartComponent implements AfterViewInit, OnDestroy {
         ? ([{
             name: 'Locked items',
             type: 'line',
-            smooth: true,
+            smooth: 0.45,
+            showSymbol: true,
+            symbol: 'circle',
+            symbolSize: 8,
             data: data.map(p => ({
               value: p.count,
               itemStyle: p === peak ? { color: '#16a34a' } : p === low ? { color: '#f59e0b' } : { color: '#2563eb' },
             })),
-            itemStyle: { color: '#2563eb', borderWidth: 3 },
-            lineStyle: { color: '#2563eb', width: 3 },
+            itemStyle: { color: '#2563eb', borderWidth: 2 },
+            lineStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                { offset: 0, color: '#2563eb' },
+                { offset: 1, color: '#7c3aed' },
+              ]),
+              width: 3,
+            },
             areaStyle: {
               color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: 'rgba(37, 99, 235, 0.25)' },
+                { offset: 0, color: 'rgba(37, 99, 235, 0.28)' },
                 { offset: 1, color: 'rgba(37, 99, 235, 0)' },
               ]),
             },

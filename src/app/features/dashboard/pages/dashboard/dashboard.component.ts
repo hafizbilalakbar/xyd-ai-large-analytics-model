@@ -52,6 +52,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   readonly refreshing = signal(false);
   readonly lastUpdated = signal(formatTime(new Date()));
+  readonly refreshed = signal(false);
 
   private readonly animatedValues = signal<Map<string, number>>(new Map());
   private animationFrame: number | null = null;
@@ -78,7 +79,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.startRefreshTimer();
     this.setupVisibilityHandler();
     this.checkStorageAlarm();
-    // First load: hide skeletons after initial render
     Promise.resolve().then(() => {
       this.store.loading.set(false);
     });
@@ -202,25 +202,33 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  onRefresh(): void {
+  async onRefresh(): Promise<void> {
     if (this.refreshing()) return;
     this.refreshing.set(true);
     this.store.loading.set(true);
     this.store.error.set(null);
+    this.refreshed.set(false);
 
-    Promise.resolve().then(() => {
-      this.startCountUpToTargets();
+    const minDelay = new Promise(resolve => setTimeout(resolve, 600));
+    try {
+      await Promise.all([minDelay, this.reloadData()]);
       this.lastUpdated.set(formatTime(new Date()));
+      this.startCountUpToTargets();
+      this.refreshed.set(true);
+      setTimeout(() => this.refreshed.set(false), 1000);
+    } catch {
+      this.store.error.set('Refresh failed. Keeping previous data.');
+    } finally {
       this.store.loading.set(false);
       this.refreshing.set(false);
       this.startRefreshTimer();
       this.checkStorageAlarm();
-    }).catch(() => {
-      this.store.loading.set(false);
-      this.refreshing.set(false);
-      this.store.error.set('Refresh failed. Keeping previous data.');
-      this.startRefreshTimer();
-    });
+    }
+  }
+
+  private async reloadData(): Promise<void> {
+    this.store.refreshData();
+    await new Promise(resolve => setTimeout(resolve, 300));
   }
 
   onAlarmMarkRead(id: number): void {

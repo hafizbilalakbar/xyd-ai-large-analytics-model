@@ -16,9 +16,9 @@
 
 .warning-card__head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-3);
   padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--color-border);
 }
@@ -32,9 +32,10 @@
 }
 
 .warning-card__subtitle {
-  margin-top: 0.125rem;
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .warning-card__monitoring {
@@ -214,7 +215,7 @@
   color: var(--color-text);
   font-size: 14px;
   font-weight: 600;
-  margin: 0 0 var(--space-1) 0;
+  margin: 0 0 var(--space-2) 0;
 }
 
 .empty-text {

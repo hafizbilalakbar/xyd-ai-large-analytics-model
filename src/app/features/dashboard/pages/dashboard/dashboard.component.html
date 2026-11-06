@@ -9,41 +9,45 @@
       class="btn-refresh"
       [disabled]="refreshing()"
       (click)="onRefresh()"
+      [attr.aria-busy]="refreshing()"
+      aria-label="Refresh data"
     >
       <app-icon name="refresh" [class.spin]="refreshing()" />
-      <span>Refresh</span>
+      <span>{{ refreshing() ? 'Refreshing...' : 'Refresh' }}</span>
     </button>
     <span class="last-updated">Last updated: {{ lastUpdated() }}</span>
   </div>
 </app-page-header>
 
-<div class="kpi-grid">
-  @for (kpi of kpis(); track kpi.label) {
-    <app-stat-card
+<div class="dashboard">
+  <div class="kpi-grid">
+    @for (kpi of kpis(); track kpi.label) {
+      <app-stat-card
+        [loading]="loading()"
+        [label]="kpi.label"
+        [value]="displayValue(kpi)"
+        [icon]="kpi.icon"
+        [tone]="kpi.tone"
+        [delta]="kpi.delta"
+        [deltaDirection]="kpi.deltaDirection"
+        [deltaTone]="kpi.deltaTone"
+      />
+    }
+  </div>
+
+  <div class="chart-grid">
+    <app-hourly-trend-chart
+      class="line-chart-card"
+      [points]="hourlyTrend()"
       [loading]="loading()"
-      [label]="kpi.label"
-      [value]="displayValue(kpi)"
-      [icon]="kpi.icon"
-      [tone]="kpi.tone"
-      [delta]="kpi.delta"
-      [deltaDirection]="kpi.deltaDirection"
-      [deltaTone]="kpi.deltaTone"
     />
-  }
-</div>
+    <app-failure-mode-chart [modes]="failureModes()" [loading]="loading()" />
+  </div>
 
-<div class="chart-grid">
-  <app-hourly-trend-chart
-    class="line-chart-card"
-    [points]="hourlyTrend()"
+  <app-recent-warning
+    [alarms]="alarms()"
     [loading]="loading()"
+    (markRead)="onAlarmMarkRead($event)"
+    (remove)="onAlarmRemove($event)"
   />
-  <app-failure-mode-chart [modes]="failureModes()" [loading]="loading()" />
 </div>
-
-<app-recent-warning
-  [alarms]="alarms()"
-  [loading]="loading()"
-  (markRead)="onAlarmMarkRead($event)"
-  (remove)="onAlarmRemove($event)"
-/>

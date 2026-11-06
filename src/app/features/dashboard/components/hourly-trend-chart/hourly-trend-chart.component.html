@@ -8,22 +8,13 @@
   </header>
 
   <div class="trend-card__chart" #chartContainer style="width:100%;height:280px">
+    <div class="echarts-container" style="width:100%;height:100%"></div>
     @if (loading()) {
-      <div class="chart-skeleton">
+      <div class="chart-loading-overlay">
         <div class="skeleton-line"></div>
         <div class="skeleton-line"></div>
         <div class="skeleton-line"></div>
       </div>
-    } @else if (points().length === 0) {
-      <div class="chart-empty">
-        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3 13l3-7h12l3 7"></path>
-          <path d="M3 13v5a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-5h-5l-1.5 2h-5L8 13H3Z"></path>
-        </svg>
-        <span class="empty-text">No locked item data for today.</span>
-      </div>
-    } @else {
-      <!-- ECharts draws directly into #chartContainer -->
     }
   </div>
 </article>
