@@ -1,12 +1,11 @@
 <div class="results-card">
   <div class="results-card__header">
-    <span class="results-card__title">Search results</span>
     <div class="results-card__search">
       <input
         type="search"
         id="resultsSearch"
         class="search-input"
-        placeholder="Search sample ID, model, failure mode..."
+        placeholder="Search results"
         [value]="searchText()"
         (input)="onSearchInput($event)"
         (keydown)="onSearchKeydown($event)"
