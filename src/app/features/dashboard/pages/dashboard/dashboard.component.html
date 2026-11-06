@@ -3,10 +3,13 @@
   subtitle="Real-time overview of locking quality, throughput, and platform health."
 >
   <div class="page-header-actions">
-    <span class="refresh-info">
-      <span class="status-dot" aria-hidden="true"></span>
-      Refreshes automatically every 60 seconds
-    </span>
+    <div class="refresh-info-block">
+      <span class="refresh-info">
+        <span class="status-dot" aria-hidden="true"></span>
+        Refreshes automatically every 60 seconds
+      </span>
+      <span class="last-updated">Last updated: {{ lastUpdated() }}</span>
+    </div>
     <button
       type="button"
       class="btn-refresh"
@@ -32,7 +35,6 @@
       </svg>
       <span class="btn-refresh__label">Refresh</span>
     </button>
-    <span class="last-updated">Last updated: {{ lastUpdated() }}</span>
   </div>
 </app-page-header>
 
