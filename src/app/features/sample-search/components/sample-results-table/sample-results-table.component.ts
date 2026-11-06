@@ -18,12 +18,31 @@ export class SampleResultsTableComponent {
   readonly pageSize = input.required<number>();
   readonly loading = input.required<boolean>();
   readonly errorMessage = input.required<string | null>();
+  readonly searchText = input.required<string>();
 
   readonly retry = output<void>();
   readonly pageChange = output<number>();
   readonly pageSizeChange = output<number>();
+  readonly searchChange = output<string>();
+  readonly searchClear = output<void>();
 
   protected isLowConfidence(confidence: number | null): boolean {
     return (confidence ?? 100) < LOW_CONFIDENCE_THRESHOLD;
+  }
+
+  protected onSearchInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchChange.emit(value);
+  }
+
+  protected onSearchKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.searchClear.emit();
+    }
+  }
+
+  protected clearSearch(): void {
+    this.searchClear.emit();
   }
 }

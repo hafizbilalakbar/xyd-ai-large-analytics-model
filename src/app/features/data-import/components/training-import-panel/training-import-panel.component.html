@@ -17,6 +17,7 @@
       <button
         type="button"
         class="btn btn-query"
+        [class.actions--write-full]="rowCount() === 0"
         [disabled]="selectedCount() === 0"
         (click)="writeClick.emit()">
         Write to Training Set ({{ selectedCount() }})

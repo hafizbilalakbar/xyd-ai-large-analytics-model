@@ -1,6 +1,24 @@
 <div class="results-card">
   <div class="results-card__header">
     <span class="results-card__title">Search results</span>
+    <div class="results-card__search">
+      <input
+        type="search"
+        id="resultsSearch"
+        class="search-input"
+        placeholder="Search sample ID, model, failure mode..."
+        [value]="searchText()"
+        (input)="onSearchInput($event)"
+        (keydown)="onSearchKeydown($event)"
+        aria-label="Search results">
+      @if (searchText()) {
+        <button
+          type="button"
+          class="search-clear"
+          (click)="clearSearch()"
+          aria-label="Clear search">×</button>
+      }
+    </div>
     <span class="results-card__hint">Sorted by locking time, newest first</span>
   </div>
 

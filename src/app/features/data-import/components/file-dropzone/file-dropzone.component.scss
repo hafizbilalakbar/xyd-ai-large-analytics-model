@@ -4,8 +4,8 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  min-height: 110px;
-  padding: 24px;
+  min-height: 100px;
+  padding: 16px;
   background: #f1f5f9;
   border: 2px dashed #d1d5db;
   border-radius: 8px;
@@ -30,6 +30,6 @@
 
 .dropzone__label {
   color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
+  font-size: 12.5px;
   text-align: center;
 }

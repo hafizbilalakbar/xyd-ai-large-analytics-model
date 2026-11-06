@@ -10,7 +10,7 @@
       [disabled]="busy()"
       (click)="onTabClick(tab.key)"
       (keydown)="onKeyDown($event, index)">
-      {{ tab.label }}
+      <span class="tab__label">{{ tab.label }}</span>
     </button>
   }
 </div>

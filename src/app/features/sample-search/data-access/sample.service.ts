@@ -19,15 +19,31 @@ export class SampleService {
   private readonly _allFilteredResults = signal<SampleResult[]>([]);
   readonly allFilteredResults: Signal<SampleResult[]> = this._allFilteredResults;
 
-  readonly results = computed(() => {
+  readonly searchText = signal('');
+
+  readonly searchedResults = computed(() => {
     const all = this._allFilteredResults();
+    const text = this.searchText().trim().toLowerCase();
+    if (!text) return all;
+    return all.filter(r =>
+      String(r.serialNo).toLowerCase().includes(text) ||
+      r.sampleId.toLowerCase().includes(text) ||
+      r.electricScrewdriverModel.toLowerCase().includes(text) ||
+      r.screwSpecification.toLowerCase().includes(text) ||
+      (r.failureMode ?? '').toLowerCase().includes(text) ||
+      r.modelVersion.toLowerCase().includes(text)
+    );
+  });
+
+  readonly results = computed(() => {
+    const all = this.searchedResults();
     const page = this.currentPage();
     const size = this.pageSize();
     const startIdx = (page - 1) * size;
     return all.slice(startIdx, startIdx + size);
   });
 
-  readonly totalCount = computed(() => this._allFilteredResults().length);
+  readonly totalCount = computed(() => this.searchedResults().length);
   readonly currentPage = signal(1);
   readonly pageSize = signal(5);
   readonly isLoading = signal(false);
@@ -49,6 +65,11 @@ export class SampleService {
 
   setFilter<K extends keyof SampleFilter>(key: K, value: SampleFilter[K]) {
     this.filters.update(f => ({ ...f, [key]: value }));
+  }
+
+  setSearchText(text: string): void {
+    this.searchText.set(text);
+    this.currentPage.set(1);
   }
 
   query() {
@@ -74,6 +95,7 @@ export class SampleService {
     this._allFilteredResults.set([]);
     this.currentPage.set(1);
     this.pageSize.set(5);
+    this.searchText.set('');
     this.isLoading.set(false);
     this.errorMessage.set(null);
   }

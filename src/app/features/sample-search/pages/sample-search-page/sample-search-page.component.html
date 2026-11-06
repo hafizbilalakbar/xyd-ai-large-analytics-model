@@ -19,10 +19,13 @@
     [totalCount]="totalCount()"
     [currentPage]="currentPage()"
     [pageSize]="pageSize()"
+    [searchText]="searchText()"
     [loading]="isLoading()"
     [errorMessage]="errorMessage()"
     (retry)="onQuery()"
     (pageChange)="setPage($event)"
-    (pageSizeChange)="setPageSize($event)">
+    (pageSizeChange)="setPageSize($event)"
+    (searchChange)="setSearchText($event)"
+    (searchClear)="clearSearchText()">
   </app-sample-results-table>
 </div>
