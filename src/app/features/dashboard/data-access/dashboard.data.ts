@@ -1,4 +1,5 @@
 import type {
+  Alarm,
   DashboardKpi,
   FailureMode,
   HourlyTrendPoint,
@@ -44,25 +45,78 @@ export const DASHBOARD_KPIS: readonly DashboardKpi[] = [
   },
 ];
 
+export const EMPTY_KPIS: readonly DashboardKpi[] = DASHBOARD_KPIS.map((kpi) => ({
+  ...kpi,
+  value: '—',
+  delta: null,
+}));
+
 export const HOURLY_TREND: readonly HourlyTrendPoint[] = [
-  { hour: '08:00', count: 680 },
-  { hour: '09:00', count: 910 },
-  { hour: '10:00', count: 1150 },
-  { hour: '11:00', count: 1360 },
-  { hour: '12:00', count: 1240 },
-  { hour: '13:00', count: 1480 },
-  { hour: '14:00', count: 1610 },
-  { hour: '15:00', count: 1740 },
-  { hour: '16:00', count: 1490 },
-  { hour: '17:00', count: 1187 },
+  { hour: '00:00', count: 80 },
+  { hour: '01:00', count: 60 },
+  { hour: '02:00', count: 40 },
+  { hour: '03:00', count: 30 },
+  { hour: '04:00', count: 50 },
+  { hour: '05:00', count: 90 },
+  { hour: '06:00', count: 160 },
+  { hour: '07:00', count: 300 },
+  { hour: '08:00', count: 520 },
+  { hour: '09:00', count: 700 },
+  { hour: '10:00', count: 900 },
+  { hour: '11:00', count: 1120 },
+  { hour: '12:00', count: 1050 },
+  { hour: '13:00', count: 1250 },
+  { hour: '14:00', count: 1380 },
+  { hour: '15:00', count: 1480 },
+  { hour: '16:00', count: 1240 },
+  { hour: '17:00', count: 1000 },
+  { hour: '18:00', count: 720 },
+  { hour: '19:00', count: 250 },
+  { hour: '20:00', count: 180 },
+  { hour: '21:00', count: 120 },
+  { hour: '22:00', count: 80 },
+  { hour: '23:00', count: 47 },
 ];
 
 export const FAILURE_MODES: readonly FailureMode[] = [
-  { label: 'Dimensional Deviation', count: 176, tone: 'blue' },
-  { label: 'Surface Defect', count: 111, tone: 'amber' },
-  { label: 'Material Anomaly', count: 83, tone: 'red' },
-  { label: 'Assembly Mismatch', count: 55, tone: 'violet' },
-  { label: 'Other', count: 37, tone: 'slate' },
+  { code: 'F01', name: 'Floating High', count: 176, tone: 'red' },
+  { code: 'F07', name: 'Repeated Tightening', count: 111, tone: 'amber' },
+  { code: 'F13', name: 'Hole Position Abnormal', count: 83, tone: 'violet' },
+  { code: 'F03', name: 'Clamping Abnormal', count: 55, tone: 'blue' },
+  { code: 'F05', name: 'Slipped Tooth', count: 37, tone: 'slate' },
+];
+
+function pad(value: number): string {
+  return value.toString().padStart(2, '0');
+}
+
+function alarmTime(minutesAgo: number): string {
+  const date = new Date(Date.now() - minutesAgo * 60000);
+  return `${date.getFullYear()}/${pad(date.getMonth() + 1)}/${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+export const DASHBOARD_ALARMS: readonly Alarm[] = [
+  {
+    id: 9001,
+    time: alarmTime(6),
+    type: 'storage',
+    details: 'Insufficient disk space/critical',
+    read: false,
+  },
+  {
+    id: 9002,
+    time: alarmTime(28),
+    type: 'model',
+    details: 'Model: Loading failed',
+    read: false,
+  },
+  {
+    id: 9003,
+    time: alarmTime(74),
+    type: 'training',
+    details: 'Training: Mission Failed',
+    read: true,
+  },
 ];
 
 export const SYSTEM_WARNINGS: readonly SystemWarning[] = [

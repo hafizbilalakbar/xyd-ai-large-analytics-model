@@ -1,28 +1,28 @@
-import { ChangeDetectionStrategy, Component, inject, signal, HostListener, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { StatCardComponent } from '../../../../shared/components/stat-card/stat-card.component';
 import { FailureModeChartComponent } from '../../components/failure-mode-chart/failure-mode-chart.component';
 import { HourlyTrendChartComponent } from '../../components/hourly-trend-chart/hourly-trend-chart.component';
 import { RecentWarningComponent } from '../../components/recent-warning/recent-warning.component';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
+import { ToastContainerComponent } from '../../../../shared/components/toast-container/toast-container.component';
+import { ToastService } from '../../../../shared/services/toast.service';
 import { DashboardStore } from '../../data-access/dashboard.store';
-import type { DashboardKpi } from '../../data-access/dashboard.models';
-
-function parseNumber(value: string): number {
-  const n = Number(value.replace(/,/g, '').replace('%', ''));
-  return isNaN(n) ? 0 : n;
-}
-
-function formatNumber(n: number): string {
-  return n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-}
-
-function formatPercent(n: number): string {
-  return n.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
-}
 
 function formatTime(date: Date): string {
-  return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  return date.toLocaleTimeString('zh-CN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
 }
 
 @Component({
@@ -35,131 +35,47 @@ function formatTime(date: Date): string {
     FailureModeChartComponent,
     RecentWarningComponent,
     IconComponent,
+    ToastContainerComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   private readonly store = inject(DashboardStore);
+  private readonly toast = inject(ToastService);
 
   readonly kpis = this.store.kpis;
   readonly hourlyTrend = this.store.hourlyTrend;
   readonly failureModes = this.store.failureModes;
   readonly alarms = this.store.alarms;
   readonly loading = this.store.loading;
-  readonly error = this.store.error;
 
   readonly refreshing = signal(false);
   readonly lastUpdated = signal(formatTime(new Date()));
-  readonly refreshed = signal(false);
 
-  private readonly animatedValues = signal<Map<string, number>>(new Map());
-  private animationFrame: number | null = null;
   private refreshTimer: ReturnType<typeof setTimeout> | null = null;
   private visibilityHandler: (() => void) | null = null;
 
-  readonly displayValue = (kpi: DashboardKpi): string => {
-    const animated = this.animatedValues().get(kpi.label);
-    const target = parseNumber(kpi.value);
-    const current = animated ?? target;
-    if (kpi.label === 'PASS Rate') {
-      return formatPercent(current);
-    }
-    return formatNumber(current);
-  };
-
-  @HostListener('window:beforeunload')
-  onBeforeUnload(): void {
-    this.destroy();
-  }
-
   ngOnInit(): void {
-    this.startCountUpFromZero();
-    this.startRefreshTimer();
+    this.scheduleRefresh();
     this.setupVisibilityHandler();
     this.checkStorageAlarm();
-    Promise.resolve().then(() => {
-      this.store.loading.set(false);
-    });
-  }
-
-  ngAfterViewInit(): void {
+    Promise.resolve().then(() => this.store.loading.set(false));
   }
 
   ngOnDestroy(): void {
-    this.destroy();
-  }
-
-  private destroy(): void {
-    this.cancelAnimation();
     this.stopRefreshTimer();
     this.removeVisibilityHandler();
   }
 
-  private startCountUpFromZero(): void {
-    const kpis = this.kpis();
-    const start = performance.now();
-    const duration = 1200;
-
-    const animate = (now: number) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-
-      const next = new Map<string, number>();
-      for (const kpi of kpis) {
-        const target = parseNumber(kpi.value);
-        next.set(kpi.label, target * easeProgress);
-      }
-      this.animatedValues.set(next);
-
-      if (progress < 1) {
-        this.animationFrame = requestAnimationFrame(animate);
-      }
-    };
-
-    this.animationFrame = requestAnimationFrame(animate);
-  }
-
-  private startCountUpToTargets(): void {
-    const prev = this.animatedValues();
-    const kpis = this.kpis();
-    const start = performance.now();
-    const duration = 1200;
-
-    const animate = (now: number) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-
-      const next = new Map<string, number>();
-      for (const kpi of kpis) {
-        const target = parseNumber(kpi.value);
-        const current = prev.get(kpi.label) ?? target;
-        next.set(kpi.label, current + (target - current) * easeProgress);
-      }
-      this.animatedValues.set(next);
-
-      if (progress < 1) {
-        this.animationFrame = requestAnimationFrame(animate);
-      }
-    };
-
-    this.animationFrame = requestAnimationFrame(animate);
-  }
-
-  private cancelAnimation(): void {
-    if (this.animationFrame !== null) {
-      cancelAnimationFrame(this.animationFrame);
-      this.animationFrame = null;
-    }
-  }
-
-  private startRefreshTimer(): void {
+  private scheduleRefresh(): void {
     this.stopRefreshTimer();
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+      return;
+    }
     this.refreshTimer = setTimeout(() => {
-      this.onRefresh();
+      void this.onRefresh();
     }, 60000);
   }
 
@@ -172,10 +88,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private setupVisibilityHandler(): void {
     this.visibilityHandler = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === 'hidden') {
         this.stopRefreshTimer();
-        this.onRefresh();
-        this.startRefreshTimer();
+      } else {
+        this.scheduleRefresh();
       }
     };
     document.addEventListener('visibilitychange', this.visibilityHandler);
@@ -190,45 +106,45 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private checkStorageAlarm(): void {
     if ('storage' in navigator && 'estimate' in navigator.storage) {
-      navigator.storage.estimate().then(est => {
-        const total = est.quota ?? 0;
-        const used = est.usage ?? 0;
-        const free = total - used;
-        if (total > 0 && free / total < 0.05) {
-          this.store.addAlarm('storage', 'Insufficient disk space/critical');
-        }
-      }).catch(() => {
-      });
+      navigator.storage
+        .estimate()
+        .then((estimate) => {
+          const total = estimate.quota ?? 0;
+          const used = estimate.usage ?? 0;
+          if (total > 0 && (total - used) / total < 0.05) {
+            this.store.addAlarm('storage', 'Insufficient disk space/critical');
+          }
+        })
+        .catch(() => {});
     }
   }
 
   async onRefresh(): Promise<void> {
-    if (this.refreshing()) return;
+    if (this.refreshing()) {
+      return;
+    }
+
     this.refreshing.set(true);
     this.store.loading.set(true);
     this.store.error.set(null);
-    this.refreshed.set(false);
 
-    const minDelay = new Promise(resolve => setTimeout(resolve, 600));
     try {
-      await Promise.all([minDelay, this.reloadData()]);
+      await Promise.all([this.reloadData(), new Promise((resolve) => setTimeout(resolve, 500))]);
       this.lastUpdated.set(formatTime(new Date()));
-      this.startCountUpToTargets();
-      this.refreshed.set(true);
-      setTimeout(() => this.refreshed.set(false), 1000);
     } catch {
       this.store.error.set('Refresh failed. Keeping previous data.');
+      this.toast.show('Refresh failed. Please try again.', 'error');
     } finally {
       this.store.loading.set(false);
       this.refreshing.set(false);
-      this.startRefreshTimer();
+      this.scheduleRefresh();
       this.checkStorageAlarm();
     }
   }
 
   private async reloadData(): Promise<void> {
+    await new Promise((resolve) => setTimeout(resolve, 250));
     this.store.refreshData();
-    await new Promise(resolve => setTimeout(resolve, 300));
   }
 
   onAlarmMarkRead(id: number): void {

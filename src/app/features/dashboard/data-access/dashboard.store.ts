@@ -1,25 +1,14 @@
-import { Injectable, computed, signal, inject } from '@angular/core';
-import { MOCK_RESULTS } from '../../sample-search/data-access/sample.mock';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { USE_SAMPLE_MOCK } from '../../sample-search/data-access/sample.mock';
 import { OperationLogService, Alarm } from '../../../shared/services/operation-log.service';
+import {
+  DASHBOARD_ALARMS,
+  DASHBOARD_KPIS,
+  EMPTY_KPIS,
+  FAILURE_MODES,
+  HOURLY_TREND,
+} from './dashboard.data';
 import type { DashboardKpi, FailureMode, HourlyTrendPoint } from './dashboard.models';
-
-function pad(n: number): string {
-  return n.toString().padStart(2, '0');
-}
-
-function dateKey(offsetDays: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + offsetDays);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-const todayKey = dateKey(0);
-const yesterdayKey = dateKey(-1);
-
-function hourKey(dt: string): string {
-  const match = dt.match(/ (\d{2}):/);
-  return match ? match[1] + ':00' : '';
-}
 
 @Injectable({ providedIn: 'root' })
 export class DashboardStore {
@@ -27,136 +16,56 @@ export class DashboardStore {
 
   private readonly refreshCounter = signal(0);
 
-  private readonly todayResults = computed(() => {
-    this.refreshCounter();
-    return MOCK_RESULTS.filter((r: { lockingTime: string }) => r.lockingTime.startsWith(todayKey));
-  });
-
-  private readonly yesterdayResults = computed(() => {
-    this.refreshCounter();
-    return MOCK_RESULTS.filter((r: { lockingTime: string }) => r.lockingTime.startsWith(yesterdayKey));
-  });
+  private readonly sampleAlarms = signal<readonly Alarm[]>(
+    USE_SAMPLE_MOCK ? [...DASHBOARD_ALARMS] : [],
+  );
 
   readonly kpis = computed<readonly DashboardKpi[]>(() => {
-    const today = this.todayResults();
-    const yesterday = this.yesterdayResults();
-
-    const todayTotal = today.length;
-    const todayPass = today.filter((r: { result: string }) => r.result === 'PASS').length;
-    const todayFail = today.filter((r: { result: string }) => r.result === 'FAIL').length;
-    const todayLowConf = today.filter((r: { confidence: number | null }) => r.confidence != null && r.confidence < 80).length;
-
-    const yesterdayTotal = yesterday.length;
-    const yesterdayPass = yesterday.filter((r: { result: string }) => r.result === 'PASS').length;
-    const yesterdayFail = yesterday.filter((r: { result: string }) => r.result === 'FAIL').length;
-    const yesterdayLowConf = yesterday.filter((r: { confidence: number | null }) => r.confidence != null && r.confidence < 80).length;
-
-    const passRate = todayTotal > 0 ? Math.round((todayPass / todayTotal) * 1000) / 10 : 0;
-    const yesterdayPassRate = yesterdayTotal > 0 ? Math.round((yesterdayPass / yesterdayTotal) * 1000) / 10 : 0;
-
-    const deltaTotal = yesterdayTotal > 0 ? todayTotal - yesterdayTotal : 0;
-    const deltaPassRate = yesterdayTotal > 0 ? passRate - yesterdayPassRate : 0;
-    const deltaFail = yesterdayTotal > 0 ? todayFail - yesterdayFail : 0;
-    const deltaLowConf = yesterdayTotal > 0 ? todayLowConf - yesterdayLowConf : 0;
-
-    return [
-      {
-        label: 'Total Locked Items Today',
-        value: String(todayTotal),
-        icon: 'layers',
-        tone: 'primary' as const,
-        delta: yesterdayTotal > 0 ? `${deltaTotal >= 0 ? '+' : ''}${deltaTotal}` : null,
-        deltaDirection: deltaTotal >= 0 ? 'up' : 'down',
-        deltaTone: deltaTotal >= 0 ? 'positive' : 'negative',
-      },
-      {
-        label: 'PASS Rate',
-        value: yesterdayTotal > 0 ? `${passRate.toFixed(1)}%` : '—',
-        icon: 'check',
-        tone: 'success' as const,
-        delta: yesterdayTotal > 0 ? `${deltaPassRate >= 0 ? '+' : '-'}${Math.abs(deltaPassRate).toFixed(1)}%` : null,
-        deltaDirection: deltaPassRate >= 0 ? 'up' : 'down',
-        deltaTone: deltaPassRate >= 0 ? 'positive' : 'negative',
-      },
-      {
-        label: 'FAIL Count',
-        value: String(todayFail),
-        icon: 'alert',
-        tone: 'danger' as const,
-        delta: yesterdayTotal > 0 ? `${deltaFail >= 0 ? '+' : '-'}${Math.abs(deltaFail)}` : null,
-        deltaDirection: deltaFail >= 0 ? 'up' : 'down',
-        deltaTone: deltaFail >= 0 ? 'negative' : 'positive',
-      },
-      {
-        label: 'Low Confidence Count',
-        value: String(todayLowConf),
-        icon: 'activity',
-        tone: 'warning' as const,
-        delta: yesterdayTotal > 0 ? `${deltaLowConf >= 0 ? '+' : '-'}${Math.abs(deltaLowConf)}` : null,
-        deltaDirection: deltaLowConf >= 0 ? 'up' : 'down',
-        deltaTone: deltaLowConf >= 0 ? 'negative' : 'positive',
-      },
-    ];
+    this.refreshCounter();
+    return USE_SAMPLE_MOCK ? DASHBOARD_KPIS : EMPTY_KPIS;
   });
 
   readonly hourlyTrend = computed<readonly HourlyTrendPoint[]>(() => {
     this.refreshCounter();
-    const today = this.todayResults();
-    const now = new Date();
-    const currentHour = now.getHours();
-    const byHour = new Map<string, number>();
-
-    for (let h = 0; h <= currentHour; h++) {
-      byHour.set(pad(h) + ':00', 0);
-    }
-
-    for (const r of today) {
-      const hk = hourKey(r.lockingTime);
-      if (hk && byHour.has(hk)) {
-        byHour.set(hk, (byHour.get(hk) ?? 0) + 1);
-      }
-    }
-
-    return Array.from(byHour.entries()).map(([hour, count]) => ({ hour, count }));
+    return USE_SAMPLE_MOCK ? HOURLY_TREND : [];
   });
 
   readonly failureModes = computed<readonly FailureMode[]>(() => {
     this.refreshCounter();
-    const today = this.todayResults();
-    const byMode = new Map<string, number>();
-    for (const r of today) {
-      if ((r as { result: string; failureMode: string | null }).result === 'FAIL' && (r as { failureMode: string | null }).failureMode) {
-        const mode = (r as { failureMode: string }).failureMode!;
-        byMode.set(mode, (byMode.get(mode) ?? 0) + 1);
-      }
-    }
-    const modes: FailureMode[] = Array.from(byMode.entries()).map(([label, count]) => ({
-      label,
-      count,
-      tone: 'slate' as const,
-    }));
-    modes.sort((a, b) => b.count - a.count);
-    return modes;
+    return USE_SAMPLE_MOCK ? FAILURE_MODES : [];
   });
 
-  readonly alarms = this.logService.alarmEntries;
+  readonly alarms = computed<readonly Alarm[]>(() => {
+    this.refreshCounter();
+    return [...this.sampleAlarms(), ...this.logService.alarmEntries()];
+  });
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
 
-  addAlarm(type: Alarm['type'], details: string) {
+  addAlarm(type: Alarm['type'], details: string): void {
     this.logService.addAlarm(type, details);
   }
 
-  markAlarmRead(id: number) {
+  markAlarmRead(id: number): void {
+    if (this.sampleAlarms().some((alarm) => alarm.id === id)) {
+      this.sampleAlarms.update((list) =>
+        list.map((alarm) => (alarm.id === id ? { ...alarm, read: true } : alarm)),
+      );
+      return;
+    }
     this.logService.markAlarmRead(id);
   }
 
-  removeAlarm(id: number) {
+  removeAlarm(id: number): void {
+    if (this.sampleAlarms().some((alarm) => alarm.id === id)) {
+      this.sampleAlarms.update((list) => list.filter((alarm) => alarm.id !== id));
+      return;
+    }
     this.logService.removeAlarm(id);
   }
 
   refreshData(): void {
-    this.refreshCounter.update(c => c + 1);
+    this.refreshCounter.update((counter) => counter + 1);
   }
 }

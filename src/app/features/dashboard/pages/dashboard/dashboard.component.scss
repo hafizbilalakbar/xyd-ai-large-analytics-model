@@ -1,120 +1,219 @@
 :host {
   display: block;
-  padding: var(--space-7) var(--space-8);
+  min-width: 0;
+  padding: 24px;
 }
 
 .dashboard {
   display: flex;
+  min-width: 0;
   flex-direction: column;
-  gap: var(--page-gap);
+  gap: 18px;
 }
 
 .page-header-actions {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  min-width: 0;
+  flex: 0 0 auto;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-left: auto;
 }
 
 .refresh-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--color-text-muted);
-  font-size: var(--font-size-xs);
+  font-size: 12px;
+  line-height: 1.4;
   white-space: nowrap;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: var(--radius-full);
+  background-color: #16a34a;
 }
 
 .btn-refresh {
   display: inline-flex;
+  min-width: 102px;
+  height: 34px;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 34px;
-  padding: 0 14px;
-  border-radius: var(--radius-sm);
+  padding: 0 12px;
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  border-radius: 6px;
+  background-color: var(--color-surface);
   color: var(--color-text);
-  font-size: var(--font-size-xs);
+  font-size: 12px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
+  line-height: 1;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .btn-refresh:hover:not(:disabled) {
-  background-color: var(--color-primary-50);
   border-color: var(--color-primary-400);
+  background-color: var(--color-primary-50);
   color: var(--color-primary-600);
 }
 
 .btn-refresh:disabled {
-  opacity: 0.7;
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
-.btn-refresh .spin {
+.btn-refresh__icon {
+  --icon-size: 16px;
+
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.btn-refresh__icon.spin {
   animation: refresh-spin 0.8s linear infinite;
-  transform-origin: center;
-  display: block;
-  flex: none;
 }
 
-.btn-refresh .check {
-  animation: check-pop 0.3s ease;
-  transform-origin: center;
-  display: block;
-  flex: none;
+.btn-refresh__label {
+  white-space: nowrap;
 }
 
 .last-updated {
   color: var(--color-text-muted);
-  font-size: var(--font-size-xs);
+  font-size: 12px;
+  line-height: 1.4;
   white-space: nowrap;
 }
 
 @keyframes refresh-spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes check-pop {
-  0% { transform: scale(0.8); }
-  100% { transform: scale(1); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  gap: var(--page-gap);
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
 }
 
-@media (min-width: 640px) {
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.kpi-grid app-stat-card {
+  display: block;
+  min-width: 0;
+  height: 100%;
 }
 
-@media (min-width: 1024px) {
-  .kpi-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+.kpi-grid ::ng-deep .stat-card {
+  height: 100%;
+  overflow-wrap: anywhere;
+}
+
+.kpi-grid ::ng-deep .stat-card__label {
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .chart-grid {
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  gap: var(--page-gap);
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
 }
 
-@media (min-width: 1100px) {
-  .chart-grid {
-    grid-template-columns: 2fr 1fr;
+.chart-grid > * {
+  min-width: 0;
+}
+
+.chart-grid app-hourly-trend-chart,
+.chart-grid app-failure-mode-chart {
+  display: block;
+  min-width: 0;
+  min-height: 320px;
+}
+
+app-recent-warning {
+  display: block;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-.stat-card-skeleton {
-  opacity: 1;
-  transition: opacity 0.2s ease;
+@media (min-width: 1200px) {
+  .kpi-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .chart-grid {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
 }
 
-.stat-card-skeleton.skeleton {
-  opacity: 0.5;
+@media (max-width: 768px) {
+  :host {
+    padding: 16px;
+  }
+
+  .page-header-actions {
+    width: 100%;
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 639px) {
+  .chart-grid app-hourly-trend-chart,
+  .chart-grid app-failure-mode-chart {
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  :host {
+    padding: 12px;
+  }
+
+  .page-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .refresh-info {
+    order: 1;
+    white-space: normal;
+  }
+
+  .last-updated {
+    order: 2;
+  }
+
+  .btn-refresh {
+    order: 3;
+    width: 100%;
+  }
+
+  .kpi-grid ::ng-deep .stat-card__value {
+    font-size: 24px;
+  }
 }

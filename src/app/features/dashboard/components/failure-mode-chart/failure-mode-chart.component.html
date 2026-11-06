@@ -1,20 +1,58 @@
-<article class="failure-card">
+<article class="failure-card" #card>
   <header class="failure-card__head">
-    <div>
-      <h2 class="failure-card__title">Failure Mode Distribution (Today)</h2>
+    <div class="failure-card__heading">
+      <h2 class="failure-card__title">Failure Mode Distribution</h2>
+      <p class="failure-card__subtitle">Today</p>
     </div>
-    <span class="failure-card__total">NG total {{ total() }}</span>
+    <span class="failure-card__badge">NG total {{ total() }}</span>
   </header>
 
-  <div class="failure-card__chart" #chartContainer style="width:100%;height:280px">
-    <div class="echarts-container" style="width:100%;height:100%"></div>
-    @if (loading()) {
-      <div class="chart-loading-overlay">
-        <div class="skeleton-line"></div>
-        <div class="skeleton-line"></div>
-        <div class="skeleton-line"></div>
-        <div class="skeleton-line"></div>
+  <div class="failure-card__body">
+    <div class="failure-card__content" [class.is-wide]="wide()">
+      <div class="failure-card__chart">
+        <div class="chart-canvas" #chartContainer></div>
+
+        @if (loading()) {
+          <div class="chart-state">
+            <div class="chart-skeleton">
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+            </div>
+          </div>
+        }
+
+        @if (!loading() && !hasData()) {
+          <div class="chart-state chart-state--empty">
+            <svg
+              class="empty-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="8" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span class="empty-text">No failure mode distribution data available.</span>
+          </div>
+        }
       </div>
-    }
+
+      @if (!loading() && hasData()) {
+        <ul class="failure-legend">
+          @for (item of legendItems(); track item.code) {
+            <li class="failure-legend__item">
+              <span class="failure-legend__swatch" [style.background-color]="item.color"></span>
+              <span class="failure-legend__code">{{ item.code }}</span>
+              <span class="failure-legend__count">{{ item.count }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </div>
   </div>
 </article>

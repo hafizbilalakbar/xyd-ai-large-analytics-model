@@ -1,19 +1,41 @@
 <article class="trend-card">
   <header class="trend-card__head">
-    <div>
+    <div class="trend-card__heading">
       <h2 class="trend-card__title">Real-time Lock-in Trends</h2>
       <p class="trend-card__subtitle">Hourly today</p>
     </div>
-    <span class="trend-card__unit">Locked items</span>
+    <span class="trend-card__badge">Locked items</span>
   </header>
 
-  <div class="trend-card__chart" #chartContainer style="width:100%;height:280px">
-    <div class="echarts-container" style="width:100%;height:100%"></div>
+  <div class="trend-card__chart">
+    <div class="chart-canvas" #chartContainer></div>
+
     @if (loading()) {
-      <div class="chart-loading-overlay">
-        <div class="skeleton-line"></div>
-        <div class="skeleton-line"></div>
-        <div class="skeleton-line"></div>
+      <div class="chart-state">
+        <div class="chart-skeleton">
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line"></div>
+        </div>
+      </div>
+    }
+
+    @if (!loading() && !hasData()) {
+      <div class="chart-state chart-state--empty">
+        <svg
+          class="empty-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M3 17l5-5 4 3 6-7" />
+          <path d="M3 21h18" />
+        </svg>
+        <span class="empty-text">No locked data available today.</span>
       </div>
     }
   </div>

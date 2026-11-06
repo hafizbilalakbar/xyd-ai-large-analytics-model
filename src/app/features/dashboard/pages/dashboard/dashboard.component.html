@@ -3,7 +3,10 @@
   description="Real-time overview of locking quality, throughput, and platform health."
 >
   <div class="page-header-actions">
-    <span class="refresh-info">Refreshes automatically every 60 seconds</span>
+    <span class="refresh-info">
+      <span class="status-dot" aria-hidden="true"></span>
+      Refreshes automatically every 60 seconds
+    </span>
     <button
       type="button"
       class="btn-refresh"
@@ -12,8 +15,8 @@
       [attr.aria-busy]="refreshing()"
       aria-label="Refresh data"
     >
-      <app-icon name="refresh" [class.spin]="refreshing()" />
-      <span>{{ refreshing() ? 'Refreshing...' : 'Refresh' }}</span>
+      <app-icon class="btn-refresh__icon" name="refresh" [class.spin]="refreshing()" />
+      <span class="btn-refresh__label">Refresh</span>
     </button>
     <span class="last-updated">Last updated: {{ lastUpdated() }}</span>
   </div>
@@ -25,7 +28,7 @@
       <app-stat-card
         [loading]="loading()"
         [label]="kpi.label"
-        [value]="displayValue(kpi)"
+        [value]="kpi.value"
         [icon]="kpi.icon"
         [tone]="kpi.tone"
         [delta]="kpi.delta"
@@ -36,11 +39,7 @@
   </div>
 
   <div class="chart-grid">
-    <app-hourly-trend-chart
-      class="line-chart-card"
-      [points]="hourlyTrend()"
-      [loading]="loading()"
-    />
+    <app-hourly-trend-chart [points]="hourlyTrend()" [loading]="loading()" />
     <app-failure-mode-chart [modes]="failureModes()" [loading]="loading()" />
   </div>
 
@@ -51,3 +50,5 @@
     (remove)="onAlarmRemove($event)"
   />
 </div>
+
+<app-toast-container />

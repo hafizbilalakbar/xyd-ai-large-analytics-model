@@ -22,7 +22,8 @@ export interface HourlyTrendPoint {
 export type FailureModeTone = 'blue' | 'amber' | 'red' | 'violet' | 'slate';
 
 export interface FailureMode {
-  readonly label: string;
+  readonly code: string;
+  readonly name: string;
   readonly count: number;
   readonly tone: FailureModeTone;
 }
