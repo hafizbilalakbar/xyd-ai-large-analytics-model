@@ -1,0 +1,42 @@
+<div class="failure-mode-actions" role="group" aria-label="Failure mode actions">
+  @if (modeLevel() === 'Custom') {
+    <button
+      type="button"
+      class="btn btn-nav btn-mini"
+      title="Edit failure mode"
+      (click)="emitEdit()">
+      Edit
+    </button>
+    <button
+      type="button"
+      class="btn btn-nav btn-mini"
+      title="Delete failure mode"
+      (click)="emitDelete()">
+      Delete
+    </button>
+  } @else {
+    <span class="builtin-tag">Built-in</span>
+  }
+
+  @if (modeLevel() === 'Built-in') {
+    @if (mode().status === 'Enabled') {
+      <button
+        type="button"
+        class="btn btn-nav btn-mini"
+        title="Disable failure mode"
+        (click)="emitStatusToggle()">
+        Disable
+      </button>
+    } @else {
+      <span class="disabled-status">Disabled</span>
+    }
+  } @else {
+    <button
+      type="button"
+      class="btn btn-nav btn-mini"
+      title="Enable/Disable failure mode"
+      (click)="emitStatusToggle()">
+      {{ mode().status === 'Enabled' ? 'Disable' : 'Enable' }}
+    </button>
+  }
+</div>

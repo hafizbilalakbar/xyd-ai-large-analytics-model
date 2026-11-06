@@ -1,0 +1,81 @@
+<div class="config-page">
+  <app-toast-container />
+
+  <header class="page-header">
+    <div class="page-header__copy">
+      <h1 class="page-header__title">Parameter and Formula Configuration</h1>
+      <p class="page-header__description">
+        Electric screwdriver parameters, formula thresholds, and process references.
+      </p>
+    </div>
+  </header>
+
+  <div class="page-tabs-wrap">
+    <app-config-tabs [activeTab]="activeTab()" (tabChange)="onTabChange($event)" />
+  </div>
+
+  <main class="page-content">
+    @switch (activeTab()) {
+      @case ('execution') {
+        <app-execution-config-panel />
+      }
+      @case ('failure-modes') {
+        <app-failure-mode-panel />
+      }
+      @case ('system') {
+        <app-system-settings-panel />
+      }
+    }
+  </main>
+
+  <app-execution-config-dialog />
+  <app-failure-mode-dialog />
+
+  <!-- Confirm: Delete Execution Configuration -->
+  <app-confirm-dialog
+    [open]="deleteConfigConfirm().open"
+    title="Delete Configuration"
+    [message]="'Delete configuration ' + (deleteConfigConfirm().config?.batchNumber || '') + '? This cannot be undone.'"
+    confirmLabel="Delete"
+    cancelLabel="Cancel"
+    [danger]="true"
+    (confirm)="onConfirmDeleteConfig()"
+    (cancel)="onCancelDeleteConfig()" />
+
+  <!-- Confirm: Discard Execution Configuration Changes -->
+  <app-confirm-dialog
+    [open]="discardConfigConfirm()"
+    title="Discard Changes"
+    message="Discard changes?"
+    confirmLabel="Discard"
+    cancelLabel="Cancel"
+    [danger]="true"
+    (confirm)="onConfirmDiscardConfig()"
+    (cancel)="onCancelDiscardConfig()" />
+
+  <!-- Confirm: Failure Mode Action (Disable or Delete) -->
+  <app-confirm-dialog
+    [open]="failureModeConfirm().open"
+    [title]="failureModeConfirm().type === 'delete' ? 'Delete Failure Mode' : 'Disable Failure Mode'"
+    [message]="
+      failureModeConfirm().type === 'delete'
+        ? 'Delete ' + (failureModeConfirm().failureMode?.code || '') + '? This cannot be undone.'
+        : 'Disable ' + (failureModeConfirm().failureMode?.code || '') + '? It will no longer be selectable in new reviews and exports.'
+    "
+    [confirmLabel]="failureModeConfirm().type === 'delete' ? 'Delete' : 'Disable'"
+    cancelLabel="Cancel"
+    [danger]="true"
+    (confirm)="onConfirmFailureMode()"
+    (cancel)="onCancelFailureMode()" />
+
+  <!-- Confirm: Tab Switch with Unsaved System Settings -->
+  <app-confirm-dialog
+    [open]="unsavedSettingsTabConfirm().open"
+    title="Unsaved Changes"
+    message="You have unsaved changes in System Settings. Are you sure you want to discard them and switch tabs?"
+    confirmLabel="Discard"
+    cancelLabel="Cancel"
+    [danger]="true"
+    (confirm)="onConfirmTabSwitch()"
+    (cancel)="onCancelTabSwitch()" />
+</div>

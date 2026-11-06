@@ -10,7 +10,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, HostListener, effect, i
 export class ModalComponent {
   readonly title = input('');
   readonly open = input.required<boolean>();
-  readonly size = input<'md' | 'lg'>('md');
+  readonly size = input<'md' | 'lg' | 'xl'>('md');
 
   readonly close = output<void>();
 

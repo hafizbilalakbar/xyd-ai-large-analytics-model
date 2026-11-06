@@ -1,13 +1,20 @@
-import { Injectable, signal, computed, Signal } from '@angular/core';
+import { Injectable, signal, computed, Signal, inject } from '@angular/core';
 import { SampleFilter, SampleResult, SampleFilterOptions, SAMPLE_FILTER_DEFAULTS } from './sample-models';
 import { MOCK_FILTER_OPTIONS, MOCK_RESULTS, USE_SAMPLE_MOCK } from './sample.mock';
+import { ParametersAndFormulasService } from '../../parameters-and-formulas/data-access/parameters-and-formulas.service';
+import { DEFAULT_SYSTEM_SETTINGS } from '../../parameters-and-formulas/data-access/parameters-and-formulas.models';
 
-export const LOW_CONFIDENCE_THRESHOLD = 80;
+export const LOW_CONFIDENCE_THRESHOLD = DEFAULT_SYSTEM_SETTINGS.results_confidence_threshold * 100;
 
 @Injectable({ providedIn: 'root' })
 export class SampleService {
+  private readonly paramService = inject(ParametersAndFormulasService);
+
   readonly filters = signal<SampleFilter>({ ...SAMPLE_FILTER_DEFAULTS });
-  readonly filterOptions = signal<SampleFilterOptions>(MOCK_FILTER_OPTIONS);
+  readonly filterOptions = computed<SampleFilterOptions>(() => ({
+    ...MOCK_FILTER_OPTIONS,
+    failureModes: this.paramService.activeFailureModeOptions(),
+  }));
 
   private readonly _allFilteredResults = signal<SampleResult[]>([]);
   readonly allFilteredResults: Signal<SampleResult[]> = this._allFilteredResults;
@@ -143,7 +150,8 @@ export class SampleService {
     }
 
     if (f.confidenceMode === 'low') {
-      filtered = filtered.filter(r => (r.confidence ?? 100) < LOW_CONFIDENCE_THRESHOLD);
+      const thresh = this.paramService.lowConfidenceThreshold() * 100;
+      filtered = filtered.filter(r => (r.confidence ?? 100) < thresh);
     } else if (f.confidenceMode === 'range') {
       filtered = filtered.filter(r => {
         const c = r.confidence ?? 0;

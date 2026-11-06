@@ -1,14 +1,21 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { ReviewFilter, ReviewRow, ReviewFilterOptions, ReviewSort, ReviewModalState, REVIEW_FILTER_DEFAULTS, REVIEW_SORT_DEFAULT } from './low-confidence-review.models';
 import { MOCK_REVIEW_FILTER_OPTIONS, MOCK_REVIEW_ROWS, USE_REVIEW_MOCK } from './low-confidence-review.mock';
+import { ParametersAndFormulasService } from '../../parameters-and-formulas/data-access/parameters-and-formulas.service';
 import { LOW_CONFIDENCE_THRESHOLD } from '../../sample-search/data-access/sample.service';
 
 export { LOW_CONFIDENCE_THRESHOLD };
 
 @Injectable({ providedIn: 'root' })
 export class LowConfidenceReviewService {
+  private readonly paramService = inject(ParametersAndFormulasService);
+
   readonly filters = signal<ReviewFilter>({ ...REVIEW_FILTER_DEFAULTS });
-  readonly filterOptions = signal<ReviewFilterOptions>(MOCK_REVIEW_FILTER_OPTIONS);
+  readonly filterOptions = computed<ReviewFilterOptions>(() => ({
+    ...MOCK_REVIEW_FILTER_OPTIONS,
+    failureModes: this.paramService.activeFailureModeOptions(),
+  }));
+  readonly threshold = computed(() => Math.round(this.paramService.lowConfidenceThreshold() * 100));
   readonly sort = signal<ReviewSort>({ ...REVIEW_SORT_DEFAULT });
   readonly selectedIds = signal<Set<string>>(new Set());
   readonly modalState = signal<ReviewModalState>({ type: null, record: null });

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { LowConfidenceReviewService, LOW_CONFIDENCE_THRESHOLD } from '../../data-access/low-confidence-review.service';
+import { LowConfidenceReviewService } from '../../data-access/low-confidence-review.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { ReviewSummaryCardsComponent } from '../../components/review-summary-cards/review-summary-cards.component';
 import { ReviewFilterPanelComponent } from '../../components/review-filter-panel/review-filter-panel.component';
@@ -43,7 +43,7 @@ export class LowConfidenceReviewPageComponent {
   readonly notReviewedCount = this.service.notReviewedCount;
   readonly completionRate = this.service.completionRate;
   readonly modalState = this.service.modalState;
-  readonly threshold = LOW_CONFIDENCE_THRESHOLD;
+  readonly threshold = this.service.threshold;
 
   onQuery() {
     this.service.query();

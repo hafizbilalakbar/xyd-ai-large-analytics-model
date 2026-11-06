@@ -10,6 +10,7 @@ import type { IconName } from './icon-paths';
 })
 export class IconComponent {
   readonly name = input.required<IconName>();
+  readonly size = input<number>(20);
 
   protected readonly paths = computed(() => ICON_PATHS[this.name()]);
 }
