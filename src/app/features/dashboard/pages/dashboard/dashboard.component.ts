@@ -11,7 +11,6 @@ import { StatCardComponent } from '../../../../shared/components/stat-card/stat-
 import { FailureModeChartComponent } from '../../components/failure-mode-chart/failure-mode-chart.component';
 import { HourlyTrendChartComponent } from '../../components/hourly-trend-chart/hourly-trend-chart.component';
 import { RecentWarningComponent } from '../../components/recent-warning/recent-warning.component';
-import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import { ToastContainerComponent } from '../../../../shared/components/toast-container/toast-container.component';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { DashboardStore } from '../../data-access/dashboard.store';
@@ -34,7 +33,6 @@ function formatTime(date: Date): string {
     HourlyTrendChartComponent,
     FailureModeChartComponent,
     RecentWarningComponent,
-    IconComponent,
     ToastContainerComponent,
   ],
   templateUrl: './dashboard.component.html',
@@ -129,7 +127,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.store.error.set(null);
 
     try {
-      await Promise.all([this.reloadData(), new Promise((resolve) => setTimeout(resolve, 500))]);
+      await Promise.all([this.reloadData(), new Promise((resolve) => setTimeout(resolve, 600))]);
       this.lastUpdated.set(formatTime(new Date()));
     } catch {
       this.store.error.set('Refresh failed. Keeping previous data.');

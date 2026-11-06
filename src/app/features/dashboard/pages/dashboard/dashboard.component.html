@@ -15,7 +15,21 @@
       [attr.aria-busy]="refreshing()"
       aria-label="Refresh data"
     >
-      <app-icon class="btn-refresh__icon" name="refresh" [class.spin]="refreshing()" />
+      <svg
+        class="btn-refresh__icon"
+        [class.spin]="refreshing()"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        width="14"
+        height="14"
+        aria-hidden="true"
+      >
+        <path d="M1 12a11 11 0 0 0 8.595 10.69l-.447 2.237A13 13 0 0 1 1 12zM22.405 12a11 11 0 0 0-8.595-10.69l.447-2.237A13 13 0 0 1 23 12z" />
+      </svg>
       <span class="btn-refresh__label">Refresh</span>
     </button>
     <span class="last-updated">Last updated: {{ lastUpdated() }}</span>
