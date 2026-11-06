@@ -168,6 +168,19 @@ app-recent-warning {
   }
 }
 
+@media (min-width: 769px) and (max-width: 1199px) {
+  :host ::ng-deep .page-header {
+    flex-wrap: wrap;
+  }
+
+  .page-header-actions {
+    width: 100%;
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+}
+
 @media (max-width: 768px) {
   :host {
     padding: 16px;
