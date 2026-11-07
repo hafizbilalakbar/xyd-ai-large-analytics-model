@@ -45,7 +45,7 @@ export class SampleService {
 
   readonly totalCount = computed(() => this.searchedResults().length);
   readonly currentPage = signal(1);
-  readonly pageSize = signal(5);
+  readonly pageSize = signal(20);
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
 
