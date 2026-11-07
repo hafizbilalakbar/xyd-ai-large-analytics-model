@@ -54,17 +54,8 @@
 }
 
 @media (min-width: 640px) and (max-width: 1023px) {
-  .app-shell__body {
-    display: grid;
-    grid-template-columns: 60px minmax(0, 1fr);
-  }
-
-  app-sidebar {
-    grid-column: 1 / 2;
-  }
-
   .app-shell__content {
-    grid-column: 2 / 3;
+    margin-left: 64px;
     padding: 24px 20px;
   }
 }

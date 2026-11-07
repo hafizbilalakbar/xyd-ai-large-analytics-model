@@ -396,13 +396,9 @@
     position: fixed;
     top: var(--header-height);
     left: 0;
+    bottom: 0;
     z-index: 45;
     height: calc(100dvh - var(--header-height));
-  }
-
-  .sidebar--collapsed {
-    position: static;
-    width: 60px;
   }
 
   .sidebar--drawer-open .sidebar__head {
@@ -505,8 +501,7 @@
 
 @media (min-width: 640px) and (max-width: 1023px) {
   .sidebar--tablet.sidebar--collapsed {
-    position: static;
-    width: 60px;
+    width: 64px;
     overflow: hidden;
   }
 

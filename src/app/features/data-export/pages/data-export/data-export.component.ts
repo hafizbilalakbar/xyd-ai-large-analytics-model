@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, HostListener, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  HostListener,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { zipSync, strToU8 } from 'fflate';
 import { SampleService } from '../../../sample-search/data-access/sample.service';
@@ -13,7 +20,23 @@ import { PageHeaderComponent } from '../../../../shared/components/page-header/p
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import { ToastContainerComponent } from '../../../../shared/components/toast-container/toast-container.component';
 
-const EXPORT_COLUMNS = ['Serial Number', 'Sample number', 'Locking time', 'Electric screwdriver model', 'Screw specifications', 'result', 'Failure Mode', 'Confidence', 'Model version'];
+const EXPORT_COLUMNS = [
+  'Serial Number',
+  'Sample number',
+  'Locking time',
+  'Electric screwdriver model',
+  'Screw specifications',
+  'result',
+  'Failure Mode',
+  'Confidence',
+  'Model version',
+];
+
+type PaginationItem = {
+  key: string;
+  value: number | null;
+  ellipsis: boolean;
+};
 
 function pad(n: number): string {
   return n.toString().padStart(2, '0');
@@ -35,7 +58,14 @@ function csvEscape(value: unknown): string {
 @Component({
   selector: 'app-data-export',
   standalone: true,
-  imports: [FormsModule, MultiSelectDropdownComponent, ConfirmDialogComponent, PageHeaderComponent, IconComponent, ToastContainerComponent],
+  imports: [
+    FormsModule,
+    MultiSelectDropdownComponent,
+    ConfirmDialogComponent,
+    PageHeaderComponent,
+    IconComponent,
+    ToastContainerComponent,
+  ],
   templateUrl: './data-export.component.html',
   styleUrl: './data-export.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -69,8 +99,14 @@ export class DataExportComponent {
   readonly cancelFlag = signal(false);
   readonly exportStarted = signal(false);
   readonly showExportResult = signal(false);
-  readonly exportResult = signal<{ count: number; format: string; fileName: string; size: number } | null>(null);
+  readonly exportResult = signal<{
+    count: number;
+    format: string;
+    fileName: string;
+    size: number;
+  } | null>(null);
   readonly filtersChanged = signal(false);
+  readonly viewportWidth = signal(typeof window === 'undefined' ? 1280 : window.innerWidth);
 
   readonly pageSizes = [20, 50, 100];
 
@@ -83,14 +119,40 @@ export class DataExportComponent {
   });
 
   readonly canQuery = computed(() => !this.isLoading() && !this.dateError());
-  readonly exportDisabled = computed(() => this.isLoading() || this.exporting() || (this.filtersChanged() && this.totalCount() > 0));
+  readonly exportDisabled = computed(
+    () => this.isLoading() || this.exporting() || (this.filtersChanged() && this.totalCount() > 0),
+  );
   readonly estimatedCount = computed(() => this.totalCount());
   readonly operator = computed(() => this.authService.user()?.name ?? 'Administrator');
 
   readonly archiveMessage = `Currently in archive export mode: Clicking this button will prompt for a second confirmation. Successfully exported samples will be permanently deleted from your local machine. Turning off the "Archive Export" switch will revert the button to the normal "Export" mode, without deleting the original samples.`;
 
   readonly labelingOptions = computed(() => this.service.filterOptions().labelingCorrectionOptions);
-  readonly pages = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+  readonly paginationItems = computed<PaginationItem[]>(() => {
+    const total = this.totalPages();
+    if (total <= 1) {
+      return [];
+    }
+    const current = Math.min(Math.max(this.currentPage(), 1), total);
+    const neighbours = this.viewportWidth() <= 480 ? 1 : 2;
+    const visible = new Set<number>([1, total]);
+    const start = Math.max(1, current - neighbours);
+    const end = Math.min(total, current + neighbours);
+    for (let page = start; page <= end; page++) {
+      visible.add(page);
+    }
+    const sorted = Array.from(visible).sort((a, b) => a - b);
+    const items: PaginationItem[] = [];
+    let previous = 0;
+    for (const page of sorted) {
+      if (previous > 0 && page - previous > 1) {
+        items.push({ key: `ellipsis-${previous}-${page}`, value: null, ellipsis: true });
+      }
+      items.push({ key: `page-${page}`, value: page, ellipsis: false });
+      previous = page;
+    }
+    return items;
+  });
 
   readonly archiveConfirmMessage = computed(() => {
     const count = this.totalCount();
@@ -105,6 +167,11 @@ export class DataExportComponent {
     return `Exported ${r.count} record(s) as ${r.format.toUpperCase()}. File: ${r.fileName} (${r.size} bytes).`;
   });
 
+  @HostListener('window:resize')
+  onResize(): void {
+    this.viewportWidth.set(window.innerWidth);
+  }
+
   @HostListener('window:beforeunload', ['$event'])
   onBeforeUnload(event: BeforeUnloadEvent): void {
     if (this.exporting()) {
@@ -112,7 +179,10 @@ export class DataExportComponent {
     }
   }
 
-  setFilter<K extends keyof ReturnType<typeof this.filters>>(key: K, value: ReturnType<typeof this.filters>[K]): void {
+  setFilter<K extends keyof ReturnType<typeof this.filters>>(
+    key: K,
+    value: ReturnType<typeof this.filters>[K],
+  ): void {
     this.filtersChanged.set(true);
     this.service.setFilter(key, value);
   }
@@ -137,6 +207,7 @@ export class DataExportComponent {
     this.filtersChanged.set(false);
     this.exportFormat.set('both');
     this.service.resetFilters();
+    this.service.setPageSize(20);
   }
 
   onExport(): void {
@@ -281,7 +352,12 @@ export class DataExportComponent {
     ].join(',');
   }
 
-  private deleteSamples(records: SampleResult[], format: 'both' | 'csv' | 'json', fileName: string, size: number): void {
+  private deleteSamples(
+    records: SampleResult[],
+    format: 'both' | 'csv' | 'json',
+    fileName: string,
+    size: number,
+  ): void {
     const ids = new Set(records.map((r) => r.sampleId));
     const remaining = MOCK_RESULTS.filter((r: SampleResult) => !ids.has(r.sampleId));
     MOCK_RESULTS.splice(0, MOCK_RESULTS.length, ...remaining);
@@ -289,7 +365,13 @@ export class DataExportComponent {
     this.finishExport(records.length, format, fileName, size, true);
   }
 
-  private finishExport(recordCount: number, format: 'both' | 'csv' | 'json', fileName: string, size: number, deleted: boolean): void {
+  private finishExport(
+    recordCount: number,
+    format: 'both' | 'csv' | 'json',
+    fileName: string,
+    size: number,
+    deleted: boolean,
+  ): void {
     this.exporting.set(false);
     this.progress.set(0);
     this.exportStarted.set(false);
@@ -302,10 +384,12 @@ export class DataExportComponent {
   private scopeText(): string {
     const f = this.filters();
     const parts: string[] = [];
-    if (f.electricBatchNumber && f.electricBatchNumber !== 'all') parts.push(`batch=${f.electricBatchNumber}`);
+    if (f.electricBatchNumber && f.electricBatchNumber !== 'all')
+      parts.push(`batch=${f.electricBatchNumber}`);
     if (f.resultStatus && f.resultStatus !== 'all') parts.push(`status=${f.resultStatus}`);
     if (f.failureModes.length) parts.push(`failureModes=${f.failureModes.join(',')}`);
-    if (f.labelingCorrection && f.labelingCorrection !== 'all') parts.push(`labeling=${f.labelingCorrection}`);
+    if (f.labelingCorrection && f.labelingCorrection !== 'all')
+      parts.push(`labeling=${f.labelingCorrection}`);
     if (f.startDate) parts.push(`start=${f.startDate}`);
     if (f.endDate) parts.push(`end=${f.endDate}`);
     return parts.length ? parts.join('; ') : 'all';
