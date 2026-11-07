@@ -91,11 +91,15 @@
         [attr.aria-checked]="archiveMode()"
         (click)="toggleArchive()"
         (keydown)="onToggleKeydown($event)"
-        aria-label="Archive Export">
+        aria-labelledby="archiveToggleLabel"
+      >
         <span class="toggle-knob" aria-hidden="true"></span>
       </button>
       <div class="archive-text">
-        <div class="archive-line1"><span class="archive-bold">After successful export</span>, the original sample is deleted from the local machine (unrecoverable).</div>
+        <div id="archiveToggleLabel" class="archive-line1">
+          <span class="archive-bold">After successful export</span>, the
+          original sample is deleted from the local machine (unrecoverable).
+        </div>
         <div class="archive-line2" [class.on]="archiveMode()">{{ archiveMode() ? 'On: Exported samples will be permanently deleted from local storage and cannot be recovered.' : 'Off: Normal export, keep original samples.' }}</div>
       </div>
     </div>
