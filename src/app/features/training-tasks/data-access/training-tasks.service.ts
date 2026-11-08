@@ -63,7 +63,7 @@ export class TrainingTasksService {
     if (this.isStarting()) {
       return 'Starting…';
     }
-    return '+ New training';
+    return '+ Create a new training';
   });
 
   async load(): Promise<void> {
