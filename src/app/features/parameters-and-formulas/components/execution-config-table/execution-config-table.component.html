@@ -39,7 +39,7 @@
       <p class="empty-text">No configurations yet.</p>
     </div>
   } @else {
-    <div class="table-scroll-wrapper desktop-table-wrapper">
+    <div class="table-scroll-wrapper">
       <table class="data-table" aria-label="System Execution Parameters">
         <thead>
           <tr>
@@ -103,28 +103,6 @@
             aria-label="Next page">
             Next
           </button>
-        </div>
-      }
-    </div>
-
-    <div class="mobile-cards-list">
-      @for (c of configs(); track c.batchNumber) {
-        <div class="exec-card-item">
-          <div class="exec-card-item__header">
-            <span class="exec-card-item__batch">{{ c.batchNumber }}</span>
-            <span class="exec-card-item__model">{{ c.screwdriverModel || c.process_baseline.device_model }}</span>
-          </div>
-          <p class="exec-card-item__summary">{{ c.summary }}</p>
-          <div class="exec-card-item__footer">
-            <span class="exec-card-item__updated">{{ c.updatedAt }}</span>
-            <div class="exec-card-item__actions">
-              <button type="button" class="action-link" (click)="onCopy(c)">Copy</button>
-              <span class="action-divider" aria-hidden="true">｜</span>
-              <button type="button" class="action-link" (click)="onEdit(c)">Edit</button>
-              <span class="action-divider" aria-hidden="true">｜</span>
-              <button type="button" class="action-link action-link--danger" (click)="onDelete(c)">Delete</button>
-            </div>
-          </div>
         </div>
       }
     </div>

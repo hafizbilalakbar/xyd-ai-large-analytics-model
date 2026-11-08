@@ -24,8 +24,8 @@
     <p class="empty-text">No failure modes found.</p>
   </div>
   } @else {
-  <!-- Desktop Table (>= 640px) -->
-  <div class="desktop-table-wrapper">
+  <!-- Desktop Table -->
+  <div class="table-scroll-wrapper desktop-table-wrapper">
     <table class="modes-table" aria-label="Failure Mode Types">
       <thead>
         <tr>
@@ -73,48 +73,6 @@
         }
       </tbody>
     </table>
-  </div>
-
-  <!-- Mobile Stacked Cards (< 640px) -->
-  <div class="mobile-cards-list">
-    @for (m of modes(); track m.code) {
-    <div class="mode-card-item" [class.mode-card-item--disabled]="m.status === 'Disabled' || !m.enabled">
-      <div class="mode-card-item__header">
-        <span class="mode-card-code">{{ m.code }}</span>
-        <span class="mode-card-name">{{ m.name }}</span>
-      </div>
-
-      <p class="mode-card-item__desc">{{ m.description }}</p>
-
-      <div class="mode-card-item__footer">
-        <div class="mode-card-tags">
-          <span class="badge-tag" [class.badge-tag--builtin]="m.type === 'Built-in' || m.is_builtin"
-            [class.badge-tag--custom]="m.type === 'Custom' && !m.is_builtin">
-            {{ m.type }}
-          </span>
-          <span class="badge-tag" [class.badge-tag--enabled]="m.status === 'Enabled' || m.enabled"
-            [class.badge-tag--disabled]="m.status === 'Disabled' || !m.enabled">
-            {{ m.status }}
-          </span>
-        </div>
-
-        <div class="mode-card-actions">
-          <button type="button" class="action-link" (click)="onEdit(m)">Edit</button>
-          <span class="action-divider" aria-hidden="true">｜</span>
-          <button type="button" class="action-link" [class.action-link--danger]="m.status === 'Enabled' || m.enabled"
-            (click)="onToggleStatus(m)">
-            {{ m.status === 'Enabled' || m.enabled ? 'Disable' : 'Enable' }}
-          </button>
-          @if (m.type === 'Custom' && !m.is_builtin) {
-          <span class="action-divider" aria-hidden="true">｜</span>
-          <button type="button" class="action-link action-link--danger" (click)="onDelete(m)">
-            Delete
-          </button>
-          }
-        </div>
-      </div>
-    </div>
-    }
   </div>
   }
 </div>
