@@ -8,11 +8,18 @@ import { ChangeDetectionStrategy, Component, ElementRef, HostListener, effect, i
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ModalComponent {
+  private static titleSequence = 0;
+
   readonly title = input('');
   readonly open = input.required<boolean>();
   readonly size = input<'md' | 'lg' | 'xl'>('md');
+  readonly maxWidth = input<number | null>(null);
+  readonly mobileFullscreen = input(false);
+  readonly footerVisible = input(true);
+  readonly compactFooter = input(false);
 
   readonly close = output<void>();
+  readonly titleId = `modal-title-${ModalComponent.titleSequence++}`;
 
   private readonly dialogRef = viewChild.required<ElementRef<HTMLDivElement>>('dialog');
   private lastFocusedElement: Element | null = null;

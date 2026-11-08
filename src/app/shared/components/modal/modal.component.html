@@ -1,18 +1,22 @@
 @if (open()) {
   <div
     class="modal-overlay"
+    [class.modal-overlay--fullscreen]="mobileFullscreen()"
     (click)="onBackdropClick()"
     role="dialog"
     aria-modal="true"
-    [attr.aria-labelledby]="'modal-title-' + title()">
+    [attr.aria-labelledby]="titleId">
     <div
       #dialog
       class="modal"
       [class.modal--md]="size() === 'md'"
       [class.modal--lg]="size() === 'lg'"
+      [class.modal--xl]="size() === 'xl'"
+      [class.modal--mobile-fullscreen]="mobileFullscreen()"
+      [style.--modal-max-width]="maxWidth() !== null ? maxWidth() + 'px' : null"
       (click)="$event.stopPropagation()">
       <div class="modal__header">
-        <h2 [id]="'modal-title-' + title()" class="modal__title">{{ title() }}</h2>
+        <h2 [id]="titleId" class="modal__title">{{ title() }}</h2>
         <button
           type="button"
           class="modal__close"
@@ -26,9 +30,11 @@
       <div class="modal__body">
         <ng-content select="[modalBody]"></ng-content>
       </div>
-      <div class="modal__footer">
-        <ng-content select="[modalFooter]"></ng-content>
-      </div>
+      @if (footerVisible()) {
+        <div class="modal__footer" [class.modal__footer--compact]="compactFooter()">
+          <ng-content select="[modalFooter]"></ng-content>
+        </div>
+      }
     </div>
   </div>
 }

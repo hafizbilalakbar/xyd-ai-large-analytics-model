@@ -56,6 +56,7 @@ export class LowConfidenceReviewService {
 
   readonly pendingCount = computed(() => this._allFilteredRows().filter(r => !r.corrected).length);
   readonly reviewedCount = computed(() => this._allFilteredRows().filter(r => r.corrected).length);
+  readonly correctedTotal = computed(() => this._sourceRows().filter(r => r.corrected).length);
 
   readonly completionRate = computed(() => {
     const total = this.totalCount();

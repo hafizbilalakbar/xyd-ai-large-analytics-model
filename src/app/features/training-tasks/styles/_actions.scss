@@ -1,0 +1,141 @@
+@mixin action-base {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+
+  &::after {
+    position: absolute;
+    inset: -4px;
+    border-radius: inherit;
+    content: '';
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  @media (max-width: 1023px) {
+    height: 30px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+@mixin action-primary {
+  background-color: var(--color-primary-600);
+  border-color: var(--color-primary-600);
+  color: var(--color-text-inverse);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-primary-500);
+    border-color: var(--color-primary-500);
+  }
+}
+
+@mixin action-secondary {
+  background-color: var(--color-surface);
+  border-color: #d9dee7;
+  color: var(--color-text);
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-primary-400);
+    color: var(--color-primary-600);
+  }
+}
+
+@mixin action-danger {
+  background-color: var(--color-surface);
+  border-color: #fecaca;
+  color: var(--color-danger);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-danger-soft);
+    border-color: var(--color-danger);
+  }
+}
+
+@mixin action-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 2px;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary-600);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &::after {
+    position: absolute;
+    inset: -4px;
+    content: '';
+  }
+
+  &:hover:not(:disabled) {
+    color: var(--color-primary-700);
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 1023px) {
+    height: 30px;
+  }
+}
+
+@mixin action-link-danger {
+  color: var(--color-danger);
+
+  &:hover:not(:disabled) {
+    color: var(--color-danger-dark, var(--color-danger));
+  }
+}
+
+@mixin spinner {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: tt-spin 700ms linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes tt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,44 @@
+<app-modal
+  [open]="open()"
+  title="Confirm training launch"
+  size="md"
+  [maxWidth]="560"
+  [mobileFullscreen]="true"
+  [compactFooter]="true"
+  (close)="cancel.emit()">
+  <div modalBody class="confirm">
+    @if (preview(); as data) {
+      <p class="confirm__lead">A full retraining will be launched with the current training data:</p>
+      <dl class="kv">
+        <dt class="kv__key">Total training samples</dt>
+        <dd class="kv__value">
+          {{ data.sample_count }} samples (base {{ data.base_sample_count }}, local {{ data.local_total }})
+        </dd>
+        <dt class="kv__key">New since last training</dt>
+        <dd class="kv__value confirm__positive">+{{ data.new_corrections }} items</dd>
+        <dt class="kv__key">Estimated training duration</dt>
+        <dd class="kv__value">{{ data.eta_text ?? 'No estimate available' }}</dd>
+      </dl>
+      <p class="confirm__hint">
+        A candidate version will be generated after training and the current model will not be
+        switched automatically.
+      </p>
+    } @else {
+      <p class="confirm__lead">Training data is unavailable.</p>
+    }
+  </div>
+
+  <div modalFooter>
+    <button type="button" class="btn btn--secondary" (click)="cancel.emit()">Cancel</button>
+    <button
+      type="button"
+      class="btn btn--primary"
+      [disabled]="loading() || preview() === null"
+      (click)="confirm.emit()">
+      @if (loading()) {
+        <span class="spinner" aria-hidden="true"></span>
+      }
+      {{ loading() ? 'Starting…' : 'Confirm launch' }}
+    </button>
+  </div>
+</app-modal>
