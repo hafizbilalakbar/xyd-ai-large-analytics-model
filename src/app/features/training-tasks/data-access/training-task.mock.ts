@@ -1,6 +1,6 @@
 import { TrainingPreview, TrainingMetrics, estimateTrainingEta } from './training-task.models';
 
-export const USE_TRAINING_TASK_MOCK = true;
+export const USE_TRAINING_TASK_MOCK = false;
 
 export const TRAINING_POLL_INTERVAL_MS = 500;
 

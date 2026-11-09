@@ -55,6 +55,7 @@ function toApiVersion(record: ModelVersionStoreVersion, includeMetrics: boolean)
     is_active: record.active,
     parent_version_id: null,
     training_scope: null,
+    source_task_id: record.sourceTaskId ?? null,
   };
   if (!includeMetrics) {
     return base;
@@ -123,10 +124,12 @@ export class VersionManagementApiService {
         readonly sample_count: number | null;
         readonly accuracy_macro: number | null;
         readonly is_active: boolean;
+        readonly source_task_id?: string | null;
       }[];
+      readonly default_compare?: readonly string[];
     };
     const versions = data.items.map((item) => ({
-      id: item.version_id,
+      id: item.version,
       type: item.type as 'basic' | 'local',
       trainingDate: item.trained_at,
       sampleSize: item.sample_count,
@@ -134,12 +137,12 @@ export class VersionManagementApiService {
       perClassAccuracy: [],
       status: item.is_active ? 'Active' : 'Inactive',
       active: item.is_active,
-      sourceTaskId: null,
+      sourceTaskId: item.source_task_id ?? null,
     }));
     this.store.setVersions(versions);
     return {
       items: versions.map((record) => toApiVersion(record, false)),
-      default_compare: versions.slice(0, 2).map((record) => record.id),
+      default_compare: data.default_compare?.length ? [...data.default_compare] : versions.slice(0, 2).map((record) => record.id),
     };
   }
 

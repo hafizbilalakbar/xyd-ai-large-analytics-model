@@ -53,13 +53,13 @@ function toRecord(item: ApiModelVersion): ModelVersionStoreVersion {
         }))
       : [],
     status: item.is_active ? 'Active' : 'Inactive',
-    sourceTaskId: null,
+    sourceTaskId: item.source_task_id ?? null,
   };
 }
 
 function toDetails(item: ApiModelVersion): VersionDetails {
   return {
-    versionId: String(item.version_id),
+    versionId: item.version ?? String(item.version_id ?? ''),
     version: item.version,
     type: item.type as 'basic' | 'local',
     trainedAt: formatDisplayDate(item.trained_at),
@@ -68,7 +68,7 @@ function toDetails(item: ApiModelVersion): VersionDetails {
     active: item.is_active,
     evalMode: item.metrics?.eval_mode ?? null,
     trainingScope: item.training_scope ?? null,
-    sourceTaskId: null,
+    sourceTaskId: item.source_task_id ?? null,
   };
 }
 
@@ -237,7 +237,7 @@ export class VersionManagementService {
       return false;
     }
 
-    const result = this.store.deleteVersion(versionId);
+    const result = this.store.deleteVersionWithTask(versionId);
     if (!result.ok) {
       this.toast.show(result.reason ?? 'Unable to delete version.', 'error');
       return false;
@@ -245,7 +245,8 @@ export class VersionManagementService {
 
     this.toast.dismissAll();
     await this.refreshComparison();
-    this.toast.show(`Deleted version ${target.id}.`, 'success');
+    const extra = result.deletedTaskId ? ` (and linked task ${result.deletedTaskId})` : '';
+    this.toast.show(`Deleted version ${target.id}${extra}.`, 'success');
     this.operationLog.add({
       operator: this.auth.user()?.name ?? 'Administrator',
       format: 'Delete model version',

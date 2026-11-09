@@ -1,0 +1,353 @@
+{
+  "nextVersionId": 5,
+  "versions": [
+    {
+      "version_id": 2,
+      "version": "V3.0",
+      "type": "basic",
+      "trained_at": "2026/11/2",
+      "sample_count": 3254,
+      "accuracy_macro": 0.9563,
+      "is_active": true,
+      "metrics": {
+        "accuracy_macro": 0.9563,
+        "accuracy_weighted": 0.9929,
+        "per_class": {
+          "PASS": 0.9963,
+          "F01": 1,
+          "F02": 0.9615,
+          "F03": 1,
+          "F04": 0.8696,
+          "F05": 0.9406,
+          "F06": 0.8824,
+          "F07": null,
+          "F08": 1,
+          "F09": null,
+          "F10": null,
+          "F11": null,
+          "F12": null,
+          "F13": null
+        },
+        "by_combo": {
+          "C1": null,
+          "C2": null,
+          "C3": null,
+          "C4": null
+        },
+        "sample_count": 3254,
+        "dropped_count": 0,
+        "eval_mode": "cv5",
+        "is_placeholder": false,
+        "local_count": 0
+      },
+      "parent_version_id": null,
+      "training_scope": null,
+      "source_task_id": null
+    },
+    {
+      "version_id": 1,
+      "version": "V2.0",
+      "type": "basic",
+      "trained_at": "2026/11/2",
+      "sample_count": 1499,
+      "accuracy_macro": 0.9581,
+      "is_active": false,
+      "metrics": {
+        "accuracy_macro": 0.9581,
+        "accuracy_weighted": 0.9893,
+        "per_class": {
+          "PASS": 0.9975,
+          "F01": 1,
+          "F02": 1,
+          "F03": 0.9857,
+          "F04": 0.8696,
+          "F05": 0.9293,
+          "F06": 0.8824,
+          "F07": null,
+          "F08": 1,
+          "F09": null,
+          "F10": null,
+          "F11": null,
+          "F12": null,
+          "F13": null
+        },
+        "by_combo": {
+          "C1": null,
+          "C2": null,
+          "C3": null,
+          "C4": null
+        },
+        "sample_count": 1499,
+        "dropped_count": 0,
+        "eval_mode": "cv5",
+        "is_placeholder": false,
+        "local_count": 0
+      },
+      "parent_version_id": null,
+      "training_scope": null,
+      "source_task_id": null
+    },
+    {
+      "version_id": 3,
+      "version": "V3.1",
+      "type": "local",
+      "trained_at": "2026-11-09T18:38:26.577Z",
+      "sample_count": 3254,
+      "accuracy_macro": 0.924,
+      "is_active": false,
+      "metrics": {
+        "accuracy_macro": 0.924,
+        "accuracy_weighted": 0.984,
+        "per_class": {
+          "PASS": 1,
+          "F01": 0.979,
+          "F02": 0.945,
+          "F03": 0.906,
+          "F04": 0.874,
+          "F05": 0.857,
+          "F06": null,
+          "F07": 0.975,
+          "F08": 0.927,
+          "F09": null,
+          "F10": 0.952,
+          "F11": 0.86,
+          "F12": 0.89,
+          "F13": 0.918
+        },
+        "by_combo": {
+          "C1": null,
+          "C2": null,
+          "C3": null,
+          "C4": null
+        },
+        "sample_count": 3254,
+        "dropped_count": 24,
+        "eval_mode": "cv5",
+        "is_placeholder": false,
+        "local_count": 0,
+        "train_params": {
+          "feature_dim": 50,
+          "cv_folds": 5,
+          "hyperparams": {
+            "objective": "multi:softprob",
+            "max_depth": 6,
+            "learning_rate": 0.1,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "min_child_weight": 5,
+            "gamma": 0.1,
+            "reg_alpha": 0.1,
+            "reg_lambda": 1,
+            "tree_method": "hist",
+            "nthread": -1,
+            "seed": 42,
+            "num_class": 13,
+            "num_boost_round": 300
+          }
+        }
+      },
+      "parent_version_id": 2,
+      "training_scope": "all_stations",
+      "source_task_id": "T20261109-70da60"
+    },
+    {
+      "version_id": 4,
+      "version": "V3.2",
+      "type": "local",
+      "trained_at": "2026-11-09T18:49:08.252Z",
+      "sample_count": 3254,
+      "accuracy_macro": 0.907,
+      "is_active": false,
+      "metrics": {
+        "accuracy_macro": 0.907,
+        "accuracy_weighted": 0.972,
+        "per_class": {
+          "PASS": 0.982,
+          "F01": 0.961,
+          "F02": 0.934,
+          "F03": null,
+          "F04": 0.815,
+          "F05": 0.877,
+          "F06": 0.902,
+          "F07": 0.936,
+          "F08": 0.928,
+          "F09": 0.835,
+          "F10": 0.954,
+          "F11": 0.934,
+          "F12": 0.881,
+          "F13": 0.853
+        },
+        "by_combo": {
+          "C1": null,
+          "C2": null,
+          "C3": null,
+          "C4": null
+        },
+        "sample_count": 3254,
+        "dropped_count": 18,
+        "eval_mode": "cv5",
+        "is_placeholder": false,
+        "local_count": 0,
+        "train_params": {
+          "feature_dim": 50,
+          "cv_folds": 5,
+          "hyperparams": {
+            "objective": "multi:softprob",
+            "max_depth": 6,
+            "learning_rate": 0.1,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "min_child_weight": 5,
+            "gamma": 0.1,
+            "reg_alpha": 0.1,
+            "reg_lambda": 1,
+            "tree_method": "hist",
+            "nthread": -1,
+            "seed": 42,
+            "num_class": 13,
+            "num_boost_round": 300
+          }
+        }
+      },
+      "parent_version_id": 3,
+      "training_scope": "all_stations",
+      "source_task_id": "T20261109-63107b"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "T20261109-70da60",
+      "status": "done",
+      "scope": "all_stations",
+      "sample_count": 3254,
+      "created_at": "2026-11-09T18:29:55.240Z",
+      "started_at": "2026-11-09T18:29:55.540Z",
+      "finished_at": "2026-11-09T18:38:26.577Z",
+      "duration_ms": 511337,
+      "progress": 100,
+      "model_version": "V3.1",
+      "model_version_id": "candidate-T20261109-70da60",
+      "created_version_id": 301,
+      "deleted": false,
+      "log_summary": "[23:29:55] Task queued.\n[23:29:55] Training started.\n[23:38:26] Grouped rotation validation completed.\n[23:38:26] Candidate version V3.1 produced.",
+      "metrics": {
+        "accuracy_macro": 0.924,
+        "accuracy_weighted": 0.984,
+        "per_class": {
+          "PASS": 1,
+          "F01": 0.979,
+          "F02": 0.945,
+          "F03": 0.906,
+          "F04": 0.874,
+          "F05": 0.857,
+          "F06": null,
+          "F07": 0.975,
+          "F08": 0.927,
+          "F09": null,
+          "F10": 0.952,
+          "F11": 0.86,
+          "F12": 0.89,
+          "F13": 0.918
+        },
+        "by_combo": {
+          "C1": null,
+          "C2": null,
+          "C3": null,
+          "C4": null
+        },
+        "sample_count": 3254,
+        "dropped_count": 24,
+        "eval_mode": "cv5",
+        "is_placeholder": false,
+        "local_count": 0,
+        "train_params": {
+          "feature_dim": 50,
+          "cv_folds": 5,
+          "hyperparams": {
+            "objective": "multi:softprob",
+            "max_depth": 6,
+            "learning_rate": 0.1,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "min_child_weight": 5,
+            "gamma": 0.1,
+            "reg_alpha": 0.1,
+            "reg_lambda": 1,
+            "tree_method": "hist",
+            "nthread": -1,
+            "seed": 42,
+            "num_class": 13,
+            "num_boost_round": 300
+          }
+        }
+      }
+    },
+    {
+      "task_id": "T20261109-63107b",
+      "status": "done",
+      "scope": "all_stations",
+      "sample_count": 3254,
+      "created_at": "2026-11-09T18:48:51.568Z",
+      "started_at": "2026-11-09T18:48:51.868Z",
+      "finished_at": "2026-11-09T18:49:08.252Z",
+      "duration_ms": 16684,
+      "progress": 100,
+      "model_version": "V3.2",
+      "model_version_id": "candidate-T20261109-63107b",
+      "created_version_id": 302,
+      "deleted": false,
+      "log_summary": "[23:48:51] Task queued.\n[23:48:51] Training started.\n[23:49:08] Grouped rotation validation completed.\n[23:49:08] Candidate version V3.2 produced.",
+      "metrics": {
+        "accuracy_macro": 0.907,
+        "accuracy_weighted": 0.972,
+        "per_class": {
+          "PASS": 0.982,
+          "F01": 0.961,
+          "F02": 0.934,
+          "F03": null,
+          "F04": 0.815,
+          "F05": 0.877,
+          "F06": 0.902,
+          "F07": 0.936,
+          "F08": 0.928,
+          "F09": 0.835,
+          "F10": 0.954,
+          "F11": 0.934,
+          "F12": 0.881,
+          "F13": 0.853
+        },
+        "by_combo": {
+          "C1": null,
+          "C2": null,
+          "C3": null,
+          "C4": null
+        },
+        "sample_count": 3254,
+        "dropped_count": 18,
+        "eval_mode": "cv5",
+        "is_placeholder": false,
+        "local_count": 0,
+        "train_params": {
+          "feature_dim": 50,
+          "cv_folds": 5,
+          "hyperparams": {
+            "objective": "multi:softprob",
+            "max_depth": 6,
+            "learning_rate": 0.1,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "min_child_weight": 5,
+            "gamma": 0.1,
+            "reg_alpha": 0.1,
+            "reg_lambda": 1,
+            "tree_method": "hist",
+            "nthread": -1,
+            "seed": 42,
+            "num_class": 13,
+            "num_boost_round": 300
+          }
+        }
+      }
+    }
+  ]
+}

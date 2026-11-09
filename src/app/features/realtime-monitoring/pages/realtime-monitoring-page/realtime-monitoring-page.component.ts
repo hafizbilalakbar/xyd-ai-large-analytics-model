@@ -32,4 +32,9 @@ export class RealtimeMonitoringPageComponent {
   protected readonly activeModelVersion = computed(
     () => this.modelVersions.activeVersion()?.id ?? '—',
   );
+  protected readonly loadError = this.monitoring.loadError$;
+
+  retry(): void {
+    void this.monitoring.refresh();
+  }
 }

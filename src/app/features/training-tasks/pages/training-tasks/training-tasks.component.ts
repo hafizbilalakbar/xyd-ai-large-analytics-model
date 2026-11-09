@@ -185,10 +185,10 @@ export class TrainingTasksComponent implements OnInit, OnDestroy {
   protected readonly trainingScopeLabel = trainingScopeLabel;
   protected readonly trainingStatusLabel = trainingStatusLabel;
 
-  versionExists(versionId: number | null): boolean {
-    if (versionId === null) {
+  versionExists(job: TrainingJob | null): boolean {
+    if (!job || job.status !== 'done') {
       return false;
     }
-    return this.modelVersions.findByVersion(`V${versionId}.0`) !== null;
+    return !!job.model_version && this.modelVersions.findByVersion(job.model_version) !== null;
   }
 }

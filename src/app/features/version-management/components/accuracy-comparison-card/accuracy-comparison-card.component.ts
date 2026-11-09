@@ -80,6 +80,22 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
     );
   });
 
+  readonly unassessed = computed<readonly { version: string; tone: 'old' | 'new'; items: readonly string[] }[]>(() => {
+    const points = this.points();
+    const older = this.olderVersion();
+    const newer = this.newerVersion();
+    const groups: { version: string; tone: 'old' | 'new'; items: string[] }[] = [];
+    const olderItems = points.filter((point) => point.older === null).map((point) => point.category);
+    if (olderItems.length > 0) {
+      groups.push({ version: older, tone: 'old', items: olderItems });
+    }
+    const newerItems = points.filter((point) => point.newer === null).map((point) => point.category);
+    if (newerItems.length > 0) {
+      groups.push({ version: newer, tone: 'new', items: newerItems });
+    }
+    return groups;
+  });
+
   readonly chartAriaLabel = computed(
     () =>
       `Category accuracy comparison between ${this.olderVersion()} and ${this.newerVersion()}.`,
@@ -203,6 +219,9 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
 
     const olderData = points.map((point) => point.older);
     const newerData = points.map((point) => point.newer);
+    const allValues = [...olderData, ...newerData].filter((value): value is number => value !== null);
+    const dataMin = allValues.length > 0 ? Math.min(...allValues) : 80;
+    const yMin = Math.min(80, Math.floor(dataMin / 10) * 10);
 
     return {
       backgroundColor: 'transparent',
@@ -239,7 +258,7 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
           const line = (color: string, version: string, value: number | null): string => {
             const shown =
               value === null
-                ? '<span style="color:#9aa7bd">Not evaluated</span>'
+                ? '<span style="color:#9aa7bd">Unevaluated</span>'
                 : `${value.toFixed(1)}%`;
             return `<div style="display:flex;align-items:center;gap:6px;line-height:1.6"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};flex:none"></span><span>${this.escape(version)}</span><span style="margin-left:auto;font-weight:600">${shown}</span></div>`;
           };
@@ -260,6 +279,13 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
           interval: 0,
           rotate: 0,
           margin: isPhone ? 8 : 10,
+          color: (_value?: string | number | undefined, index?: number | undefined): string => {
+            const point = points[index ?? 0];
+            if (!point) {
+              return '#6b7a92';
+            }
+            return point.older === null || point.newer === null ? '#b5c0d0' : '#6b7a92';
+          },
           formatter: (value: string, index: number) => {
             const point = points[index];
             if (point === undefined) {
@@ -278,7 +304,7 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
       },
       yAxis: {
         type: 'value',
-        min: 80,
+        min: yMin,
         max: 100,
         interval: 5,
         axisTick: { show: false },

@@ -50,4 +50,24 @@
       </p>
     }
   </div>
+
+  @if (unassessed().length > 0 && !loading() && !error()) {
+    <div class="unassessed">
+      <p class="unassessed__note">
+        This version does not provide evaluation results for these categories.
+      </p>
+      <div class="unassessed__groups">
+        @for (group of unassessed(); track group.version) {
+          <div class="unassessed__group">
+            <span class="unassessed__version" [class.unassessed__version--old]="group.tone === 'old'" [class.unassessed__version--new]="group.tone === 'new'">{{ group.version }}</span>
+            <div class="unassessed__chips">
+              @for (item of group.items; track item) {
+                <span class="unassessed__chip" [class.unassessed__chip--old]="group.tone === 'old'" [class.unassessed__chip--new]="group.tone === 'new'">{{ item }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
 </div>

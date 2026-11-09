@@ -10,7 +10,12 @@
   </app-page-header>
 
   <div class="monitoring__card">
-    @if (monitoring.latestRecord(); as record) {
+    @if (monitoring.serviceStatus() === 'error') {
+      <div class="monitoring__error" role="alert">
+        <p class="monitoring__error-title">{{ loadError() }}</p>
+        <button type="button" class="monitoring__error-retry" (click)="retry()">Retry</button>
+      </div>
+    } @else if (monitoring.latestRecord(); as record) {
       <app-monitoring-live-result
         [record]="record"
         [recentRecords]="monitoring.recentRecords()"

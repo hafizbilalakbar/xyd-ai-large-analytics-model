@@ -1,9 +1,10 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { AuthService } from '../../../core/auth/auth.service';
-import { ModelVersionStore } from '../../../shared/services/model-version.store';
+import { ModelVersionStore, type TrainingTaskStoreTask } from '../../../shared/services/model-version.store';
 import { OperationLogService } from '../../../shared/services/operation-log.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { TrainingTaskApiService } from './training-task-api.service';
+import { VersionManagementApiService } from '../../version-management/data-access/version-management-api.service';
 import {
   TrainingJob,
   TrainingPreview,
@@ -17,6 +18,7 @@ export type TrainingListState = 'loading' | 'ok' | 'empty' | 'error';
 @Injectable({ providedIn: 'root' })
 export class TrainingTasksService {
   private readonly api = inject(TrainingTaskApiService);
+  private readonly versionApi = inject(VersionManagementApiService);
   private readonly toast = inject(ToastService);
   private readonly operationLog = inject(OperationLogService);
   private readonly auth = inject(AuthService);
@@ -82,6 +84,7 @@ export class TrainingTasksService {
       this.isPreviewLoading.set(false);
       this.listState.set(list.items.length > 0 ? 'ok' : 'empty');
       this.loadError.set(null);
+      this.syncJobsToStore(list.items);
       this.trackPreviousStatuses(list.items);
       this.backfillVersions(list.items);
       if (this.hasActiveJob()) {
@@ -98,10 +101,10 @@ export class TrainingTasksService {
 
   private backfillVersions(jobs: TrainingJob[]): void {
     for (const job of jobs) {
-      if (job.status === 'done' && job.created_version_id !== null) {
-        const existing = this.store.versions().find((item) => item.sourceTaskId === job.task_id);
+      if (job.status === 'done' && job.model_version) {
+        const versionId = job.model_version;
+        const existing = this.store.versions().find((item) => item.sourceTaskId === job.task_id || item.id === versionId);
         if (!existing) {
-          const versionId = `V${job.created_version_id}.0`;
           const metrics = job.metrics;
           this.store.addVersion({
             id: versionId,
@@ -113,13 +116,47 @@ export class TrainingTasksService {
               metrics?.per_class
                 ? Object.entries(metrics.per_class).map(([code, acc]) => ({
                     code,
-                    accuracy: acc ?? 0,
+                    accuracy: (acc ?? 0) * 100,
                   }))
                 : [],
             status: 'Inactive',
             sourceTaskId: job.task_id,
           });
         }
+      }
+    }
+  }
+
+  private syncJobsToStore(jobs: TrainingJob[]): void {
+    for (const job of jobs) {
+      const existing = this.store.findTask(job.task_id);
+      const draft: Partial<TrainingTaskStoreTask> & { taskId: string } = {
+        taskId: job.task_id,
+        status: job.status,
+        scope: job.scope,
+        sampleCount: job.sample_count,
+        createdAt: job.created_at,
+        startedAt: job.started_at,
+        finishedAt: job.finished_at,
+        durationMs: job.duration_ms,
+        progress: job.progress,
+        modelVersion: job.model_version,
+        modelVersionId: job.model_version_id,
+        createdVersionId: job.created_version_id,
+      };
+      if (existing) {
+        this.store.updateTask(job.task_id, {
+          ...draft,
+          deleted: existing.deleted,
+          logSummary: job.log_summary ?? null,
+          metrics: job.metrics ?? null,
+        });
+      } else {
+        this.store.addTask(draft as TrainingTaskStoreTask);
+        this.store.updateTask(job.task_id, {
+          logSummary: job.log_summary ?? null,
+          metrics: job.metrics ?? null,
+        });
       }
     }
   }
@@ -144,6 +181,7 @@ export class TrainingTasksService {
       const job = await this.api.startTraining();
       this.confirmOpen.set(false);
       this.trackPreviousStatuses([job]);
+      this.syncJobsToStore([job]);
       this.logStart(job);
       this.toast.show('Training task started.', 'success');
       this.store.setTrainingInProgress(true);
@@ -307,6 +345,7 @@ export class TrainingTasksService {
         'success',
       );
       this.store.setTrainingInProgress(false);
+      void this.versionApi.getVersions();
       return;
     }
 
@@ -344,6 +383,7 @@ export class TrainingTasksService {
       this.preview.set(this.decoratePreview(preview));
       this.isPreviewLoading.set(false);
       this.loadError.set(null);
+      this.syncJobsToStore(list.items);
       this.trackPreviousStatuses(list.items);
       this.backfillVersions(list.items);
       if (!this.hasActiveJob()) {

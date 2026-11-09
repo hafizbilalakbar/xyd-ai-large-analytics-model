@@ -5,6 +5,8 @@ import type {
   TorqueAnglePoint,
 } from './monitoring.models';
 
+export const USE_MONITORING_MOCK = false;
+
 export const MOCK_MONITORING_STATE: 'empty' | 'live' = 'empty';
 
 interface MockSample {

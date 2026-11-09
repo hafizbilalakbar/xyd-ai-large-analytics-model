@@ -182,7 +182,7 @@
                       } @else {
                         <span class="row-actions__sep" aria-hidden="true">|</span>
                         @if (isDone(job)) {
-                          @if (versionExists(job.created_version_id)) {
+                          @if (versionExists(job)) {
                             <button type="button" class="row-action" (click)="onGoVersions()">
                               Go to Version Management
                             </button>

@@ -1,4 +1,4 @@
-export const USE_VERSION_MANAGEMENT_MOCK = true;
+export const USE_VERSION_MANAGEMENT_MOCK = false;
 
 export const CLASS_DISPLAY_NAMES: Readonly<Record<string, string>> = {
   PASS: 'Pass',

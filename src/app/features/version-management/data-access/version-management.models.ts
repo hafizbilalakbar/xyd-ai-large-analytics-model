@@ -53,6 +53,7 @@ export interface ApiModelVersion {
   readonly metrics?: ApiEvaluationMetrics | null;
   readonly parent_version_id?: number | null;
   readonly training_scope?: string | null;
+  readonly source_task_id?: string | null;
 }
 
 export interface GetVersionsResponse {
