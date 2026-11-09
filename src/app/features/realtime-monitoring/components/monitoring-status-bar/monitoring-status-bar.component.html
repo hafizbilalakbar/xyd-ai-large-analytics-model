@@ -1,0 +1,28 @@
+<div class="status" [class.status--timeout]="isTimedOut()">
+  <div class="status__item">
+    <span
+      class="status__dot"
+      role="img"
+      [attr.aria-label]="isTimedOut() ? 'Data reception timeout' : 'Data reception normal'"
+    ></span>
+    <span class="status__text">
+      {{ isTimedOut() ? 'Data reception timeout' : 'Data reception normal' }}
+    </span>
+  </div>
+
+  <div class="status__item">
+    <span class="status__label">Receive frequency</span>
+    <strong class="status__value">{{ frequencyLabel() }}</strong>
+  </div>
+
+  <div class="status__item">
+    <span class="status__label">Final Receive</span>
+    <strong class="status__value">
+      @if (lastReceivedAt(); as time) {
+        {{ time | date: 'HH:mm:ss' }}
+      } @else {
+        —
+      }
+    </strong>
+  </div>
+</div>

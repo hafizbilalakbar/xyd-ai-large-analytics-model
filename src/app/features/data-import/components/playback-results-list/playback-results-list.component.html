@@ -1,0 +1,77 @@
+<div class="results-list">
+  <div class="results-list__toolbar">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search file or sample ID"
+      [value]="search()"
+      (input)="searchChange.emit($any($event.target).value)" />
+    <select class="filter-select" [value]="filter()" (change)="filterChange.emit($any($event.target).value)">
+      <option value="all">All results</option>
+      <option value="PASS">PASS</option>
+      <option value="FAIL">FAIL</option>
+      <option value="Pending">Pending</option>
+    </select>
+    <select class="filter-select" [value]="sort()" (change)="sortChange.emit($any($event.target).value)">
+      <option value="time">Sort by time</option>
+      <option value="name">Sort by name</option>
+    </select>
+  </div>
+
+  <div class="table-scroll">
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Sample ID</th>
+          <th>Locking Time</th>
+          <th>Points</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of items(); track item.id) {
+          <tr
+            class="results-table__row"
+            [class.results-table__row--selected]="item.id === selectedId()"
+            (click)="selectItem.emit(item.id)">
+            <td>
+              <div class="cell-file">
+                {{ item.fileName }}
+                @if (item.warning) {
+                  <svg class="warning-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-label="Warning">
+                    <path d="M12 3 2.5 20h19L12 3Z"></path>
+                    <path d="M12 9v5"></path>
+                    <path d="M12 17.5h.01"></path>
+                  </svg>
+                }
+              </div>
+            </td>
+            <td>{{ item.sampleId }}</td>
+            <td>{{ item.lockingTime }}</td>
+            <td>{{ item.pointCount }}</td>
+            <td>
+              <span class="tag" [class.tag--pass]="item.result === 'PASS'" [class.tag--fail]="item.result === 'FAIL'" [class.tag--pending]="item.result === 'Pending'">
+                {{ item.result }}
+              </span>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="results-table__empty" colspan="5">No curves match this filter.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="results-list__footer">
+    <app-table-pagination
+      [totalCount]="totalCount()"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="pageChange.emit($event)"
+      (pageSizeChange)="pageSizeChange.emit($event)">
+    </app-table-pagination>
+  </div>
+</div>

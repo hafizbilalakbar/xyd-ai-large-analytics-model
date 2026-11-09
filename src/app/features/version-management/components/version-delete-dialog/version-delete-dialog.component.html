@@ -1,0 +1,42 @@
+<app-modal
+  [open]="open()"
+  size="md"
+  [maxWidth]="560"
+  [mobileFullscreen]="true"
+  [footerVisible]="true"
+  [compactFooter]="true"
+  [title]="title"
+  (close)="onCancel()">
+  <div modalBody>
+    <p class="dialog-message">
+      Delete version <strong>{{ version() }}</strong>?
+      @if (taskDeleted() && taskId()) {
+        <br />
+        This also deletes the training task <strong>{{ taskId() }}</strong> that created it.
+      }
+      <br />
+      This cannot be undone.
+    </p>
+  </div>
+
+  <div modalFooter>
+    <button
+      type="button"
+      class="btn btn--secondary"
+      [disabled]="pending()"
+      (click)="onCancel()">
+      Cancel
+    </button>
+    <button
+      type="button"
+      class="btn btn--danger"
+      [disabled]="pending()"
+      [attr.aria-busy]="pending()"
+      (click)="onConfirm()">
+      @if (pending()) {
+        <span class="spinner" aria-hidden="true"></span>
+      }
+      {{ pending() ? 'Deleting…' : 'Delete' }}
+    </button>
+  </div>
+</app-modal>

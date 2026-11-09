@@ -1,0 +1,19 @@
+<div class="toast-container" role="status" aria-live="polite">
+  @for (toast of toasts(); track toast.id) {
+    <div
+      class="toast"
+      [class.toast--info]="toast.type === 'info'"
+      [class.toast--success]="toast.type === 'success'"
+      [class.toast--error]="toast.type === 'error'"
+      [class.toast--leaving]="toast.isLeaving"
+      (mouseenter)="pause(toast.id)"
+      (mouseleave)="resume(toast.id)">
+      <span class="toast__message">{{ toast.message }}</span>
+      <button type="button" class="toast__close" (click)="dismiss(toast.id)" aria-label="Dismiss notification">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M18 6L6 18M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+  }
+</div>

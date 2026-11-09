@@ -1,0 +1,57 @@
+<div class="low-confidence-review-page">
+  <app-toast-container></app-toast-container>
+
+  <app-page-header
+    title="Low Confidence Review"
+    subtitle="Filter results that require manual confirmation."
+  ></app-page-header>
+
+  <app-review-summary-cards
+    [pendingCount]="pendingCount()"
+    [reviewedCount]="reviewedCount()"
+    [totalCount]="totalCount()"
+    [completionRate]="completionRate()"
+    [threshold]="threshold()">
+  </app-review-summary-cards>
+
+  <app-review-filter-panel
+    (query)="onQuery()"
+    (reset)="onReset()"
+    [filterOptions]="filterOptions()">
+  </app-review-filter-panel>
+
+  <app-review-checklist-table
+    [rows]="rows()"
+    [totalCount]="totalCount()"
+    [currentPage]="currentPage()"
+    [pageSize]="pageSize()"
+    [loading]="isLoading()"
+    [errorMessage]="errorMessage()"
+    [sort]="sort()"
+    [selectedIds]="selectedIds()"
+    [allSelectedOnPage]="allSelectedOnPage()"
+    [someSelectedOnPage]="someSelectedOnPage()"
+    [selectedCount]="selectedCount()"
+    [notReviewedCount]="notReviewedCount()"
+    [isExporting]="isExporting()"
+    [modalState]="modalState()"
+    [isSaving]="isSaving()"
+    [isDeleting]="isDeleting()"
+    [failureModeOptions]="filterOptions().failureModes"
+    (retry)="onQuery()"
+    (pageChange)="setPage($event)"
+    (pageSizeChange)="setPageSize($event)"
+    (sortChange)="onSort($event)"
+    (toggleSelect)="onToggleSelect($event)"
+    (toggleSelectAll)="onToggleSelectAll()"
+    (clearSelection)="onClearSelection()"
+    (export)="onExport()"
+    (view)="onView($event)"
+    (edit)="onEdit($event)"
+    (delete)="onDelete($event)"
+    (bulkDelete)="onBulkDelete($event)"
+    (update)="onUpdate($event)"
+    (closeModal)="onCloseModal()"
+    (discardChanges)="onDiscardChanges()">
+  </app-review-checklist-table>
+</div>

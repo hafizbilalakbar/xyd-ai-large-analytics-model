@@ -1,0 +1,44 @@
+<app-modal
+  [open]="open()"
+  size="lg"
+  [maxWidth]="720"
+  [mobileFullscreen]="true"
+  [footerVisible]="false"
+  [title]="title()"
+  (close)="close.emit()">
+  <div modalBody>
+    @if (version(); as details) {
+      <dl class="details-list">
+        <div class="details-row">
+          <dt>Type</dt>
+          <dd>{{ typeText() }}</dd>
+        </div>
+        <div class="details-row">
+          <dt>Training date</dt>
+          <dd>{{ details.trainedAt ?? '—' }}</dd>
+        </div>
+        <div class="details-row">
+          <dt>Sample size</dt>
+          <dd>{{ details.sampleSize ?? '—' }}</dd>
+        </div>
+        <div class="details-row">
+          <dt>Accuracy</dt>
+          <dd class="details-accuracy">
+            <span class="details-accuracy__value">{{ accuracyText() }}</span>
+            <span class="details-accuracy__note">
+              Macro average accuracy, each class weighted equally.
+            </span>
+          </dd>
+        </div>
+        <div class="details-row">
+          <dt>Evaluation mode</dt>
+          <dd>{{ evalModeText() }}</dd>
+        </div>
+        <div class="details-row">
+          <dt>Training scope</dt>
+          <dd>{{ trainingScopeText() }}</dd>
+        </div>
+      </dl>
+    }
+  </div>
+</app-modal>

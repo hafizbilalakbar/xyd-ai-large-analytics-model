@@ -1,0 +1,67 @@
+<article class="live">
+  <header class="live__banner" [class.live__banner--fail]="record().result === 'FAIL'">
+    <div class="live__judgment">
+      <span class="live__status">{{ record().result }}</span>
+      <span class="live__caption">Lock judgment</span>
+    </div>
+
+    <div class="live__time">
+      <span class="live__caption">Lock time</span>
+      <time [attr.datetime]="record().lockedAt.toISOString()">
+        {{ record().lockedAt | date: 'HH:mm:ss' }}
+      </time>
+    </div>
+  </header>
+
+  <div class="live__body">
+    <app-torque-angle-chart [points]="record().curve" />
+
+    <aside class="live__values" aria-label="Key values for the latest lock">
+      <h3 class="live__values-title">Key values</h3>
+
+      <dl class="live__value-list">
+        <div class="live__value">
+          <dt>Sample ID</dt>
+          <dd>{{ record().sampleId }}</dd>
+        </div>
+        <div class="live__value">
+          <dt>Workstation</dt>
+          <dd>{{ record().workstation }}</dd>
+        </div>
+        <div class="live__value">
+          <dt>Torque</dt>
+          <dd>{{ record().torque }} N·m</dd>
+        </div>
+        <div class="live__value">
+          <dt>Angle</dt>
+          <dd>{{ record().angle }}°</dd>
+        </div>
+        <div class="live__value">
+          <dt>Model version</dt>
+          <dd>{{ record().modelVersion }}</dd>
+        </div>
+      </dl>
+    </aside>
+  </div>
+
+  <section class="live__recent" aria-labelledby="recent-results-title">
+    <header class="live__recent-head">
+      <h3 id="recent-results-title">Recent results</h3>
+      <span>Newest first · Last 10</span>
+    </header>
+
+    <ol class="live__results">
+      @for (row of recentRecords(); track row.id) {
+        <li class="live__result">
+          <time [attr.datetime]="row.lockedAt.toISOString()">
+            {{ row.lockedAt | date: 'HH:mm:ss' }}
+          </time>
+          <span class="live__sample">{{ row.sampleId }}</span>
+          <span class="live__tag" [class.live__tag--fail]="row.result === 'FAIL'">
+            {{ row.result }}
+          </span>
+        </li>
+      }
+    </ol>
+  </section>
+</article>

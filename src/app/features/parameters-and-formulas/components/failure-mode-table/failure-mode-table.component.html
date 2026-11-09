@@ -1,0 +1,78 @@
+<div class="modes-table-container">
+  @if (isLoading()) {
+  <div class="table-skeleton" aria-busy="true">
+    @for (row of [1, 2, 3, 4]; track row) {
+    <div class="skeleton-row">
+      <div class="skeleton-cell w-16"></div>
+      <div class="skeleton-cell w-32"></div>
+      <div class="skeleton-cell w-64"></div>
+      <div class="skeleton-cell w-20"></div>
+      <div class="skeleton-cell w-20"></div>
+      <div class="skeleton-cell w-28"></div>
+    </div>
+    }
+  </div>
+  } @else if (errorMessage()) {
+  <div class="table-error" role="alert">
+    <app-icon name="alert-triangle" [size]="20" />
+    <span>{{ errorMessage() }}</span>
+    <button type="button" class="btn-retry" (click)="onRetry()">Retry</button>
+  </div>
+  } @else if (modes().length === 0) {
+  <div class="table-empty">
+    <app-icon name="inbox" [size]="40" class="empty-icon" />
+    <p class="empty-text">No failure modes found.</p>
+  </div>
+  } @else {
+  <!-- Desktop Table -->
+  <div class="table-scroll-wrapper desktop-table-wrapper">
+    <table class="modes-table" aria-label="Failure Mode Types">
+      <thead>
+        <tr>
+          <th scope="col" class="th-code">Code</th>
+          <th scope="col" class="th-name">Name</th>
+          <th scope="col" class="th-desc">Description</th>
+          <th scope="col" class="th-tag">Type</th>
+          <th scope="col" class="th-tag">Status</th>
+          <th scope="col" class="th-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of modes(); track m.code) {
+        <tr [class.row--disabled]="m.status === 'Disabled' || !m.enabled">
+          <td class="td-code">{{ m.code }}</td>
+          <td class="td-name">{{ m.name }}</td>
+          <td class="td-desc">{{ m.description }}</td>
+          <td class="td-tag">
+            <span class="badge-tag" [class.badge-tag--builtin]="m.type === 'Built-in' || m.is_builtin"
+              [class.badge-tag--custom]="m.type === 'Custom' && !m.is_builtin">
+              {{ m.type }}
+            </span>
+          </td>
+          <td class="td-tag">
+            <span class="badge-tag" [class.badge-tag--enabled]="m.status === 'Enabled' || m.enabled"
+              [class.badge-tag--disabled]="m.status === 'Disabled' || !m.enabled">
+              {{ m.status }}
+            </span>
+          </td>
+          <td class="td-actions">
+            <button type="button" class="action-link" (click)="onEdit(m)">Edit</button>
+            <span class="action-divider" aria-hidden="true">｜</span>
+            <button type="button" class="action-link" [class.action-link--danger]="m.status === 'Enabled' || m.enabled"
+              (click)="onToggleStatus(m)">
+              {{ m.status === 'Enabled' || m.enabled ? 'Disable' : 'Enable' }}
+            </button>
+            @if (m.type === 'Custom' && !m.is_builtin) {
+            <span class="action-divider" aria-hidden="true">｜</span>
+            <button type="button" class="action-link action-link--danger" (click)="onDelete(m)">
+              Delete
+            </button>
+            }
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+</div>

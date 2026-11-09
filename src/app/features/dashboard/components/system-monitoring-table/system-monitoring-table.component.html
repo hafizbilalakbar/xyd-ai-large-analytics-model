@@ -1,0 +1,60 @@
+<article class="monitoring">
+  <header class="monitoring__head">
+    <div>
+      <h2 class="monitoring__title">Recent Warnings &amp; System Monitoring</h2>
+      <p class="monitoring__subtitle">Latest platform alerts and service events.</p>
+    </div>
+    <span class="monitoring__count" [class.monitoring__count--clear]="activeCount() === 0">
+      {{ activeCount() === 0 ? 'All clear' : activeCount() + ' active' }}
+    </span>
+  </header>
+
+  <div class="monitoring__scroll">
+    <table class="monitoring__table" aria-label="Recent warnings and system monitoring">
+      <thead>
+        <tr>
+          <th scope="col">Time</th>
+          <th scope="col">Level</th>
+          <th scope="col">Service</th>
+          <th scope="col">Message</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (warning of warnings(); track warning.id) {
+          <tr>
+            <td class="monitoring__time">{{ warning.time }}</td>
+            <td>
+              <span
+                class="level"
+                [class.level--critical]="warning.level === 'Critical'"
+                [class.level--warning]="warning.level === 'Warning'"
+                [class.level--info]="warning.level === 'Info'"
+              >
+                {{ warning.level }}
+              </span>
+            </td>
+            <td class="monitoring__service">{{ warning.service }}</td>
+            <td class="monitoring__message">{{ warning.message }}</td>
+            <td>
+              <span
+                class="state"
+                [class.state--open]="warning.status === 'Open'"
+                [class.state--investigating]="warning.status === 'Investigating'"
+                [class.state--resolved]="warning.status === 'Resolved'"
+              >
+                {{ warning.status }}
+              </span>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td class="monitoring__empty" colspan="5">
+              No warnings recorded. All monitored services are operating normally.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</article>

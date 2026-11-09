@@ -1,0 +1,64 @@
+<section class="panel">
+  <header class="panel__header">
+    <h2 class="panel__title">Replay Data Browsing</h2>
+    <button type="button" class="btn btn-query" (click)="importClick.emit()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 15V3"></path>
+        <path d="M7.5 7.5 12 3l4.5 4.5"></path>
+        <path d="M4 17v3h16v-3"></path>
+      </svg>
+      Import Playback Data
+    </button>
+  </header>
+
+  @if (allCount() === 0) {
+    <app-file-dropzone
+      icon="monitor"
+      label="View the curves and judgment results after importing the file."
+      format="Supported formats: .zip, .csv, .tsv, .txt, .xlsx, .xls, .json. Max size: 100 MB"
+      (fileSelect)="fileDrop.emit($event)">
+    </app-file-dropzone>
+  } @else {
+    <div class="panel__summary">
+      <span class="panel__summary-text">
+        {{ counts().total }} curves imported, {{ counts().pass }} pass, {{ counts().fail }} fail, {{ counts().warning }} with warnings
+      </span>
+      <div class="panel__summary-actions">
+        <button type="button" class="btn btn-reset" (click)="clear.emit()">Clear</button>
+        @if (hasErrors()) {
+          <button type="button" class="btn btn-reset" (click)="downloadErrors.emit()">Download Error Report</button>
+        }
+      </div>
+    </div>
+
+    <div class="panel__content">
+      <app-playback-results-list
+        class="panel__list"
+        [items]="items()"
+        [totalCount]="totalCount()"
+        [currentPage]="currentPage()"
+        [pageSize]="pageSize()"
+        [selectedId]="selectedItem()?.id ?? null"
+        [search]="search()"
+        [filter]="filter()"
+        [sort]="sort()"
+        (searchChange)="searchChange.emit($event)"
+        (filterChange)="filterChange.emit($event)"
+        (sortChange)="sortChange.emit($event)"
+        (pageChange)="pageChange.emit($event)"
+        (pageSizeChange)="pageSizeChange.emit($event)"
+        (selectItem)="selectItem.emit($event)">
+      </app-playback-results-list>
+
+      @if (selectedItem()) {
+        <app-curve-viewer
+          class="panel__viewer"
+          [item]="selectedItem()!"
+          (previous)="previous.emit()"
+          (next)="next.emit()"
+          (reJudge)="reJudge.emit()">
+        </app-curve-viewer>
+      }
+    </div>
+  }
+</section>

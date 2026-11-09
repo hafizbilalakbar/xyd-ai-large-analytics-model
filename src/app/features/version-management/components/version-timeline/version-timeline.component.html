@@ -1,0 +1,82 @@
+<div class="timeline-card" role="list" aria-label="Model version timeline">
+  @if (versions().length === 0) {
+    <p class="timeline-empty">No model versions available.</p>
+  } @else {
+    @for (version of versions(); track version.versionId; let i = $index) {
+      <div
+        class="timeline-row"
+        [class.timeline-row--active]="isActive(version)"
+        [style.--row-index]="i"
+        role="listitem">
+        <div class="timeline-lane" aria-hidden="true">
+          <span
+            class="timeline-dot"
+            [class.timeline-dot--active]="isActive(version)">
+          </span>
+        </div>
+
+        <div class="timeline-identity">
+          <div class="identity-line">
+            <span class="version-name">{{ version.version }}</span>
+            @if (isActive(version)) {
+              <span class="in-use">
+                <span class="in-use__dot" aria-hidden="true"></span>
+                In use
+              </span>
+            }
+          </div>
+          <span class="model-type">{{ modelTypeLabel(version.type) }}</span>
+        </div>
+
+        <div class="timeline-metrics">
+          <div class="timeline-metric">
+            <span class="metric__label">Training date</span>
+            <span class="metric__value">{{ version.trainedAt ?? '—' }}</span>
+          </div>
+          <div class="timeline-metric-divider" aria-hidden="true"></div>
+          <div class="timeline-metric">
+            <span class="metric__label">Sample size</span>
+            <span class="metric__value">{{ sampleDisplay(version.versionId) ?? version.sampleSize ?? '—' }}</span>
+          </div>
+          <div class="timeline-metric-divider" aria-hidden="true"></div>
+          <div class="timeline-metric timeline-metric--accuracy">
+            <span class="metric__label">Accuracy</span>
+            <span class="metric__value">{{ accuracyText(accuracyDisplay(version.versionId)) }}</span>
+            <span class="metric__bar" aria-hidden="true">
+              <i [style.--bar-to]="barWidth(accuracyDisplay(version.versionId)) + '%'"></i>
+            </span>
+          </div>
+        </div>
+
+        <div class="timeline-actions">
+          <button
+            type="button"
+            class="details-link"
+            (click)="details.emit(version.versionId)">
+            Details
+          </button>
+          @if (!isActive(version)) {
+            <button
+              type="button"
+              class="activate-btn"
+              (click)="activate.emit(version.versionId)">
+              Activate
+            </button>
+          } @else {
+            <span class="activate-placeholder" aria-hidden="true"></span>
+          }
+          @if (!isActive(version) && versionCanDelete(version)) {
+            <button
+              type="button"
+              class="delete-btn"
+              (click)="delete.emit(version.versionId)">
+              Delete
+            </button>
+          } @else {
+            <span class="delete-placeholder" aria-hidden="true"></span>
+          }
+        </div>
+      </div>
+    }
+  }
+</div>

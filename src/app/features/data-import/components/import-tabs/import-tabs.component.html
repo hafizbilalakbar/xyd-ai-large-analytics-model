@@ -1,0 +1,16 @@
+<div class="tabs" role="tablist" aria-label="Import tabs">
+  @for (tab of tabsList(); track tab.key; let index = $index) {
+    <button
+      type="button"
+      class="tab"
+      role="tab"
+      [class.tab--active]="activeTab() === tab.key"
+      [attr.aria-selected]="activeTab() === tab.key"
+      [attr.tabindex]="activeTab() === tab.key ? 0 : -1"
+      [disabled]="busy()"
+      (click)="onTabClick(tab.key)"
+      (keydown)="onKeyDown($event, index)">
+      <span class="tab__label">{{ tab.label }}</span>
+    </button>
+  }
+</div>

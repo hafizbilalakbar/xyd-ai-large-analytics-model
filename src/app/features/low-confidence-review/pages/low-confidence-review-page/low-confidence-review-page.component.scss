@@ -1,0 +1,21 @@
+:host {
+  display: block;
+}
+
+.low-confidence-review-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  padding-bottom: 24px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .low-confidence-review-page {
+    gap: 18px;
+  }
+}

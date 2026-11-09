@@ -1,0 +1,236 @@
+<div class="training-tasks">
+  <app-page-header
+    title="Training Task Management"
+    subtitle="Full retraining and training records">
+    <div class="page-header__actions">
+      <span class="page-header__model">Active model <b>{{ activeVersion() }}</b></span>
+    </div>
+  </app-page-header>
+
+  <section class="panel">
+    <div class="panel__head">
+      <h2 class="panel__title">New training task</h2>
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="!canStart()"
+        [attr.aria-busy]="isStarting()"
+        (click)="onCreate()">
+        @if (isStarting()) {
+          <span class="spinner" aria-hidden="true"></span>
+        }
+        {{ startLabel() }}
+      </button>
+    </div>
+
+    <div class="panel__body">
+      @if (isPreviewLoading()) {
+        <div class="tiles" role="status" aria-live="polite" aria-label="Loading training preview">
+          @for (item of skeletonTiles; track item) {
+            <div class="tile tile--skeleton" aria-hidden="true">
+              <span class="skeleton skeleton--label"></span>
+              <span class="skeleton skeleton--value"></span>
+              <span class="skeleton skeleton--sub"></span>
+            </div>
+          }
+          <span class="sr-only">Loading training preview…</span>
+        </div>
+      } @else if (preview(); as data) {
+        <div class="tiles">
+          <article class="tile">
+            <span class="tile__label">Current active version / training sample count</span>
+            <span class="tile__value">{{ data.active_version ?? '—' }} / {{ data.active_train_count ?? '—' }}</span>
+            <span class="tile__sub">{{ thisRunText() }}</span>
+          </article>
+          <article class="tile">
+            <span class="tile__label">New local corrections since last training</span>
+            <span class="tile__value tile__value--positive">+{{ data.new_corrections }} items</span>
+            <span class="tile__sub">Corrected samples will join the next training round</span>
+          </article>
+          <article class="tile">
+            <span class="tile__label">Estimated training duration</span>
+            <span class="tile__value tile__value--eta">{{ data.eta_text ?? 'No estimate available' }}</span>
+            <span class="tile__sub">Based on the current sample count</span>
+          </article>
+        </div>
+      } @else {
+        <div class="state-block state-block--inline">
+          <app-icon name="alert-triangle" [size]="26" />
+          <p class="state-block__title">{{ loadError() ?? 'Unable to load training data.' }}</p>
+          @if (traceId()) {
+            <p class="state-block__trace">Trace ID: {{ traceId() }}</p>
+          }
+          <button type="button" class="btn btn--secondary" (click)="onRetry()">Retry</button>
+        </div>
+      }
+
+      <p class="hint">
+        Real-time classification runs as usual during training. Activate the new version in
+        Version Management when training completes.
+      </p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel__head">
+      <h2 class="panel__title">Training task list</h2>
+      <span class="panel__meta">Latest 20</span>
+    </div>
+
+    <div class="panel__body panel__body--table">
+      @if (listState() === 'loading') {
+        <div class="table-skeleton" role="status" aria-live="polite" aria-label="Loading training tasks">
+          @for (row of skeletonRows; track row) {
+            <div class="table-skeleton__row" aria-hidden="true">
+              <span class="skeleton skeleton--cell skeleton--wide"></span>
+              <span class="skeleton skeleton--cell"></span>
+              <span class="skeleton skeleton--cell skeleton--short"></span>
+              <span class="skeleton skeleton--cell skeleton--wide"></span>
+            </div>
+          }
+          <span class="sr-only">Loading training tasks…</span>
+        </div>
+      } @else if (listState() === 'error') {
+        <div class="state-block" role="status" aria-live="polite">
+          <app-icon name="alert-triangle" [size]="28" />
+          <p class="state-block__title">Failed to load training data.</p>
+          @if (traceId()) {
+            <p class="state-block__trace">Trace ID: {{ traceId() }}</p>
+          }
+          <button type="button" class="btn btn--secondary" (click)="onRetry()">Retry</button>
+        </div>
+      } @else if (listState() === 'empty') {
+        <div class="state-block" role="status" aria-live="polite">
+          <app-icon name="inbox" [size]="28" />
+          <p class="state-block__title">No training tasks</p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table class="task-table">
+            <caption class="sr-only">Training task list</caption>
+            <colgroup>
+              <col class="col-task" />
+              <col class="col-start" />
+              <col class="col-scope" />
+              <col class="col-status" />
+              <col class="col-samples" />
+              <col class="col-duration" />
+              <col class="col-actions" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th scope="col">Task ID</th>
+                <th scope="col">Start time</th>
+                <th scope="col">Scope</th>
+                <th scope="col">Status</th>
+                <th scope="col">Sample count</th>
+                <th scope="col">Duration</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (job of jobs(); track job.task_id) {
+                <tr>
+                  <td class="cell-task">{{ job.task_id }}</td>
+                  <td>{{ formatTrainingDate(job.created_at) }}</td>
+                  <td>{{ trainingScopeLabel(job.scope) }}</td>
+                  <td>
+                    @if (job.status === 'running') {
+                      <div class="task-progress">
+                        <span
+                          class="task-progress__track"
+                          role="progressbar"
+                          aria-label="Training progress"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                          [attr.aria-valuenow]="job.progress">
+                          <span class="task-progress__fill" [style.width.%]="job.progress"></span>
+                        </span>
+                        <span class="task-progress__label">Training {{ job.progress }}%</span>
+                      </div>
+                    } @else {
+                      <span
+                        class="status-pill"
+                        [class.status-pill--success]="job.status === 'done'"
+                        [class.status-pill--danger]="job.status === 'failed'">
+                        {{ trainingStatusLabel(job.status) }}
+                      </span>
+                    }
+                  </td>
+                  <td>{{ job.sample_count ?? '—' }}</td>
+                  <td>{{ formatTrainingDuration(job.duration_ms) }}</td>
+                  <td>
+                    <div class="row-actions">
+                      <button
+                        type="button"
+                        class="row-action"
+                        (click)="onViewDetails(job.task_id)">
+                        View details
+                      </button>
+                      @if (isActive(job)) {
+                        <span class="row-actions__sep" aria-hidden="true">|</span>
+                        <button
+                          type="button"
+                          class="row-action row-action--danger"
+                          [disabled]="isCancelling(job.task_id)"
+                          (click)="onCancelTask(job.task_id)">
+                          @if (isCancelling(job.task_id)) {
+                            <span class="spinner" aria-hidden="true"></span>
+                          }
+                          Terminate
+                        </button>
+                      } @else {
+                        <span class="row-actions__sep" aria-hidden="true">|</span>
+                        @if (isDone(job)) {
+                          @if (versionExists(job.created_version_id)) {
+                            <button type="button" class="row-action" (click)="onGoVersions()">
+                              Go to Version Management
+                            </button>
+                          } @else {
+                            <span class="row-action row-action--muted">Version deleted</span>
+                          }
+                        }
+                        <span class="row-actions__sep" aria-hidden="true">|</span>
+                        <button
+                          type="button"
+                          class="row-action row-action--delete"
+                          [disabled]="!isDeletable(job)"
+                          (click)="onDeleteTask(job.task_id)">
+                          Delete
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </section>
+</div>
+
+<app-training-task-confirm
+  [open]="confirmOpen()"
+  [preview]="preview()"
+  [loading]="isStarting()"
+  (confirm)="onConfirmStart()"
+  (cancel)="onCloseConfirm()" />
+
+<app-training-task-detail
+  [open]="detailOpen()"
+  [job]="detail()"
+  [cancelling]="cancellingDetail()"
+  (close)="onCloseDetail()"
+  (cancelTask)="onCancelTask($event)"
+  (goToVersions)="onGoVersions()" />
+
+<app-task-delete-dialog
+  [open]="deleteOpen()"
+  [taskId]="deleteTaskId() ?? ''"
+  [pending]="deletionPending()"
+  [versionDeleted]="deleteVersionDeleted()"
+  [version]="deleteVersion()"
+  (close)="onDeleteClose()"
+  (confirm)="onDeleteConfirm()" />

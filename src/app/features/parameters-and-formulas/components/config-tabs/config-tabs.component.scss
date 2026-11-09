@@ -1,0 +1,157 @@
+@use 'mixins' as mixins;
+
+:host {
+  display: block;
+}
+
+.config-tabs-nav {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  white-space: nowrap;
+  padding-bottom: 16px;
+  scroll-snap-type: x mandatory;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Soft fade edges on scroll */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1rem;
+    pointer-events: none;
+    background: linear-gradient(to bottom, var(--color-surface), transparent);
+    z-index: 1;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1rem;
+    pointer-events: none;
+    background: linear-gradient(to bottom, transparent, var(--color-surface));
+    z-index: 1;
+  }
+
+  /* Scroll snap for tabs */
+  .config-tab-item {
+    scroll-snap: start;
+  }
+}
+
+.config-tab-item {
+  position: relative;
+  background: transparent;
+  border: none;
+  height: 44px;
+  padding: 0 16px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease, font-weight 0.15s ease, border-color 0.15s ease;
+  min-height: 44px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  margin: 0 4px;
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  &:not(.config-tab-item--active):hover {
+    color: var(--color-text-secondary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary-400);
+    outline-offset: 2px;
+  }
+
+  &--active {
+    color: var(--color-primary-600);
+    font-weight: 700;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--color-primary-600);
+    }
+  }
+
+  &--inactive {
+    color: var(--color-text-secondary);
+    font-weight: 500;
+
+    &::after {
+      content: none;
+    }
+  }
+}
+
+/* 16px gap above the tab row - provided by page-header { margin-bottom: 16px } */
+/* 16px gap between the tab row and the card - achieved via page-content margin-top */
+
+/* Desktop: 1024px and up */
+@include mixins.media-up(1024px) {
+  .config-tabs-nav {
+    position: static;
+    background: none;
+    margin-bottom: 16px;
+  }
+}
+
+/* Tablet and below: 1023px and down */
+@include mixins.media-down(1023px) {
+  .config-tabs-nav {
+    position: sticky;
+    top: 0;
+    background-color: var(--color-surface);
+    z-index: 10;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 16px;
+  }
+
+  .config-tab-item {
+    padding: 0 16px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+
+  /* Active tablet state */
+  .config-tab-item--active {
+    color: var(--color-primary-600);
+    font-weight: 700;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--color-primary-600);
+    }
+  }
+
+  .config-tab-item--inactive {
+    color: var(--color-text-secondary);
+    font-weight: 500;
+  }
+}

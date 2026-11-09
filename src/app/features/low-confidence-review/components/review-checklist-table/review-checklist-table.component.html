@@ -1,0 +1,368 @@
+<div class="results-card">
+  <div class="results-card__header">
+    <span class="results-card__title">Checklist</span>
+    <div class="results-card__group">
+      <span class="results-card__summary">Total {{ totalCount() }} items, {{ notReviewedCount() }} not reviewed.</span>
+      <button
+      type="button"
+      class="btn-export"
+      [disabled]="isExporting()"
+      (click)="export.emit()"
+      aria-label="Batch export">
+      @if (isExporting()) {
+        <span class="btn__spinner"></span>
+      } @else {
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+      }
+      Batch export
+    </button>
+    </div>
+  </div>
+
+  @if (selectedCount() > 0) {
+    <div class="selection-bar">
+      <span class="selection-bar__count">{{ selectedCount() }} selected</span>
+      <div class="selection-bar__actions">
+        <button type="button" class="selection-bar__clear" (click)="clearSelection.emit()">Clear selection</button>
+        <button
+          type="button"
+          class="selection-bar__delete"
+          (click)="onBulkDelete()"
+          aria-label="Delete selected samples">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Delete selected
+        </button>
+      </div>
+    </div>
+  }
+
+  <div class="table-scroll">
+    <table class="results-table">
+      <colgroup>
+        <col class="col-checkbox">
+        <col class="col-serial">
+        <col class="col-sample">
+        <col class="col-time">
+        <col class="col-failure">
+        <col class="col-confidence">
+        <col class="col-corrected">
+        <col class="col-version">
+        <col class="col-actions">
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="th-checkbox">
+            <input
+              type="checkbox"
+              [checked]="allSelectedOnPage()"
+              [indeterminate]="someSelectedOnPage()"
+              (change)="toggleSelectAll.emit()"
+              aria-label="Select all rows on page">
+          </th>
+          <th>Serial No.</th>
+          <th>Sample ID</th>
+          <th class="sortable" (click)="onSort('lockingTime')">
+            Locking Time
+            <span class="sort-icon" [class.active]="sort().field === 'lockingTime'">
+              @if (sort().field === 'lockingTime' && sort().direction === 'desc') {
+                &#9662;
+              } @else {
+                &#9652;
+              }
+            </span>
+          </th>
+          <th>Major Failure Mode</th>
+          <th class="sortable" (click)="onSort('confidence')">
+            Confidence
+            <span class="sort-icon" [class.active]="sort().field === 'confidence'">
+              @if (sort().field === 'confidence' && sort().direction === 'desc') {
+                &#9662;
+              } @else {
+                &#9652;
+              }
+            </span>
+          </th>
+          <th>Corrected</th>
+          <th>Model Version</th>
+          <th class="actions-header">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          <tr class="state-row">
+            <td colspan="9">
+              <div class="skeleton-rows">
+                @for (i of [1, 2, 3, 4, 5]; track i) {
+                  <div class="skeleton-row">
+                    <div class="skeleton-cell col-checkbox"></div>
+                    <div class="skeleton-cell col-serial"></div>
+                    <div class="skeleton-cell col-sample"></div>
+                    <div class="skeleton-cell col-time"></div>
+                    <div class="skeleton-cell col-failure"></div>
+                    <div class="skeleton-cell col-confidence"></div>
+                    <div class="skeleton-cell col-corrected"></div>
+                    <div class="skeleton-cell col-version"></div>
+                    <div class="skeleton-cell col-actions"></div>
+                  </div>
+                }
+              </div>
+            </td>
+          </tr>
+        } @else if (errorMessage()) {
+          <tr class="state-row">
+            <td colspan="9">
+              <div class="error-state">
+                <p class="error-message">Failed to load data.</p>
+                <button class="retry-btn" type="button" (click)="retry.emit()" aria-label="Retry loading data">Retry</button>
+              </div>
+            </td>
+          </tr>
+        } @else if (rows().length === 0) {
+          <tr class="state-row">
+            <td colspan="9">
+              <div class="empty-state">
+                <svg class="empty-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+                  <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                </svg>
+                <p class="empty-text">No data available.</p>
+              </div>
+            </td>
+          </tr>
+        } @else {
+          @for (row of rows(); track row.serialNo) {
+            <tr [class.selected]="selectedIds().has(row.sampleId)">
+              <td class="td-checkbox">
+                <input
+                  type="checkbox"
+                  [checked]="selectedIds().has(row.sampleId)"
+                  (change)="toggleSelect.emit(row.sampleId)"
+                  [attr.aria-label]="'Select sample ' + row.sampleId">
+              </td>
+              <td>{{ row.serialNo }}</td>
+              <td>{{ row.sampleId }}</td>
+              <td>{{ row.lockingTime }}</td>
+              <td>{{ row.failureMode ?? '-' }}</td>
+              <td>
+                @if (row.confidence !== null) {
+                  <span [class.confidence-low]="isLowConfidence(row.confidence)">
+                    {{ row.confidence }}%
+                  </span>
+                } @else {
+                  <span>-</span>
+                }
+              </td>
+              <td>
+                @if (row.corrected) {
+                  <span class="tag tag--yes">Yes</span>
+                } @else {
+                  <span class="tag tag--no">No</span>
+                }
+              </td>
+              <td>{{ row.modelVersion }}</td>
+              <td class="actions-cell">
+                <button
+                  class="action-btn"
+                  type="button"
+                  title="View"
+                  [attr.aria-label]="'View sample ' + row.sampleId"
+                  (click)="onView(row.sampleId)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+                <button
+                  class="action-btn"
+                  type="button"
+                  title="Edit"
+                  [attr.aria-label]="'Edit sample ' + row.sampleId"
+                  (click)="onEdit(row.sampleId)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                </button>
+                <button
+                  class="action-btn action-btn--danger"
+                  type="button"
+                  title="Delete"
+                  [attr.aria-label]="'Delete sample ' + row.sampleId"
+                  (click)="onDelete(row.sampleId)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="results-card__footer">
+    <app-table-pagination
+      [totalCount]="totalCount()"
+      [currentPage]="currentPage()"
+      [pageSize]="pageSize()"
+      (pageChange)="pageChange.emit($event)"
+      (pageSizeChange)="pageSizeChange.emit($event)">
+    </app-table-pagination>
+  </div>
+</div>
+
+<app-modal
+  [open]="modalState().type === 'view' && !!modalState().record"
+  title="Sample Details"
+  (close)="onCloseModal()">
+  <div modalBody>
+    @if (modalState().record; as record) {
+      <p class="view-subtitle">{{ record.sampleId }}</p>
+      <div class="view-grid">
+        <div class="view-item">
+          <span class="view-label">Serial No.</span>
+          <span class="view-value">{{ record.serialNo }}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Sample ID</span>
+          <span class="view-value">{{ record.sampleId }}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Locking Time</span>
+          <span class="view-value">{{ record.lockingTime }}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Major Failure Mode</span>
+          <span class="view-value">{{ record.failureMode ?? '-' }}</span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Confidence</span>
+          <span class="view-value" [class.confidence-low]="isLowConfidence(record.confidence)">
+            {{ record.confidence ?? '-' }}%
+          </span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Corrected</span>
+          <span class="view-value">
+            @if (record.corrected) {
+              <span class="tag tag--yes">Yes</span>
+            } @else {
+              <span class="tag tag--no">No</span>
+            }
+          </span>
+        </div>
+        <div class="view-item">
+          <span class="view-label">Model Version</span>
+          <span class="view-value">{{ record.modelVersion }}</span>
+        </div>
+      </div>
+    }
+  </div>
+  <div modalFooter>
+    <button type="button" class="btn btn-reset" (click)="modalState().record && onEdit(modalState().record!.sampleId)">Edit</button>
+    <button type="button" class="btn btn-query" (click)="onCloseModal()">Close</button>
+  </div>
+</app-modal>
+
+<app-modal
+  [open]="modalState().type === 'edit'"
+  title="Edit Sample"
+  (close)="onCloseModal()">
+  <div modalBody>
+    @if (editForm(); as form) {
+      <div class="form-field">
+        <label class="form-label" for="editSampleId">Sample ID</label>
+        <input id="editSampleId" type="text" class="form-input" [value]="form.sampleId" disabled>
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="editFailureMode">Major Failure Mode</label>
+        <select
+          id="editFailureMode"
+          class="form-input"
+          [value]="form.failureMode ?? ''"
+          (change)="setFailureMode($event)">
+          <option value="">Select failure mode</option>
+          @for (opt of failureModeOptions(); track opt.key) {
+            <option [value]="opt.key">{{ opt.label }}</option>
+          }
+        </select>
+        @if (editTouched() && !editValid()) {
+          <span class="field__error">Failure mode is required.</span>
+        }
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="editCorrected">Corrected</label>
+        <select
+          id="editCorrected"
+          class="form-input"
+          [value]="form.corrected ? 'true' : 'false'"
+          (change)="setCorrected($event)">
+          <option value="true">Yes</option>
+          <option value="false">No</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="editModelVersion">Model Version</label>
+        <input id="editModelVersion" type="text" class="form-input" [value]="form.modelVersion" disabled>
+      </div>
+    }
+  </div>
+  <div modalFooter>
+    <button type="button" class="btn btn-reset" (click)="onCloseModal()">Cancel</button>
+    <button
+      type="button"
+      class="btn btn-query"
+      [disabled]="!isEditDirty() || isSaving()"
+      (click)="onSaveEdit()">
+      @if (isSaving()) {
+        <span class="btn__spinner"></span>
+      }
+      Save
+    </button>
+  </div>
+</app-modal>
+
+<app-confirm-dialog
+  [open]="modalState().type === 'delete'"
+  title="Delete sample?"
+  [message]="'Sample ' + (modalState().record?.sampleId ?? '') + ' will be deleted. This cannot be undone.'"
+  confirmLabel="Delete"
+  [danger]="true"
+  [autofocusCancel]="true"
+  [confirmDisabled]="isDeleting()"
+  (confirm)="onConfirmDelete()"
+  (cancel)="closeModal.emit()">
+</app-confirm-dialog>
+
+<app-confirm-dialog
+  [open]="modalState().type === 'bulkDelete'"
+  [title]="'Delete ' + deleteTargetIds().length + ' samples?'"
+  [message]="bulkDeleteMessage()"
+  confirmLabel="Delete"
+  [danger]="true"
+  [autofocusCancel]="true"
+  [confirmDisabled]="isDeleting()"
+  (confirm)="onConfirmDelete()"
+  (cancel)="closeModal.emit()">
+</app-confirm-dialog>
+
+<app-confirm-dialog
+  [open]="modalState().type === 'discard'"
+  title="Discard changes?"
+  message="You have unsaved changes. Are you sure you want to discard them?"
+  confirmLabel="Discard"
+  cancelLabel="Keep editing"
+  [danger]="true"
+  [autofocusCancel]="true"
+  (confirm)="onConfirmDiscard()"
+  (cancel)="onKeepEditing()">
+</app-confirm-dialog>

@@ -1,0 +1,45 @@
+<header class="app-header">
+  <div class="app-header__brand">
+    <button
+      class="app-header__menu"
+      type="button"
+      aria-label="Open menu"
+      aria-controls="app-sidebar"
+      (click)="toggleMobile.emit()"
+    >
+      <app-icon name="menu" />
+    </button>
+
+    <span class="app-header__logo" aria-hidden="true">X</span>
+
+    <span class="app-header__title app-header__title--full">{{ settings.name }}</span>
+    <span class="app-header__title app-header__title--short">{{ settings.shortName }}</span>
+  </div>
+
+  <div class="app-header__actions">
+    @if (user(); as currentUser) {
+      <div class="app-header__user">
+        <span class="app-header__avatar">
+          <app-icon name="user" />
+        </span>
+        <span class="app-header__user-copy">
+          <span class="app-header__user-name">
+            <span class="app-header__status-dot" aria-hidden="true"></span>
+            {{ currentUser.name }}
+          </span>
+          <span class="app-header__user-role">{{ currentUser.role }}</span>
+        </span>
+      </div>
+
+      <button class="app-header__action" type="button" (click)="signOut()">
+        <app-icon name="logout" />
+        <span class="app-header__action-label">Sign out</span>
+      </button>
+    } @else {
+      <button class="app-header__action" type="button" (click)="signIn()">
+        <app-icon name="user" />
+        <span class="app-header__action-label">Sign in</span>
+      </button>
+    }
+  </div>
+</header>

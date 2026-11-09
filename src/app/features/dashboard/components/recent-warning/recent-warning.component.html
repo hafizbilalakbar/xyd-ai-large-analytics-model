@@ -1,0 +1,99 @@
+<article class="warning-card">
+  <header class="warning-card__head">
+    <h2 class="warning-card__title">Recent warning</h2>
+    <span class="warning-card__subtitle">The 10 most recent items</span>
+  </header>
+
+  <div class="warning-card__monitoring">
+    <span class="monitoring-label">Monitoring range</span>
+    <div class="monitoring-tags">
+      @for (tag of monitoringRange; track tag.type) {
+        <button
+          type="button"
+          class="monitoring-tag"
+          [class.is-active]="activeType() === tag.type"
+          [style.color]="tag.color"
+          [style.border-color]="activeType() === tag.type ? tag.color : null"
+          [style.background-color]="activeType() === tag.type ? tag.color + '18' : null"
+          [attr.aria-pressed]="activeType() === tag.type"
+          (click)="toggleType(tag.type)"
+        >
+          <span class="monitoring-tag__dot" [style.background-color]="tag.color"></span>
+          {{ tag.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="warning-loading">
+      <div class="skeleton-line"></div>
+      <div class="skeleton-line"></div>
+    </div>
+  } @else if (hasAlarms()) {
+    <div class="warning-card__table-wrap">
+      <table class="warning-card__table" aria-label="Recent warnings">
+        <thead>
+          <tr>
+            <th scope="col">Time</th>
+            <th scope="col">Type</th>
+            <th scope="col">Details</th>
+            <th scope="col" class="warning-card__operate-head">Operate</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (alarmRows().length > 0) {
+            @for (row of alarmRows(); track row.id) {
+              <tr>
+                <td class="warning-time">{{ row.time }}</td>
+                <td>
+                  <span
+                    class="type-tag"
+                    [style.background-color]="row.typeColor + '18'"
+                    [style.color]="row.typeColor"
+                  >
+                    {{ row.typeName }}
+                  </span>
+                </td>
+                <td class="warning-details">{{ row.details }}</td>
+                <td class="warning-card__operate">
+                  <button
+                    type="button"
+                    class="operate-btn"
+                    [class.read]="row.read"
+                    (click)="row.read ? onRemove(row.id) : onMarkRead(row.id)"
+                  >
+                    {{ row.read ? 'Remove' : 'Mark as read' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          } @else {
+            <tr>
+              <td colspan="4" class="warning-no-match">No alarms match the selected filter.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <div class="warning-empty">
+      <div class="empty-check-wrapper">
+        <svg
+          class="empty-check-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
+      </div>
+      <h3 class="empty-title">The system is running normally.</h3>
+      <p class="empty-text">No alarms yet</p>
+    </div>
+  }
+</article>

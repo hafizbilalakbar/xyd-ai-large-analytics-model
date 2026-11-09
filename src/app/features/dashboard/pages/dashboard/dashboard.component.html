@@ -1,0 +1,73 @@
+<app-page-header
+  title="Homepage Overview"
+  subtitle="Real-time overview of locking quality, throughput, and platform health."
+>
+  <div class="page-header-actions">
+    <div class="refresh-info-block">
+      <span class="status-line">
+        <span class="icon-slot" aria-hidden="true"><span class="status-dot"></span></span>
+        <span class="line-text">Refreshes automatically every 60 seconds</span>
+      </span>
+      <span class="status-line" aria-label="Last updated">
+        <span class="icon-slot"><svg class="clock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg></span>
+        <span class="line-text">Last updated: {{ lastUpdated() }}</span>
+      </span>
+    </div>
+    <button
+      type="button"
+      class="btn-refresh"
+      [disabled]="refreshing()"
+      (click)="onRefresh()"
+      [attr.aria-busy]="refreshing()"
+      aria-label="Refresh data"
+    >
+      <svg
+        class="btn-refresh__icon"
+        [class.spin]="refreshing()"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        width="14"
+        height="14"
+        aria-hidden="true"
+      >
+        <path d="M1 12a11 11 0 0 0 8.595 10.69l-.447 2.237A13 13 0 0 1 1 12zM22.405 12a11 11 0 0 0-8.595-10.69l.447-2.237A13 13 0 0 1 23 12z" />
+      </svg>
+      <span class="btn-refresh__label">Refresh</span>
+    </button>
+  </div>
+</app-page-header>
+
+<div class="dashboard">
+  <div class="kpi-grid">
+    @for (kpi of kpis(); track kpi.label) {
+      <app-stat-card
+        [loading]="loading()"
+        [label]="kpi.label"
+        [value]="kpi.value"
+        [icon]="kpi.icon"
+        [tone]="kpi.tone"
+        [delta]="kpi.delta"
+        [deltaDirection]="kpi.deltaDirection"
+        [deltaTone]="kpi.deltaTone"
+      />
+    }
+  </div>
+
+  <div class="chart-grid">
+    <app-hourly-trend-chart [points]="hourlyTrend()" [loading]="loading()" />
+    <app-failure-mode-chart [modes]="failureModes()" [loading]="loading()" />
+  </div>
+
+  <app-recent-warning
+    [alarms]="alarms()"
+    [loading]="loading()"
+    (markRead)="onAlarmMarkRead($event)"
+    (remove)="onAlarmRemove($event)"
+  />
+</div>
+
+<app-toast-container />

@@ -1,0 +1,53 @@
+<div class="accuracy-card">
+  <div class="accuracy-card__header">
+    <h2 class="accuracy-card__title">Accuracy comparison of each category</h2>
+    @if (olderVersion() && newerVersion()) {
+      <div
+        class="accuracy-card__legend"
+        [attr.aria-label]="olderVersion() + ' compared with ' + newerVersion()">
+        <span class="legend-swatch legend-swatch--older" aria-hidden="true"></span>
+        <span class="legend-version">{{ olderVersion() }}</span>
+        <span class="legend-vs">vs</span>
+        <span class="legend-swatch legend-swatch--newer" aria-hidden="true"></span>
+        <span class="legend-version">{{ newerVersion() }}</span>
+      </div>
+    }
+  </div>
+
+  <div class="accuracy-card__body">
+    <div
+      class="accuracy-card__chart-wrap"
+      [class.accuracy-card__chart-wrap--loading]="loading()"
+      [class.accuracy-card__chart-wrap--error]="error()">
+      <div
+        #chartHost
+        class="accuracy-chart"
+        role="img"
+        [attr.aria-label]="chartAriaLabel()">
+      </div>
+      @if (loading()) {
+        <div class="chart-shimmer" aria-hidden="true">
+          <span class="chart-shimmer__dot"></span>
+          <span class="chart-shimmer__dot"></span>
+          <span class="chart-shimmer__dot"></span>
+          <span class="chart-shimmer__dot"></span>
+          <span class="chart-shimmer__dot"></span>
+        </div>
+      }
+      @if (error()) {
+        <div class="chart-error">
+          <p class="chart-error__message">{{ error() }}</p>
+          <button type="button" class="chart-error__retry" (click)="retry.emit()">
+            Retry
+          </button>
+        </div>
+      }
+    </div>
+
+    @if (showNoDataNote() && !loading() && !error()) {
+      <p class="no-data-note">
+        There is currently no data on class-specific accuracy for either version.
+      </p>
+    }
+  </div>
+</div>

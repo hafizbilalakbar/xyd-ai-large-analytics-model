@@ -1,0 +1,33 @@
+<app-modal [open]="open()" title="Review Column Mapping" (close)="cancel.emit()">
+  <div modalBody>
+    <p class="mapping-intro">Verify the detected columns before importing.</p>
+    <div class="mapping-list">
+      @for (mapping of mappings(); track mapping.field) {
+        <div class="mapping-row">
+          <span class="mapping-field">{{ mapping.field }}</span>
+          <select
+            class="mapping-select"
+            [value]="mapping.sourceColumn ?? ''"
+            (change)="onColumnChange(mapping.field, $any($event.target).value)">
+            <option value="">Not mapped</option>
+            @for (header of headers(); track header) {
+              <option [value]="header" [selected]="header === mapping.sourceColumn">{{ header }}</option>
+            }
+          </select>
+          <span class="mapping-confidence" [class.mapping-confidence--high]="mapping.confidence === 'High'" [class.mapping-confidence--medium]="mapping.confidence === 'Medium'" [class.mapping-confidence--low]="mapping.confidence === 'Low'">
+            {{ mapping.confidence }}
+          </span>
+          <div class="mapping-samples">
+            @for (sample of mapping.samples; track $index) {
+              <span class="mapping-sample">{{ sample ?? '—' }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div modalFooter>
+    <button type="button" class="btn btn-reset" (click)="cancel.emit()">Cancel</button>
+    <button type="button" class="btn btn-query" (click)="onConfirm()">Confirm</button>
+  </div>
+</app-modal>
