@@ -191,7 +191,7 @@ export class TrainingTasksService {
 
   async openDetail(taskId: string): Promise<void> {
     try {
-      const job = await this.api.getJob(taskId);
+      const job = await this.api.getTrainingTaskDetail(taskId);
       this.detail.set(job);
       this.detailOpen.set(true);
       this.trackJob(job);
@@ -203,6 +203,10 @@ export class TrainingTasksService {
     } catch (error) {
       this.report(error, 'Failed to load training details.');
     }
+  }
+
+  async getTrainingTaskDetail(taskId: string): Promise<TrainingJob> {
+    return this.api.getTrainingTaskDetail(taskId);
   }
 
   closeDetail(): void {

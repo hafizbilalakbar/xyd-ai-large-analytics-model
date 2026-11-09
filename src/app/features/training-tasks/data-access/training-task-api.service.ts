@@ -59,7 +59,9 @@ function toTaskDraft(job: TrainingJob): TrainingTaskDraft {
     progress: job.progress,
     modelVersion: job.model_version,
     modelVersionId: job.model_version_id,
-    createdVersionId: null,
+    createdVersionId: job.created_version_id,
+    metrics: job.metrics,
+    logSummary: job.log_summary,
   };
 }
 
@@ -78,8 +80,8 @@ function toJob(task: TrainingTask): TrainingJob {
     model_version_id: task.modelVersionId,
     created_version_id: task.createdVersionId,
     deleted: task.deleted,
-    log_summary: null,
-    metrics: null,
+    log_summary: task.logSummary,
+    metrics: task.metrics,
   };
 }
 
@@ -177,6 +179,10 @@ export class TrainingTaskApiService {
     return this.request<TrainingJob>('GET', `${API_BASE}/jobs/${encodeURIComponent(taskId)}`);
   }
 
+  async getTrainingTaskDetail(taskId: string): Promise<TrainingJob> {
+    return this.getJob(taskId);
+  }
+
   async cancelJob(taskId: string): Promise<TrainingJob> {
     if (USE_TRAINING_TASK_MOCK) {
       await delay(220);
@@ -195,6 +201,7 @@ export class TrainingTaskApiService {
         status: 'cancelled',
         finishedAt: now.toISOString(),
         durationMs: elapsed,
+        logSummary: this.appendLogLine(task.logSummary, `[${logTime(now)}] Training task terminated by the operator.`),
       });
       if (updated === null) {
         throw new Error(`Training task ${taskId} was not found.`);
@@ -239,10 +246,12 @@ export class TrainingTaskApiService {
       if (task.status === 'pending') {
         const createdAt = Date.parse(task.createdAt);
         if (nowMs - createdAt >= TRAINING_QUEUE_MS) {
+          const startedAt = new Date(createdAt + TRAINING_QUEUE_MS).toISOString();
           this.versions.updateTask(task.taskId, {
             status: 'running',
-            startedAt: new Date(createdAt + TRAINING_QUEUE_MS).toISOString(),
+            startedAt,
             progress: 1,
+            logSummary: this.appendLogLine(task.logSummary, `[${logTime(new Date(createdAt + TRAINING_QUEUE_MS))}] Training started.`),
           });
         }
       }
@@ -262,6 +271,10 @@ export class TrainingTaskApiService {
     }
   }
 
+  private appendLogLine(existing: string | null, line: string): string {
+    return existing ? `${existing}\n${line}` : line;
+  }
+
   private finishJob(task: TrainingTask, now: Date): void {
     const job = toJob(task);
     const failureReason = this.failureReason(job);
@@ -276,20 +289,26 @@ export class TrainingTaskApiService {
       this.versions.updateTask(task.taskId, {
         ...baseUpdates,
         status: 'failed',
+        logSummary: this.appendLogLine(task.logSummary, failureReason),
       });
       return;
     }
 
     const nextVersion = this.versions.nextVersion();
+    const metrics = this.buildMetrics();
     this.versions.updateTask(task.taskId, {
       ...baseUpdates,
       status: 'done',
       progress: 100,
       modelVersion: nextVersion,
       modelVersionId: `candidate-${task.taskId}`,
+      metrics,
+      logSummary: this.appendLogLine(
+        this.appendLogLine(task.logSummary, `[${logTime(now)}] Grouped rotation validation completed.`),
+        `[${logTime(now)}] Candidate version ${nextVersion} produced.`,
+      ),
     });
 
-    const metrics = this.buildMetrics();
     const version = this.versions.addVersion({
       version: nextVersion,
       trainedAt: nowIso,

@@ -1,4 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
+import type { TrainingMetrics } from '../../features/training-tasks/data-access/training-task.models';
 
 export type ModelVersionType = 'basic' | 'local';
 
@@ -59,6 +60,8 @@ export interface TrainingTask {
   readonly modelVersionId: string | null;
   readonly createdVersionId: number | null;
   readonly deleted: boolean;
+  readonly metrics: TrainingMetrics | null;
+  readonly logSummary: string | null;
 }
 
 export interface TrainingTaskDraft {
@@ -74,6 +77,8 @@ export interface TrainingTaskDraft {
   readonly modelVersion: string | null;
   readonly modelVersionId: string | null;
   readonly createdVersionId: number | null;
+  readonly metrics: TrainingMetrics | null;
+  readonly logSummary: string | null;
 }
 
 const VERSIONS_STORAGE_KEY = 'xyd_model_versions_v3';
