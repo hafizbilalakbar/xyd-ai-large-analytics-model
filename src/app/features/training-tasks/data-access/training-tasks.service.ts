@@ -113,9 +113,11 @@ export class TrainingTasksService {
       this.previousStatuses.set(job.task_id, job.status);
       this.logStart(job);
       this.toast.show('Training task started.', 'success');
+      this.versions.setTrainingInProgress(true);
       started = true;
       await this.refresh();
     } catch (error) {
+      this.versions.setTrainingInProgress(false);
       this.report(error, 'Failed to start training.');
     } finally {
       this.isStarting.set(false);
@@ -229,25 +231,53 @@ export class TrainingTasksService {
     });
 
     if (job.status === 'done') {
+      const metrics = job.metrics;
       const version = this.versions.addVersion({
         version: job.model_version ?? this.versions.nextVersion(),
         trainedAt: job.finished_at,
         sampleCount: job.sample_count,
+        accuracy: metrics?.accuracy_macro ?? null,
+        metrics:
+          metrics === null
+            ? null
+            : {
+                accuracyMacro: metrics.accuracy_macro,
+                accuracyWeighted: null,
+                perClass: { ...metrics.per_class },
+                byCombo: null,
+                sampleCount: job.sample_count,
+                droppedCount: 0,
+                evalMode: metrics.eval_mode,
+                isPlaceholder: metrics.is_placeholder,
+              },
+        trainingScope: job.scope,
+        parentVersionId: this.versions.activeVersion()?.versionId ?? null,
+        type: 'local',
       });
       this.api.markCorrectionsIncluded();
+      this.operationLog.add({
+        operator: this.operatorName(),
+        format: 'Create model version',
+        scope: `Version ${version.version}; result: success`,
+        recordCount: job.sample_count ?? 0,
+        deleted: false,
+      });
       this.toast.show(
         `Training completed. Candidate version ${version.version} is available.`,
         'success',
       );
+      this.versions.setTrainingInProgress(false);
       return;
     }
 
     if (job.status === 'failed') {
       this.operationLog.addAlarm('training', `Training: Task ${job.task_id} failed.`);
       this.toast.show(`Training task ${job.task_id} failed.`, 'error');
+      this.versions.setTrainingInProgress(false);
       return;
     }
 
+    this.versions.setTrainingInProgress(false);
     this.toast.show(`Training task ${job.task_id} was terminated.`, 'info');
   }
 

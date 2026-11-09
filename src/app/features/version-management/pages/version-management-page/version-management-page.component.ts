@@ -42,6 +42,8 @@ export class VersionManagementPageComponent implements OnInit {
   readonly comparison = this.service.comparison;
   readonly classAccuracies = this.service.classAccuracies;
   readonly hasComparison = this.service.hasComparison;
+  readonly isComparisonLoading = this.service.isComparisonLoading;
+  readonly comparisonError = this.service.comparisonError;
 
   readonly details = signal<VersionDetails | null>(null);
   readonly detailsOpen = signal(false);
@@ -65,14 +67,24 @@ export class VersionManagementPageComponent implements OnInit {
     void this.service.load();
   }
 
-  onActivateVersion(version: string): void {
+  retryComparison(): void {
+    void this.service.retryComparison();
+  }
+
+  onActivateVersion(versionId: number): void {
+    const version = this.versions().find((item) => item.versionId === versionId)?.version ?? '';
     this.activateVersion.set(version);
     this.activateOpen.set(true);
   }
 
   async onActivateConfirm(version: string): Promise<void> {
     this.activationPending.set(true);
-    const activated = await this.service.activateVersion(version);
+    const versionId = this.versions().find((item) => item.version === version)?.versionId;
+    if (versionId === undefined) {
+      this.activationPending.set(false);
+      return;
+    }
+    const activated = await this.service.activateVersion(versionId);
     this.activationPending.set(false);
     if (activated) {
       this.activateOpen.set(false);
@@ -88,8 +100,8 @@ export class VersionManagementPageComponent implements OnInit {
     this.activateVersion.set(null);
   }
 
-  async onDetailsVersion(version: string): Promise<void> {
-    const details = await this.service.getVersionDetails(version);
+  async onDetailsVersion(versionId: number): Promise<void> {
+    const details = await this.service.getVersionDetails(versionId);
     if (details === null) {
       return;
     }

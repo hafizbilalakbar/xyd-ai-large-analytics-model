@@ -25,14 +25,14 @@ export class VersionDetailsDialogComponent {
     if (version === null) {
       return '—';
     }
-    return version.type === 'base' ? 'Basic Model' : 'Local Model';
+    return version.type === 'basic' ? 'Basic Model' : 'Local Model';
   });
 
   readonly accuracyText = computed(() => {
     const version = this.version();
     return version === null || version.accuracy === null
       ? '—'
-      : `${version.accuracy.toFixed(1)}%`;
+      : `${(version.accuracy * 100).toFixed(1)}%`;
   });
 
   readonly evalModeText = computed(() => {

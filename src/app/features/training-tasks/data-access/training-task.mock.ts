@@ -1,4 +1,4 @@
-import { TrainingPreview, estimateTrainingEta } from './training-task.models';
+import { TrainingPreview, TrainingMetrics, estimateTrainingEta } from './training-task.models';
 
 export const USE_TRAINING_TASK_MOCK = true;
 
@@ -9,6 +9,34 @@ export const TRAINING_QUEUE_MS = 1800;
 export const TRAINING_RUN_MS = 16000;
 
 export const MOCK_TRAINING_BASE_SAMPLE_COUNT = 3254;
+
+export const TRAINING_CATEGORY_CODES: readonly string[] = ['PASS', 'F01', 'F02', 'F03', 'F04', 'F05', 'F06', 'F08'];
+
+export function buildTrainingMetrics(): TrainingMetrics {
+  const perClass: Record<string, number | null> = {
+    PASS: 0.993,
+    F01: 0.998,
+    F02: 0.945,
+    F03: 0.972,
+    F04: 0.890,
+    F05: 0.938,
+    F06: 0.905,
+    F08: 0.991,
+  };
+  const values = TRAINING_CATEGORY_CODES.map((code) => perClass[code]).filter(
+    (value): value is number => typeof value === 'number',
+  );
+  const accuracy =
+    values.length > 0
+      ? Number((values.reduce((total, value) => total + value, 0) / values.length).toFixed(4))
+      : null;
+  return {
+    accuracy_macro: accuracy,
+    per_class: perClass,
+    eval_mode: 'cv5',
+    is_placeholder: true,
+  };
+}
 
 export const MOCK_TRAINING_PREVIEW: TrainingPreview = {
   active_version: 'V3.0',

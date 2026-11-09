@@ -5,6 +5,8 @@
   border-radius: 8px;
   background-color: var(--color-surface);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .accuracy-card__header {
@@ -12,16 +14,18 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 18px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
 }
 
 .accuracy-card__title {
   margin: 0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--color-text);
   letter-spacing: -0.01em;
+  min-width: 0;
 }
 
 .accuracy-card__legend {
@@ -33,6 +37,7 @@
   border: 1px solid var(--color-border);
   border-radius: 6px;
   background-color: #f8fafc;
+  flex-shrink: 0;
 }
 
 .legend-swatch {
@@ -67,20 +72,92 @@
   white-space: nowrap;
 }
 
-.accuracy-card__chart-box {
-  padding: 4px 10px 8px;
+.accuracy-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 8px;
+}
+
+.accuracy-card__chart-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
 }
 
 .accuracy-chart {
   width: 100%;
   height: 360px;
+  display: block;
 }
 
 .no-data-note {
   margin: 0;
-  padding: 0 18px 16px;
+  padding: 10px 12px;
   font-size: 12px;
   color: var(--color-text-muted);
+  text-align: center;
+}
+
+.chart-shimmer {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  z-index: 2;
+}
+
+.chart-shimmer__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #cbd5e1;
+  background-image: linear-gradient(90deg, #eef2f7 0%, #e2e8f0 50%, #eef2f7 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.chart-error {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  text-align: center;
+  z-index: 2;
+}
+
+.chart-error__message {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.chart-error__retry {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chart-error__retry:hover {
+  border-color: #0b57a8;
+  color: #0b57a8;
 }
 
 @media (max-width: 1023px) {
@@ -93,19 +170,55 @@
   .accuracy-card__header {
     flex-wrap: wrap;
     padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .accuracy-card__title {
+    font-size: 13px;
+  }
+
+  .accuracy-card__legend {
+    order: 1;
+    width: 100%;
+    justify-content: flex-start;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .accuracy-card__legend .legend-version,
+  .accuracy-card__legend .legend-vs {
+    font-size: 11px;
   }
 
   .accuracy-chart {
     height: 260px;
   }
 
-  .accuracy-card__chart-box {
-    padding: 4px 4px 6px;
+  .accuracy-card__body {
+    padding: 6px;
+  }
+}
+
+@media (max-width: 359px) {
+  .accuracy-card__header {
+    padding: 10px 12px;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .accuracy-chart {
-    scroll-behavior: auto;
+  .chart-shimmer__dot {
+    animation: none;
+    background-color: #cbd5e1;
+    background-image: none;
   }
 }

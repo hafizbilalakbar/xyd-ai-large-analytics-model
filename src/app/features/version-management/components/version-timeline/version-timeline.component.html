@@ -2,32 +2,45 @@
   @if (versions().length === 0) {
     <p class="timeline-empty">No model versions available.</p>
   } @else {
-    @for (version of versions(); track version.version; let first = $first, last = $last) {
+    @for (version of versions(); track version.versionId; let i = $index) {
       <div
         class="timeline-row"
         [class.timeline-row--active]="isActive(version)"
-        [class.timeline-row--first]="first"
-        [class.timeline-row--last]="last"
+        [style.--row-index]="i"
         role="listitem">
         <div class="timeline-lane" aria-hidden="true">
           <span
             class="timeline-dot"
-            [class.timeline-dot--active]="isActive(version)"
-            [class.timeline-dot--base]="!isActive(version) && version.type === 'base'">
+            [class.timeline-dot--active]="isActive(version)">
           </span>
         </div>
 
         <div class="timeline-version">
-          <div class="timeline-version__name">
-            <span class="version-name">{{ version.version }}</span>
-            @if (isActive(version)) {
-              <span class="in-use">
-                <span class="in-use__dot" aria-hidden="true"></span>
-                In use
-              </span>
-            }
-          </div>
+          <span class="version-name">{{ version.version }}</span>
+          @if (isActive(version)) {
+            <span class="in-use">
+              <span class="in-use__dot" aria-hidden="true"></span>
+              In use
+            </span>
+          }
           <span class="model-type">{{ modelTypeLabel(version.type) }}</span>
+        </div>
+
+        <div class="timeline-actions">
+          <button
+            type="button"
+            class="details-btn"
+            (click)="details.emit(version.versionId)">
+            Details
+          </button>
+          @if (!isActive(version)) {
+            <button
+              type="button"
+              class="activate-btn"
+              (click)="activate.emit(version.versionId)">
+              Activate
+            </button>
+          }
         </div>
 
         <div class="timeline-metrics">
@@ -37,26 +50,15 @@
           </div>
           <div class="metric">
             <span class="metric__label">Sample size</span>
-            <span class="metric__value">{{ version.sampleSize ?? '—' }}</span>
+            <span class="metric__value">{{ sampleDisplay(version.versionId) ?? version.sampleSize ?? '—' }}</span>
           </div>
           <div class="metric metric--accuracy">
             <span class="metric__label">Accuracy</span>
-            <span class="metric__value">{{ accuracyText(version.accuracy) }}</span>
+            <span class="metric__value">{{ accuracyText(accuracyDisplay(version.versionId)) }}</span>
             <span class="metric__bar" aria-hidden="true">
-              <i [style.width.%]="barWidth(version.accuracy)"></i>
+              <i [style.--bar-to]="barWidth(accuracyDisplay(version.versionId)) + '%'"></i>
             </span>
           </div>
-        </div>
-
-        <div class="timeline-actions">
-          <button type="button" class="details-btn" (click)="details.emit(version.version)">
-            Details
-          </button>
-          @if (!isActive(version)) {
-            <button type="button" class="activate-btn" (click)="activate.emit(version.version)">
-              Activate
-            </button>
-          }
         </div>
       </div>
     }

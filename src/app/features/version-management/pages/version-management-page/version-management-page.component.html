@@ -44,13 +44,14 @@
         (details)="onDetailsVersion($event)">
       </app-version-timeline>
 
-      @if (hasComparison()) {
-        <app-accuracy-comparison-card
-          [olderVersion]="comparison().olderVersion"
-          [newerVersion]="comparison().newerVersion"
-          [classAccuracies]="classAccuracies()">
-        </app-accuracy-comparison-card>
-      }
+      <app-accuracy-comparison-card
+        [olderVersion]="comparison().olderVersion"
+        [newerVersion]="comparison().newerVersion"
+        [classAccuracies]="classAccuracies()"
+        [loading]="isComparisonLoading()"
+        [error]="comparisonError()"
+        (retry)="retryComparison()">
+      </app-accuracy-comparison-card>
     </div>
   }
 

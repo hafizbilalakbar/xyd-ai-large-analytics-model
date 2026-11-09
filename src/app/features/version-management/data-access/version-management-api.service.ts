@@ -1,22 +1,15 @@
-import { Injectable } from '@angular/core';
-import { ACTIVE_MODEL_VERSION_STORAGE_KEY } from '../../../shared/services/model-version.service';
-import {
-  MOCK_CLASS_ACCURACY,
-  MOCK_VERSION_DETAILS,
-  MOCK_VERSIONS,
-  USE_VERSION_MANAGEMENT_MOCK,
-} from './version-management.mock';
+import { Injectable, inject } from '@angular/core';
+import { ModelVersionService } from '../../../shared/services/model-version.service';
+import type { ModelVersionRecord } from '../../../shared/services/model-version.service';
+import { CLASS_DISPLAY_NAMES, USE_VERSION_MANAGEMENT_MOCK, classCategory } from './version-management.mock';
 import type {
-  ActivateVersionResponse,
+  ActivationApiResponse,
+  ApiEvaluationMetrics,
+  ApiModelVersion,
   ClassAccuracy,
   GetClassAccuracyResponse,
   GetVersionsResponse,
-  VersionDetails,
-  VersionSummary,
 } from './version-management.models';
-
-const STORAGE_KEY_VERSIONS = 'xyd_versions_v1';
-const STORAGE_KEY_ACTIVE = ACTIVE_MODEL_VERSION_STORAGE_KEY;
 
 interface ApiErrorBody {
   readonly error?: {
@@ -28,78 +21,64 @@ function delayMs(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function versionWeight(version: string): number {
-  const match = /^V(\d+)\.(\d+)$/.exec(version);
-  if (match === null) {
-    return 0;
-  }
-  return Number(match[1]) * 1000 + Number(match[2]);
-}
-
-function sortVersions(versions: readonly VersionSummary[]): VersionSummary[] {
-  return [...versions].sort(
-    (left, right) => versionWeight(right.version) - versionWeight(left.version),
-  );
-}
-
-function isVersionSummary(value: unknown): value is VersionSummary {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-  const record = value as Record<string, unknown>;
-  return (
-    typeof record['version'] === 'string' &&
-    (record['type'] === 'base' || record['type'] === 'local') &&
-    (record['trainedAt'] === null || typeof record['trainedAt'] === 'string') &&
-    (record['sampleSize'] === null || typeof record['sampleSize'] === 'number') &&
-    (record['accuracy'] === null || typeof record['accuracy'] === 'number') &&
-    typeof record['active'] === 'boolean'
-  );
-}
-
-function readStoredVersions(): VersionSummary[] | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_VERSIONS);
-    if (raw === null) {
-      return null;
-    }
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0 || !parsed.every(isVersionSummary)) {
-      return null;
-    }
-    return parsed.map((item) => ({ ...item }));
-  } catch {
+function toApiMetrics(record: ModelVersionRecord): ApiEvaluationMetrics | null {
+  if (record.metrics === null) {
     return null;
   }
-}
-
-function readStoredActiveVersion(): string | null {
-  try {
-    const value = localStorage.getItem(STORAGE_KEY_ACTIVE);
-    return value !== null && value.length > 0 ? value : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveStoredState(versions: readonly VersionSummary[], activeVersion: string): void {
-  try {
-    localStorage.setItem(STORAGE_KEY_VERSIONS, JSON.stringify(versions));
-    localStorage.setItem(STORAGE_KEY_ACTIVE, activeVersion);
-  } catch {
-    return;
-  }
-}
-
-function cloneDefaults(): VersionSummary[] {
-  return MOCK_VERSIONS.map((version) => ({ ...version }));
-}
-
-function cloneClassAccuracy(metric: ClassAccuracy): ClassAccuracy {
   return {
-    ...metric,
-    accuracies: { ...metric.accuracies },
+    accuracy_macro: record.metrics.accuracyMacro,
+    accuracy_weighted: record.metrics.accuracyWeighted,
+    per_class: { ...record.metrics.perClass },
+    by_combo: record.metrics.byCombo === null ? null : { ...record.metrics.byCombo },
+    sample_count: record.metrics.sampleCount,
+    dropped_count: record.metrics.droppedCount,
+    eval_mode: record.metrics.evalMode,
+    is_placeholder: record.metrics.isPlaceholder,
   };
+}
+
+function toApiVersion(record: ModelVersionRecord, includeMetrics: boolean): ApiModelVersion {
+  const base: ApiModelVersion = {
+    version_id: record.versionId,
+    version: record.version,
+    type: record.type,
+    trained_at: record.trainedAt,
+    sample_count: record.sampleCount,
+    accuracy_macro: record.accuracy,
+    is_active: record.active,
+    parent_version_id: record.parentVersionId,
+    training_scope: record.trainingScope,
+  };
+  if (!includeMetrics) {
+    return base;
+  }
+  return { ...base, metrics: toApiMetrics(record) };
+}
+
+function roundPercent(value: number | null | undefined): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return null;
+  }
+  return Math.round(value * 1000) / 10;
+}
+
+function buildClassAccuracies(
+  first: ApiModelVersion,
+  second: ApiModelVersion,
+): ClassAccuracy[] {
+  const firstClasses = first.metrics?.per_class ?? {};
+  const secondClasses = second.metrics?.per_class ?? {};
+  const codes = Array.from(
+    new Set([...Object.keys(firstClasses), ...Object.keys(secondClasses)]),
+  ).sort();
+  return codes.map((code) => ({
+    code,
+    category: classCategory(code),
+    accuracies: {
+      [first.version]: roundPercent(firstClasses[code]),
+      [second.version]: roundPercent(secondClasses[code]),
+    },
+  }));
 }
 
 async function parseError(response: Response, fallback: string): Promise<Error> {
@@ -113,10 +92,16 @@ async function parseError(response: Response, fallback: string): Promise<Error> 
 
 @Injectable({ providedIn: 'root' })
 export class VersionManagementApiService {
+  private readonly versionStore = inject(ModelVersionService);
+
   async getVersions(): Promise<GetVersionsResponse> {
     if (USE_VERSION_MANAGEMENT_MOCK) {
       await delayMs(360);
-      return { versions: this.loadVersions() };
+      const records = this.versionStore.versions();
+      return {
+        items: records.map((record) => toApiVersion(record, false)),
+        default_compare: records.slice(0, 2).map((record) => record.versionId),
+      };
     }
     const response = await fetch('/api/v1/models/versions', { method: 'GET' });
     if (!response.ok) {
@@ -125,102 +110,79 @@ export class VersionManagementApiService {
     return (await response.json()) as GetVersionsResponse;
   }
 
-  async getVersionDetails(version: string): Promise<VersionDetails> {
+  async getVersionDetails(versionId: number): Promise<ApiModelVersion> {
     if (USE_VERSION_MANAGEMENT_MOCK) {
       await delayMs(320);
-      return this.buildDetails(version);
+      const record = this.versionStore.findById(versionId);
+      if (record === null) {
+        throw new Error('Version not found.');
+      }
+      return toApiVersion(record, true);
     }
-    const response = await fetch(`/api/v1/models/versions/${encodeURIComponent(version)}`, {
-      method: 'GET',
-    });
+    const response = await fetch(`/api/v1/models/${versionId}`, { method: 'GET' });
     if (!response.ok) {
       throw await parseError(response, 'Failed to load version details.');
     }
-    return (await response.json()) as VersionDetails;
+    return (await response.json()) as ApiModelVersion;
   }
 
   async getClassAccuracy(
-    olderVersion: string,
-    newerVersion: string,
+    olderVersionId: number,
+    newerVersionId: number,
   ): Promise<GetClassAccuracyResponse> {
     if (USE_VERSION_MANAGEMENT_MOCK) {
       await delayMs(340);
+      const older = this.versionStore.findById(olderVersionId);
+      const newer = this.versionStore.findById(newerVersionId);
+      if (older === null || newer === null) {
+        throw new Error('Version not found.');
+      }
       return {
-        classAccuracies: MOCK_CLASS_ACCURACY.map(cloneClassAccuracy),
+        classAccuracies: buildClassAccuracies(
+          toApiVersion(older, true),
+          toApiVersion(newer, true),
+        ),
       };
     }
     const response = await fetch(
-      `/api/v1/models/compare?v1=${encodeURIComponent(olderVersion)}&v2=${encodeURIComponent(newerVersion)}`,
+      `/api/v1/models/compare?v1=${olderVersionId}&v2=${newerVersionId}`,
       { method: 'GET' },
     );
     if (!response.ok) {
       throw await parseError(response, 'Failed to load class accuracy.');
     }
-    return (await response.json()) as GetClassAccuracyResponse;
+    const comparison = (await response.json()) as {
+      readonly v1: ApiModelVersion;
+      readonly v2: ApiModelVersion;
+    };
+    return { classAccuracies: buildClassAccuracies(comparison.v1, comparison.v2) };
   }
 
-  async activateVersion(version: string): Promise<ActivateVersionResponse> {
+  async activateVersion(versionId: number): Promise<ActivationApiResponse> {
     if (USE_VERSION_MANAGEMENT_MOCK) {
       const startedAt = Date.now();
       await delayMs(340);
-      const versions = this.loadVersions();
-      if (!versions.some((item) => item.version === version)) {
+      const record = this.versionStore.findById(versionId);
+      if (record === null) {
         throw new Error('Version not found.');
       }
-      const previousVersion = versions.find((item) => item.active)?.version ?? null;
-      const updated = sortVersions(
-        versions.map((item) => ({ ...item, active: item.version === version })),
-      );
-      saveStoredState(updated, version);
+      if (record.active) {
+        throw new Error(`${record.version} is already in use.`);
+      }
       return {
-        success: true,
-        activatedVersion: version,
-        previousVersion,
-        durationMs: Date.now() - startedAt,
+        version_id: record.versionId,
+        version: record.version,
+        duration_ms: Date.now() - startedAt,
       };
     }
-    const response = await fetch(`/api/v1/models/${encodeURIComponent(version)}/activate`, {
+    const response = await fetch(`/api/v1/models/${versionId}/activate`, {
       method: 'POST',
     });
     if (!response.ok) {
       throw await parseError(response, 'Failed to activate version.');
     }
-    return (await response.json()) as ActivateVersionResponse;
-  }
-
-  private loadVersions(): VersionSummary[] {
-    const stored = readStoredVersions();
-    if (stored === null) {
-      saveStoredState(cloneDefaults(), 'V3.0');
-      return cloneDefaults();
-    }
-    const activeVersion = readStoredActiveVersion();
-    if (activeVersion !== null && stored.some((item) => item.version === activeVersion)) {
-      return sortVersions(
-        stored.map((item) => ({ ...item, active: item.version === activeVersion })),
-      );
-    }
-    const existingActive = stored.find((item) => item.active)?.version ?? null;
-    if (existingActive !== null) {
-      return sortVersions(
-        stored.map((item) => ({ ...item, active: item.version === existingActive })),
-      );
-    }
-    return sortVersions(stored.map((item) => ({ ...item, active: item.version === stored[0].version })));
-  }
-
-  private buildDetails(version: string): VersionDetails {
-    const summary = this.loadVersions().find((item) => item.version === version) ?? null;
-    const detail = MOCK_VERSION_DETAILS.find((item) => item.version === version) ?? null;
-    return {
-      version,
-      type: summary?.type ?? detail?.type ?? 'base',
-      trainedAt: summary?.trainedAt ?? detail?.trainedAt ?? null,
-      sampleSize: summary?.sampleSize ?? detail?.sampleSize ?? null,
-      accuracy: summary?.accuracy ?? detail?.accuracy ?? null,
-      active: summary?.active ?? false,
-      evalMode: detail?.evalMode ?? null,
-      trainingScope: detail?.trainingScope ?? null,
-    };
+    return (await response.json()) as ActivationApiResponse;
   }
 }
+
+export const VERSION_CLASS_NAMES = CLASS_DISPLAY_NAMES;

@@ -3,7 +3,6 @@ import { ParametersAndFormulasService } from '../../parameters-and-formulas/data
 import { LowConfidenceReviewService } from '../../low-confidence-review/data-access/low-confidence-review.service';
 import { ModelVersionService } from '../../../shared/services/model-version.service';
 import {
-  TrainingEvaluationMode,
   TrainingJob,
   TrainingJobList,
   TrainingMetrics,
@@ -16,6 +15,7 @@ import {
   TRAINING_QUEUE_MS,
   TRAINING_RUN_MS,
   USE_TRAINING_TASK_MOCK,
+  buildTrainingMetrics,
   createMockTaskId,
 } from './training-task.mock';
 
@@ -236,25 +236,7 @@ export class TrainingTaskApiService {
   }
 
   private buildMetrics(): TrainingMetrics {
-    const codes = this.parameters.activeFailureModes().map((mode) => mode.code);
-    const perClass: Record<string, number | null> = {};
-    codes.forEach((code, index) => {
-      perClass[code] = Number((0.88 + ((index * 7) % 9) / 100).toFixed(3));
-    });
-    const values = codes
-      .map((code) => perClass[code])
-      .filter((value): value is number => typeof value === 'number');
-    const accuracy =
-      values.length > 0
-        ? Number((values.reduce((total, value) => total + value, 0) / values.length).toFixed(4))
-        : null;
-    const evaluationMode: TrainingEvaluationMode = 'cv5';
-    return {
-      accuracy_macro: accuracy,
-      per_class: perClass,
-      eval_mode: evaluationMode,
-      is_placeholder: true,
-    };
+    return buildTrainingMetrics();
   }
 
   private appendLog(job: TrainingJob, message: string, at: Date): void {

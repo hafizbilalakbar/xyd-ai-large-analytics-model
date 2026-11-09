@@ -1,41 +1,70 @@
+import type { ModelEvaluationMode, ModelVersionType } from '../../../shared/services/model-version.service';
+
 export interface ClassAccuracy {
-  category: string;
-  code: string;
-  accuracies: Readonly<Record<string, number | null>>;
+  readonly category: string;
+  readonly code: string;
+  readonly accuracies: Readonly<Record<string, number | null>>;
 }
 
 export interface VersionSummary {
-  version: string;
-  type: 'base' | 'local';
-  trainedAt: string | null;
-  sampleSize: number | null;
-  accuracy: number | null;
-  active: boolean;
+  readonly versionId: number;
+  readonly version: string;
+  readonly type: ModelVersionType;
+  readonly trainedAt: string | null;
+  readonly sampleSize: number | null;
+  readonly accuracy: number | null;
+  readonly active: boolean;
 }
 
 export type VersionTimelineItem = VersionSummary;
 
 export interface VersionDetails extends VersionSummary {
-  evalMode: 'cv5' | 'trainset' | null;
-  trainingScope: string | null;
+  readonly evalMode: ModelEvaluationMode | null;
+  readonly trainingScope: string | null;
 }
 
 export interface VersionComparison {
-  olderVersion: string;
-  newerVersion: string;
+  readonly olderVersion: string;
+  readonly newerVersion: string;
+  readonly olderVersionId: number;
+  readonly newerVersionId: number;
+}
+
+export interface ApiEvaluationMetrics {
+  readonly accuracy_macro: number | null;
+  readonly accuracy_weighted: number | null;
+  readonly per_class: Readonly<Record<string, number | null>>;
+  readonly by_combo: Readonly<Record<string, number | null>> | null;
+  readonly sample_count: number | null;
+  readonly dropped_count: number;
+  readonly eval_mode: ModelEvaluationMode | null;
+  readonly is_placeholder: boolean;
+}
+
+export interface ApiModelVersion {
+  readonly version_id: number;
+  readonly version: string;
+  readonly type: ModelVersionType;
+  readonly trained_at: string | null;
+  readonly sample_count: number | null;
+  readonly accuracy_macro: number | null;
+  readonly is_active: boolean;
+  readonly metrics?: ApiEvaluationMetrics | null;
+  readonly parent_version_id?: number | null;
+  readonly training_scope?: string | null;
 }
 
 export interface GetVersionsResponse {
-  versions: readonly VersionSummary[];
+  readonly items: readonly ApiModelVersion[];
+  readonly default_compare: readonly number[];
 }
 
 export interface GetClassAccuracyResponse {
-  classAccuracies: readonly ClassAccuracy[];
+  readonly classAccuracies: readonly ClassAccuracy[];
 }
 
-export interface ActivateVersionResponse {
-  success: boolean;
-  activatedVersion: string;
-  previousVersion: string | null;
-  durationMs: number;
+export interface ActivationApiResponse {
+  readonly version_id: number;
+  readonly version: string;
+  readonly duration_ms: number;
 }

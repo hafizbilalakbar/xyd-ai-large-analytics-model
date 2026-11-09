@@ -7,6 +7,7 @@ import {
   computed,
   effect,
   input,
+  output,
   viewChild,
 } from '@angular/core';
 import * as echarts from 'echarts';
@@ -23,6 +24,16 @@ interface ChartPoint {
   newer: number | null;
 }
 
+interface BandStyle {
+  width: number;
+  align: 'center';
+  fontSize: number;
+  lineHeight: number;
+  color: string;
+  fontWeight: number;
+  overflow: 'truncate';
+}
+
 @Component({
   selector: 'app-accuracy-comparison-card',
   standalone: true,
@@ -35,12 +46,17 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
   readonly olderVersion = input.required<string>();
   readonly newerVersion = input.required<string>();
   readonly classAccuracies = input<readonly ClassAccuracy[]>([]);
+  readonly loading = input(false);
+  readonly error = input<string | null>(null);
+
+  readonly retry = output<void>();
 
   private readonly chartHost = viewChild.required<ElementRef<HTMLDivElement>>('chartHost');
 
   private chart: EChartsType | null = null;
   private resizeObserver: ResizeObserver | null = null;
-  private compactLabels = false;
+  private resizeFrame: number | null = null;
+  private lastLayoutKey = '';
 
   readonly points = computed<readonly ChartPoint[]>(() => {
     const older = this.olderVersion();
@@ -53,16 +69,32 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
     }));
   });
 
-  readonly hasChartData = computed(() =>
-    this.points().some((point) => point.older !== null || point.newer !== null),
-  );
-
-  readonly showNoDataNote = computed(() => !this.hasChartData());
+  readonly showNoDataNote = computed(() => {
+    const points = this.points();
+    if (points.length === 0) {
+      return true;
+    }
+    return (
+      points.every((point) => point.older === null) ||
+      points.every((point) => point.newer === null)
+    );
+  });
 
   readonly chartAriaLabel = computed(
     () =>
       `Category accuracy comparison between ${this.olderVersion()} and ${this.newerVersion()}.`,
   );
+
+  private readonly pointerOutside = (event: PointerEvent): void => {
+    if (event.pointerType !== 'touch') {
+      return;
+    }
+    const host = this.chartHost().nativeElement;
+    const target = event.target;
+    if (target instanceof Node && !host.contains(target)) {
+      this.chart?.dispatchAction({ type: 'hideTip' });
+    }
+  };
 
   constructor() {
     effect(() => {
@@ -70,7 +102,7 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
       this.olderVersion();
       this.newerVersion();
       if (this.chart !== null) {
-        this.chart.setOption(this.buildOption(), true);
+        this.chart.setOption(this.buildOption(), { notMerge: false, lazyUpdate: true });
       }
     });
   }
@@ -78,63 +110,123 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
   ngAfterViewInit(): void {
     const host = this.chartHost().nativeElement;
     this.chart = echarts.init(host);
-    this.compactLabels = host.clientWidth > 0 && host.clientWidth < 560;
-    this.chart.setOption(this.buildOption(), true);
-    this.resizeObserver = new ResizeObserver(() => {
-      if (this.chart === null) {
-        return;
-      }
-      const width = this.chart.getWidth();
-      const compact = width > 0 && width < 560;
-      if (compact !== this.compactLabels) {
-        this.compactLabels = compact;
-        this.chart.setOption(this.buildOption(), true);
-      }
-      this.chart.resize();
-    });
+    this.chart.setOption(this.buildOption(), { notMerge: true });
+    this.lastLayoutKey = this.layoutKey();
+    this.resizeObserver = new ResizeObserver(() => this.scheduleResize());
     this.resizeObserver.observe(host);
+    document.addEventListener('pointerdown', this.pointerOutside, true);
   }
 
   ngOnDestroy(): void {
+    document.removeEventListener('pointerdown', this.pointerOutside, true);
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
+    if (this.resizeFrame !== null) {
+      cancelAnimationFrame(this.resizeFrame);
+      this.resizeFrame = null;
+    }
     this.chart?.dispose();
     this.chart = null;
+  }
+
+  private scheduleResize(): void {
+    if (this.resizeFrame !== null) {
+      return;
+    }
+    this.resizeFrame = requestAnimationFrame(() => {
+      this.resizeFrame = null;
+      this.chart?.resize();
+      const key = this.layoutKey();
+      if (key === this.lastLayoutKey) {
+        return;
+      }
+      this.lastLayoutKey = key;
+      this.chart?.setOption(this.buildOption(), { notMerge: false, lazyUpdate: true });
+    });
+  }
+
+  private layoutKey(): string {
+    const width = this.chart?.getWidth() ?? this.chartHost().nativeElement.clientWidth;
+    const breakpoint =
+      width < 360 ? 'xs' : width < 640 ? 'sm' : width < 1024 ? 'md' : 'lg';
+    const points = Math.max(1, this.points().length);
+    const band = Math.max(10, Math.round((width - 60) / points));
+    return `${breakpoint}:${Math.round(band / 4)}`;
   }
 
   private buildOption(): EChartsOption {
     const older = this.olderVersion();
     const newer = this.newerVersion();
     const points = this.points();
+    const width =
+      this.chart?.getWidth() ??
+      (this.chartHost().nativeElement.clientWidth || 1280);
+    const isPhone = width < 640;
+    const isTiny = width < 360;
+    const isTablet = width >= 640 && width < 1024;
+    const fontSize = isPhone ? (isTiny ? 9 : 10) : isTablet ? 10 : 11;
     const reducedMotion =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const olderData = points
-      .filter((point) => point.older !== null)
-      .map((point) => ({ value: [point.code, point.older as number] }));
-    const newerData = points
-      .filter((point) => point.newer !== null)
-      .map((point) => ({ value: [point.code, point.newer as number] }));
+    const grid = isPhone
+      ? { left: 44, right: 12, top: 16, bottom: 46 }
+      : isTablet
+        ? { left: 44, right: 12, top: 18, bottom: 60 }
+        : { left: 48, right: 18, top: 18, bottom: 56 };
+
+    const bandWidth = Math.max(
+      10,
+      Math.floor((width - grid.left - grid.right) / Math.max(1, points.length)) - 6,
+    );
+    const lineHeight = fontSize + 3;
+    const rich: Record<'code' | 'name', BandStyle> = {
+      code: {
+        width: bandWidth,
+        align: 'center',
+        fontSize,
+        lineHeight,
+        color: '#3f4c60',
+        fontWeight: 600,
+        overflow: 'truncate',
+      },
+      name: {
+        width: bandWidth,
+        align: 'center',
+        fontSize,
+        lineHeight,
+        color: '#6b7a92',
+        fontWeight: 400,
+        overflow: 'truncate',
+      },
+    };
+
+    const olderData = points.map((point) => point.older);
+    const newerData = points.map((point) => point.newer);
 
     return {
       backgroundColor: 'transparent',
       animation: !reducedMotion,
-      animationDuration: reducedMotion ? 0 : 500,
-      animationEasing: 'cubicOut',
+      animationDuration: reducedMotion ? 0 : 300,
+      animationDurationUpdate: reducedMotion ? 0 : 700,
+      animationEasingUpdate: 'cubicInOut',
+      stateAnimation: { duration: reducedMotion ? 0 : 150, easing: 'cubicOut' },
       legend: { show: false },
-      grid: { left: 60, right: 24, top: 24, bottom: 48 },
+      grid,
       tooltip: {
         trigger: 'axis',
+        triggerOn: 'mousemove|click|mousewheel',
         confine: true,
         backgroundColor: '#fff',
         borderColor: '#dbe4f0',
         borderWidth: 1,
         padding: [10, 12],
         textStyle: { color: '#0f172a', fontSize: 12 },
-        extraCssText: 'border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.14);',
+        extraCssText:
+          'max-width:calc(100vw - 32px);border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.14);',
         axisPointer: {
           type: 'line',
+          snap: true,
           lineStyle: { type: 'dashed', color: '#94a3b8', width: 1 },
         },
         formatter: (params) => {
@@ -166,23 +258,22 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
         axisLine: { lineStyle: { color: '#dde5f0' } },
         axisLabel: {
           interval: 0,
-          fontSize: this.compactLabels ? 9 : 10,
-          lineHeight: 15,
-          color: '#6b7a92',
-          formatter: (value: string) => {
-            if (this.compactLabels) {
-              return value;
-            }
-            const point = points.find((item) => item.code === value);
+          rotate: 0,
+          margin: isPhone ? 8 : 10,
+          formatter: (value: string, index: number) => {
+            const point = points[index];
             if (point === undefined) {
-              return value;
+              return `{code|${this.escape(value)}}`;
             }
-            const name =
-              point.category.startsWith(`${point.code} `) && point.category.length > point.code.length
-                ? point.category.slice(point.code.length + 1)
-                : point.category;
-            return name.length > 0 && name !== point.code ? `${point.code}\n${name}` : point.code;
+            if (isPhone) {
+              return `{code|${this.escape(point.code)}}`;
+            }
+            const name = this.pointName(point);
+            return name.length > 0
+              ? `{code|${this.escape(point.code)}}\n{name|${this.escape(name)}}`
+              : `{code|${this.escape(point.code)}}`;
           },
+          rich,
         },
       },
       yAxis: {
@@ -198,24 +289,52 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
       series: [
         {
           name: older,
-          type: 'scatter',
+          type: 'line',
           z: 2,
-          symbol: 'circle',
-          symbolSize: 12,
           data: olderData,
-          itemStyle: { color: '#fff', borderColor: OLDER_COLOR, borderWidth: 2.5 },
+          connectNulls: false,
+          showSymbol: true,
+          symbol: 'circle',
+          symbolSize: isPhone ? 10 : 12,
+          lineStyle: { opacity: 0 },
+          itemStyle: { color: '#fff', borderColor: OLDER_COLOR, borderWidth: 2 },
+          emphasis: {
+            scale: 1.4,
+            itemStyle: { color: '#fff', borderColor: OLDER_COLOR, borderWidth: 2 },
+          },
+          animationDelay: (index: number) => index * 80,
+          animationDuration: reducedMotion ? 0 : 600,
+          animationEasing: 'cubicOut',
         },
         {
           name: newer,
-          type: 'scatter',
+          type: 'line',
           z: 3,
-          symbol: 'circle',
-          symbolSize: 8,
           data: newerData,
+          connectNulls: false,
+          showSymbol: true,
+          symbol: 'circle',
+          symbolSize: isPhone ? 7 : 8,
+          lineStyle: { opacity: 0 },
           itemStyle: { color: NEWER_COLOR, borderColor: NEWER_COLOR, borderWidth: 0 },
+          emphasis: {
+            scale: 1.4,
+            itemStyle: { color: NEWER_COLOR, borderColor: NEWER_COLOR, borderWidth: 0 },
+          },
+          animationDelay: (index: number) => index * 80 + 120,
+          animationDuration: reducedMotion ? 0 : 600,
+          animationEasing: 'cubicOut',
         },
       ],
     };
+  }
+
+  private pointName(point: ChartPoint): string {
+    const prefix = `${point.code} `;
+    if (point.category.startsWith(prefix)) {
+      return point.category.slice(prefix.length);
+    }
+    return point.category === point.code ? '' : point.category;
   }
 
   private escape(text: string): string {
