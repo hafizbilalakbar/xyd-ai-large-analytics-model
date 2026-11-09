@@ -69,11 +69,11 @@
 
 .skeleton-row {
   display: grid;
-  grid-template-columns: 40px 140px minmax(0, 1fr) auto;
+  grid-template-columns: 40px 170px 140px 120px 130px auto;
   align-items: center;
-  gap: 0 16px;
-  min-height: 75px;
-  padding: 16px 20px;
+  gap: 0;
+  min-height: 64px;
+  padding: 8px 16px;
 }
 
 .skeleton-row:not(:last-child) {
@@ -83,7 +83,7 @@
 .skeleton-metrics {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 0;
   min-width: 0;
 }
 
@@ -96,26 +96,26 @@
 }
 
 .skeleton--dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   justify-self: center;
 }
 
 .skeleton--name {
-  width: 72px;
-  height: 16px;
-}
-
-.skeleton--metric {
-  width: 88px;
+  width: 120px;
   height: 14px;
 }
 
+.skeleton--metric {
+  width: 80px;
+  height: 12px;
+}
+
 .skeleton--action {
-  width: 106px;
-  height: 28px;
-  border-radius: 6px;
+  width: 150px;
+  height: 24px;
+  border-radius: 5px;
 }
 
 .skeleton--dot,
@@ -200,9 +200,10 @@
 
 @media (max-width: 1023px) {
   .skeleton-row {
-    grid-template-columns: 32px 120px minmax(0, 1fr) auto;
+    grid-template-columns: 40px 1fr auto;
     gap: 0 12px;
-    padding: 14px;
+    padding: 10px 12px;
+    min-height: 56px;
   }
 
   .skeleton__chart {
@@ -212,20 +213,21 @@
 
 @media (max-width: 639px) {
   .skeleton-row {
-    grid-template-columns: 24px minmax(0, 1fr) auto;
-    padding: 12px 14px;
+    grid-template-columns: 32px 1fr auto;
+    padding: 8px 12px;
+    min-height: 52px;
   }
 
   .skeleton--name {
-    width: 56px;
+    width: 90px;
   }
 
   .skeleton-metrics {
-    gap: 12px;
+    gap: 8px;
   }
 
   .skeleton--metric {
-    width: 64px;
+    width: 60px;
   }
 
   .skeleton--metric:nth-child(3) {
@@ -233,7 +235,7 @@
   }
 
   .skeleton--action {
-    width: 72px;
+    width: 110px;
   }
 
   .skeleton__chart {
@@ -243,7 +245,7 @@
 
 @media (max-width: 419px) {
   .skeleton-row {
-    grid-template-columns: 20px minmax(0, 1fr);
+    grid-template-columns: 20px 1fr;
   }
 
   .skeleton--action {
@@ -251,7 +253,7 @@
   }
 
   .skeleton--metric {
-    width: 60px;
+    width: 55px;
   }
 }
 

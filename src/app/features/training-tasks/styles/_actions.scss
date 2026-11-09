@@ -4,7 +4,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 32px;
+  height: 28px;
   padding: 0 12px;
   border: 1px solid transparent;
   border-radius: 6px;
@@ -33,7 +33,12 @@
   }
 
   @media (max-width: 1023px) {
-    height: 30px;
+    height: 26px;
+  }
+
+  @media (max-width: 639px) {
+    height: 24px;
+    font-size: 11px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -79,7 +84,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  height: 32px;
+  height: 28px;
   padding: 0 2px;
   border: 0;
   background: transparent;
@@ -108,7 +113,12 @@
   }
 
   @media (max-width: 1023px) {
-    height: 30px;
+    height: 26px;
+  }
+
+  @media (max-width: 639px) {
+    height: 24px;
+    font-size: 11px;
   }
 }
 

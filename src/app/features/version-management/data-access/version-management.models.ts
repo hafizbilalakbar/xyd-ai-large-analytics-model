@@ -14,6 +14,7 @@ export interface VersionSummary {
   readonly sampleSize: number | null;
   readonly accuracy: number | null;
   readonly active: boolean;
+  readonly sourceTaskId: string | null;
 }
 
 export type VersionTimelineItem = VersionSummary;
@@ -67,4 +68,9 @@ export interface ActivationApiResponse {
   readonly version_id: number;
   readonly version: string;
   readonly duration_ms: number;
+}
+
+export interface DeleteVersionResponse {
+  readonly version_id: number;
+  readonly version: string;
 }

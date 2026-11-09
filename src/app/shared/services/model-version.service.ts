@@ -4,6 +4,10 @@ export type ModelVersionType = 'basic' | 'local';
 
 export type ModelEvaluationMode = 'cv5' | 'trainset';
 
+export type TrainingTaskStatus = 'pending' | 'running' | 'done' | 'failed' | 'cancelled';
+
+export type TrainingScope = 'single_station' | 'all_stations';
+
 export interface ModelVersionEvaluation {
   readonly accuracyMacro: number | null;
   readonly accuracyWeighted: number | null;
@@ -26,6 +30,7 @@ export interface ModelVersionRecord {
   readonly metrics: ModelVersionEvaluation | null;
   readonly parentVersionId: number | null;
   readonly trainingScope: string | null;
+  readonly sourceTaskId: string | null;
 }
 
 export interface ModelVersionDraft {
@@ -37,9 +42,42 @@ export interface ModelVersionDraft {
   readonly trainingScope?: string | null;
   readonly parentVersionId?: number | null;
   readonly type?: ModelVersionType;
+  readonly sourceTaskId?: string | null;
 }
 
-const VERSIONS_STORAGE_KEY = 'xyd_model_versions_v2';
+export interface TrainingTask {
+  readonly taskId: string;
+  readonly status: TrainingTaskStatus;
+  readonly scope: TrainingScope;
+  readonly sampleCount: number | null;
+  readonly createdAt: string;
+  readonly startedAt: string | null;
+  readonly finishedAt: string | null;
+  readonly durationMs: number | null;
+  readonly progress: number;
+  readonly modelVersion: string | null;
+  readonly modelVersionId: string | null;
+  readonly createdVersionId: number | null;
+  readonly deleted: boolean;
+}
+
+export interface TrainingTaskDraft {
+  readonly taskId: string;
+  readonly status: TrainingTaskStatus;
+  readonly scope: TrainingScope;
+  readonly sampleCount: number | null;
+  readonly createdAt: string;
+  readonly startedAt: string | null;
+  readonly finishedAt: string | null;
+  readonly durationMs: number | null;
+  readonly progress: number;
+  readonly modelVersion: string | null;
+  readonly modelVersionId: string | null;
+  readonly createdVersionId: number | null;
+}
+
+const VERSIONS_STORAGE_KEY = 'xyd_model_versions_v3';
+const TASKS_STORAGE_KEY = 'xyd_training_tasks_v3';
 
 export const ACTIVE_MODEL_VERSION_STORAGE_KEY = 'xyd_active_version_v1';
 
@@ -83,6 +121,26 @@ const V2_METRICS: ModelVersionEvaluation = {
   isPlaceholder: false,
 };
 
+const V1_METRICS: ModelVersionEvaluation = {
+  accuracyMacro: 0.945,
+  accuracyWeighted: 0.991,
+  perClass: {
+    PASS: 0.9900,
+    F01: 0.985,
+    F02: 0.950,
+    F03: 0.970,
+    F04: 0.880,
+    F05: 0.930,
+    F06: 0.890,
+    F08: 0.990,
+  },
+  byCombo: { C1: null, C2: null, C3: null, C4: null },
+  sampleCount: 800,
+  droppedCount: 0,
+  evalMode: 'cv5',
+  isPlaceholder: false,
+};
+
 const INITIAL_VERSIONS: readonly ModelVersionRecord[] = [
   {
     versionId: 2,
@@ -91,10 +149,11 @@ const INITIAL_VERSIONS: readonly ModelVersionRecord[] = [
     trainedAt: '2026/11/2',
     sampleCount: 3254,
     accuracy: 0.9563,
-    active: false,
+    active: true,
     metrics: V3_METRICS,
     parentVersionId: null,
     trainingScope: null,
+    sourceTaskId: null,
   },
   {
     versionId: 1,
@@ -103,10 +162,24 @@ const INITIAL_VERSIONS: readonly ModelVersionRecord[] = [
     trainedAt: '2026/11/2',
     sampleCount: 1499,
     accuracy: 0.9581,
-    active: true,
+    active: false,
     metrics: V2_METRICS,
     parentVersionId: null,
     trainingScope: null,
+    sourceTaskId: null,
+  },
+  {
+    versionId: 3,
+    version: 'V1.0',
+    type: 'basic',
+    trainedAt: '2026/11/2',
+    sampleCount: 800,
+    accuracy: 0.945,
+    active: false,
+    metrics: V1_METRICS,
+    parentVersionId: null,
+    trainingScope: null,
+    sourceTaskId: null,
   },
 ];
 
@@ -130,6 +203,10 @@ function cloneRecord(record: ModelVersionRecord): ModelVersionRecord {
 
 function cloneDefaults(): ModelVersionRecord[] {
   return INITIAL_VERSIONS.map(cloneRecord);
+}
+
+function cloneTask(task: TrainingTask): TrainingTask {
+  return { ...task };
 }
 
 function versionWeight(version: string): number {
@@ -205,7 +282,43 @@ function isModelVersionRecord(value: unknown): value is ModelVersionRecord {
     typeof value['active'] === 'boolean' &&
     (value['metrics'] === null || isEvaluation(value['metrics'])) &&
     (value['parentVersionId'] === null || typeof value['parentVersionId'] === 'number') &&
-    (value['trainingScope'] === null || typeof value['trainingScope'] === 'string')
+    (value['trainingScope'] === null || typeof value['trainingScope'] === 'string') &&
+    (value['sourceTaskId'] === null || typeof value['sourceTaskId'] === 'string')
+  );
+}
+
+function isTrainingTaskStatus(value: unknown): value is TrainingTaskStatus {
+  return (
+    value === 'pending' ||
+    value === 'running' ||
+    value === 'done' ||
+    value === 'failed' ||
+    value === 'cancelled'
+  );
+}
+
+function isTrainingScope(value: unknown): value is TrainingScope {
+  return value === 'single_station' || value === 'all_stations';
+}
+
+function isTrainingTask(value: unknown): value is TrainingTask {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return (
+    typeof value['taskId'] === 'string' &&
+    isTrainingTaskStatus(value['status']) &&
+    isTrainingScope(value['scope']) &&
+    (value['sampleCount'] === null || typeof value['sampleCount'] === 'number') &&
+    typeof value['createdAt'] === 'string' &&
+    (value['startedAt'] === null || typeof value['startedAt'] === 'string') &&
+    (value['finishedAt'] === null || typeof value['finishedAt'] === 'string') &&
+    (value['durationMs'] === null || typeof value['durationMs'] === 'number') &&
+    typeof value['progress'] === 'number' &&
+    (value['modelVersion'] === null || typeof value['modelVersion'] === 'string') &&
+    (value['modelVersionId'] === null || typeof value['modelVersionId'] === 'string') &&
+    (value['createdVersionId'] === null || typeof value['createdVersionId'] === 'number') &&
+    typeof value['deleted'] === 'boolean'
   );
 }
 
@@ -225,6 +338,22 @@ function readStoredVersions(): ModelVersionRecord[] | null {
   }
 }
 
+function readStoredTasks(): TrainingTask[] | null {
+  try {
+    const raw = localStorage.getItem(TASKS_STORAGE_KEY);
+    if (raw === null) {
+      return null;
+    }
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed) || !parsed.every(isTrainingTask)) {
+      return null;
+    }
+    return parsed.map(cloneTask);
+  } catch {
+    return null;
+  }
+}
+
 function readStoredActiveVersion(): string | null {
   try {
     const value = localStorage.getItem(ACTIVE_MODEL_VERSION_STORAGE_KEY);
@@ -237,9 +366,11 @@ function readStoredActiveVersion(): string | null {
 @Injectable({ providedIn: 'root' })
 export class ModelVersionService {
   private readonly versionState = signal<ModelVersionRecord[]>(cloneDefaults());
+  private readonly taskState = signal<TrainingTask[]>([]);
   private readonly trainingState = signal(false);
 
   readonly versions = this.versionState.asReadonly();
+  readonly tasks = this.taskState.asReadonly();
   readonly trainingInProgress = this.trainingState.asReadonly();
 
   readonly activeVersion = computed(
@@ -271,6 +402,7 @@ export class ModelVersionService {
       metrics: cloneEvaluation(draft.metrics ?? null),
       parentVersionId: draft.parentVersionId ?? active?.versionId ?? null,
       trainingScope: draft.trainingScope ?? null,
+      sourceTaskId: draft.sourceTaskId ?? null,
     };
     this.versionState.update((list) => sortDescending([record, ...list]));
     this.persist();
@@ -288,6 +420,7 @@ export class ModelVersionService {
           metrics: record.metrics ?? prior?.metrics ?? null,
           parentVersionId: record.parentVersionId ?? prior?.parentVersionId ?? null,
           trainingScope: record.trainingScope ?? prior?.trainingScope ?? null,
+          sourceTaskId: record.sourceTaskId ?? prior?.sourceTaskId ?? null,
         });
       });
       const sorted = sortDescending(merged);
@@ -341,6 +474,162 @@ export class ModelVersionService {
     return `V${highestMajor + 1}.0`;
   }
 
+  findTask(taskId: string): TrainingTask | null {
+    return this.taskState().find((item) => item.taskId === taskId) ?? null;
+  }
+
+  addTask(draft: TrainingTaskDraft): TrainingTask {
+    const existing = this.taskState().find((item) => item.taskId === draft.taskId);
+    if (existing) {
+      return existing;
+    }
+    const task: TrainingTask = {
+      ...draft,
+      deleted: false,
+    };
+    this.taskState.update((list) => [task, ...list]);
+    this.persist();
+    return task;
+  }
+
+  updateTask(taskId: string, updates: Partial<TrainingTask>): TrainingTask | null {
+    let result: TrainingTask | null = null;
+    this.taskState.update((list) =>
+      list.map((item) => {
+        if (item.taskId !== taskId) {
+          return item;
+        }
+        const next: TrainingTask = { ...item, ...updates };
+        result = next;
+        return next;
+      }),
+    );
+    if (result !== null) {
+      this.persist();
+    }
+    return result;
+  }
+
+  terminateTask(taskId: string): TrainingTask | null {
+    const task = this.findTask(taskId);
+    if (task === null) {
+      return null;
+    }
+    if (task.status !== 'pending' && task.status !== 'running') {
+      return null;
+    }
+    const now = new Date();
+    const startedAt = task.startedAt ?? task.createdAt;
+    const elapsed = now.getTime() - Date.parse(startedAt);
+    return this.updateTask(taskId, {
+      status: 'cancelled',
+      finishedAt: now.toISOString(),
+      durationMs: elapsed,
+    });
+  }
+
+  canDeleteVersion(versionId: number): { allowed: boolean; reason: string | null } {
+    const record = this.findById(versionId);
+    if (record === null) {
+      return { allowed: false, reason: 'Version not found.' };
+    }
+    if (record.active) {
+      return { allowed: false, reason: `${record.version} is in use. Activate another version before deleting.` };
+    }
+    const versionCount = this.versionState().length;
+    if (versionCount <= 2) {
+      return { allowed: false, reason: 'Cannot delete the last remaining version.' };
+    }
+    return { allowed: true, reason: null };
+  }
+
+  canDeleteTask(taskId: string): { allowed: boolean; reason: string | null } {
+    const task = this.findTask(taskId);
+    if (task === null) {
+      return { allowed: false, reason: 'Task not found.' };
+    }
+    if (task.status === 'pending' || task.status === 'running') {
+      return { allowed: false, reason: 'Running tasks cannot be deleted.' };
+    }
+    return { allowed: true, reason: null };
+  }
+
+  deleteTaskWithVersion(taskId: string): { ok: boolean; reason: string | null; deletedVersion?: string } {
+    const task = this.findTask(taskId);
+    if (task === null) {
+      return { ok: false, reason: 'Task not found.' };
+    }
+    if (task.status === 'pending' || task.status === 'running') {
+      return { ok: false, reason: 'Running tasks cannot be deleted.' };
+    }
+
+    const createdVersionId = task.createdVersionId;
+    let deletedVersion: string | undefined;
+
+    if (createdVersionId !== null) {
+      const version = this.findById(createdVersionId);
+      if (version !== null) {
+        const canDelete = this.canDeleteVersion(createdVersionId);
+        if (!canDelete.allowed) {
+          return { ok: false, reason: canDelete.reason };
+        }
+        this.versionState.update((list) =>
+          list.filter((item) => item.versionId !== createdVersionId),
+        );
+        deletedVersion = version.version;
+      }
+    }
+
+    this.taskState.update((list) => list.filter((item) => item.taskId !== taskId));
+    this.persist();
+
+    return { ok: true, reason: null, deletedVersion };
+  }
+
+  deleteVersionWithTask(versionId: number): { ok: boolean; reason: string | null; deletedTaskId?: string } {
+    const record = this.findById(versionId);
+    if (record === null) {
+      return { ok: false, reason: 'Version not found.' };
+    }
+    if (record.active) {
+      return { ok: false, reason: `${record.version} is in use. Activate another version before deleting.` };
+    }
+    const versionCount = this.versionState().length;
+    if (versionCount <= 2) {
+      return { ok: false, reason: 'Cannot delete the last remaining version.' };
+    }
+
+    const sourceTaskId = record.sourceTaskId;
+    let deletedTaskId: string | undefined;
+
+    if (sourceTaskId !== null) {
+      const task = this.findTask(sourceTaskId);
+      if (task !== null) {
+        const canDelete = this.canDeleteTask(sourceTaskId);
+        if (!canDelete.allowed) {
+          return { ok: false, reason: canDelete.reason };
+        }
+        this.taskState.update((list) => list.filter((item) => item.taskId !== sourceTaskId));
+        deletedTaskId = sourceTaskId;
+      }
+    }
+
+    this.versionState.update((list) => list.filter((item) => item.versionId !== versionId));
+    this.persist();
+
+    return { ok: true, reason: null, deletedTaskId };
+  }
+
+  private persist(): void {
+    try {
+      localStorage.setItem(VERSIONS_STORAGE_KEY, JSON.stringify(this.versionState()));
+      localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(this.taskState()));
+      localStorage.setItem(ACTIVE_MODEL_VERSION_STORAGE_KEY, this.activeVersion()?.version ?? '');
+    } catch {
+      return;
+    }
+  }
+
   private restore(): void {
     const stored = readStoredVersions();
     const list = stored ?? cloneDefaults();
@@ -359,14 +648,10 @@ export class ModelVersionService {
     if (stored === null) {
       this.persist();
     }
-  }
 
-  private persist(): void {
-    try {
-      localStorage.setItem(VERSIONS_STORAGE_KEY, JSON.stringify(this.versionState()));
-      localStorage.setItem(ACTIVE_MODEL_VERSION_STORAGE_KEY, this.activeVersion()?.version ?? '');
-    } catch {
-      return;
+    const storedTasks = readStoredTasks();
+    if (storedTasks !== null) {
+      this.taskState.set(storedTasks);
     }
   }
 }

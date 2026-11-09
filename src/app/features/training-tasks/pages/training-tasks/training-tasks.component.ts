@@ -5,10 +5,13 @@ import {
   OnInit,
   computed,
   inject,
+  signal,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
+import { ModelVersionService } from '../../../../shared/services/model-version.service';
+import { TaskDeleteDialogComponent } from '../../components/task-delete-dialog/task-delete-dialog.component';
 import { TrainingTaskDetailComponent } from '../../components/training-task-detail/training-task-detail.component';
 import { TrainingTaskConfirmComponent } from '../../components/training-task-confirm/training-task-confirm.component';
 import { TrainingTasksService } from '../../data-access/training-tasks.service';
@@ -29,6 +32,7 @@ import {
     IconComponent,
     TrainingTaskConfirmComponent,
     TrainingTaskDetailComponent,
+    TaskDeleteDialogComponent,
   ],
   templateUrl: './training-tasks.component.html',
   styleUrl: './training-tasks.component.scss',
@@ -37,6 +41,7 @@ import {
 export class TrainingTasksComponent implements OnInit, OnDestroy {
   private readonly service = inject(TrainingTasksService);
   private readonly router = inject(Router);
+  private readonly modelVersions = inject(ModelVersionService);
 
   readonly preview = this.service.preview;
   readonly jobs = this.service.jobs;
@@ -52,6 +57,12 @@ export class TrainingTasksComponent implements OnInit, OnDestroy {
   readonly activeVersion = this.service.activeVersion;
   readonly canStart = this.service.canStart;
   readonly startLabel = this.service.startLabel;
+
+  readonly deleteTaskId = signal<string | null>(null);
+  readonly deleteOpen = signal(false);
+  readonly deletionPending = signal(false);
+  readonly deleteVersionDeleted = signal(false);
+  readonly deleteVersion = signal<string | null>(null);
 
   readonly skeletonTiles = [0, 1, 2];
   readonly skeletonRows = [0, 1, 2, 3, 4];
@@ -100,6 +111,46 @@ export class TrainingTasksComponent implements OnInit, OnDestroy {
     void this.service.cancelTask(taskId);
   }
 
+  onDeleteTask(taskId: string): void {
+    const job = this.jobs().find((item) => item.task_id === taskId);
+    if (job === undefined) {
+      return;
+    }
+    this.deleteTaskId.set(taskId);
+    this.deleteVersionDeleted.set(job.created_version_id !== null);
+    this.deleteVersion.set(job.model_version ?? null);
+    this.deleteOpen.set(true);
+  }
+
+  async onDeleteConfirm(): Promise<void> {
+    const taskId = this.deleteTaskId();
+    if (taskId === null) {
+      return;
+    }
+    this.deletionPending.set(true);
+    try {
+      const deleted = await this.service.deleteTaskWithVersion(taskId);
+      if (!deleted) {
+        return;
+      }
+    } finally {
+      this.deletionPending.set(false);
+      this.deleteTaskId.set(null);
+      this.deleteVersionDeleted.set(false);
+      this.deleteVersion.set(null);
+      this.deleteOpen.set(false);
+    }
+  }
+
+  onDeleteClose(): void {
+    if (this.deletionPending()) {
+      return;
+    }
+    this.deleteTaskId.set(null);
+    this.deleteVersionDeleted.set(false);
+    this.deleteVersion.set(null);
+  }
+
   onCloseDetail(): void {
     this.service.closeDetail();
   }
@@ -121,6 +172,10 @@ export class TrainingTasksComponent implements OnInit, OnDestroy {
     return job.status === 'done';
   }
 
+  isDeletable(job: TrainingJob): boolean {
+    return !isActiveTrainingStatus(job.status);
+  }
+
   isCancelling(taskId: string): boolean {
     return this.cancellingTaskId() === taskId;
   }
@@ -129,4 +184,11 @@ export class TrainingTasksComponent implements OnInit, OnDestroy {
   protected readonly formatTrainingDuration = formatTrainingDuration;
   protected readonly trainingScopeLabel = trainingScopeLabel;
   protected readonly trainingStatusLabel = trainingStatusLabel;
+
+  versionExists(versionId: number | null): boolean {
+    if (versionId === null) {
+      return false;
+    }
+    return this.modelVersions.findById(versionId) !== null;
+  }
 }

@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { AuthService } from '../../../core/auth/auth.service';
-import { OperationLogService } from '../../../shared/services/operation-log.service';
 import { ModelVersionService } from '../../../shared/services/model-version.service';
+import { OperationLogService } from '../../../shared/services/operation-log.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { TrainingTaskApiService } from './training-task-api.service';
 import {
@@ -27,7 +27,11 @@ export class TrainingTasksService {
   private detailTimer: number | null = null;
 
   readonly preview = signal<TrainingPreview | null>(null);
-  readonly jobs = signal<TrainingJob[]>([]);
+  readonly jobs = computed(() =>
+    this.versions.tasks()
+      .filter((task) => !task.deleted)
+      .map((task) => toJob(task)),
+  );
   readonly listState = signal<TrainingListState>('loading');
   readonly isPreviewLoading = signal(true);
   readonly loadError = signal<string | null>(null);
@@ -42,7 +46,7 @@ export class TrainingTasksService {
 
   readonly hasActiveJob = computed(
     () =>
-      this.jobs().some((job) => isActiveTrainingStatus(job.status)) ||
+      this.versions.tasks().some((task) => isActiveTrainingStatus(task.status)) ||
       (this.detail() !== null && isActiveTrainingStatus(this.detail()!.status)),
   );
 
@@ -75,8 +79,10 @@ export class TrainingTasksService {
         this.api.getJobs(1, 20),
       ]);
       this.preview.set(this.decoratePreview(preview));
-      this.applyJobs(list.items, true);
       this.isPreviewLoading.set(false);
+      this.listState.set(list.items.length > 0 ? 'ok' : 'empty');
+      this.loadError.set(null);
+      this.trackPreviousStatuses(list.items);
       if (this.hasActiveJob()) {
         this.startPolling();
       }
@@ -105,25 +111,19 @@ export class TrainingTasksService {
       return;
     }
     this.isStarting.set(true);
-    let started = false;
     try {
       const job = await this.api.startTraining();
       this.confirmOpen.set(false);
-      this.upsertJob(job);
-      this.previousStatuses.set(job.task_id, job.status);
+      this.trackPreviousStatuses([job]);
       this.logStart(job);
       this.toast.show('Training task started.', 'success');
       this.versions.setTrainingInProgress(true);
-      started = true;
-      await this.refresh();
+      this.startPolling();
     } catch (error) {
       this.versions.setTrainingInProgress(false);
       this.report(error, 'Failed to start training.');
     } finally {
       this.isStarting.set(false);
-      if (started) {
-        this.startPolling();
-      }
     }
   }
 
@@ -134,13 +134,11 @@ export class TrainingTasksService {
     this.cancellingTaskId.set(taskId);
     try {
       const job = await this.api.cancelJob(taskId);
-      this.upsertJob(job);
-      this.trackJob(job);
       if (this.detail()?.task_id === taskId) {
         this.detail.set(job);
         this.stopDetailPolling();
       }
-      await this.refresh();
+      this.handleSettled(job);
       if (!this.hasActiveJob()) {
         this.stopPolling();
       }
@@ -149,6 +147,44 @@ export class TrainingTasksService {
     } finally {
       this.cancellingTaskId.set(null);
     }
+  }
+
+  async deleteTaskWithVersion(taskId: string): Promise<boolean> {
+    const task = this.versions.findTask(taskId);
+    if (task === null) {
+      this.toast.show('Task not found.', 'error');
+      return false;
+    }
+    if (task.status === 'pending' || task.status === 'running') {
+      this.toast.show('Running tasks cannot be deleted.', 'warning');
+      return false;
+    }
+
+    const result = this.versions.deleteTaskWithVersion(taskId);
+    if (!result.ok) {
+      this.toast.show(result.reason ?? 'Unable to delete task.', 'error');
+      return false;
+    }
+
+    this.toast.dismissAll();
+    this.toast.show(`Deleted task ${taskId}.`, 'success');
+    this.operationLog.add({
+      operator: this.operatorName(),
+      format: 'Delete training task',
+      scope: `Task ${taskId}; result: success`,
+      recordCount: 0,
+      deleted: true,
+    });
+    if (result.deletedVersion !== undefined) {
+      this.operationLog.add({
+        operator: this.operatorName(),
+        format: 'Delete model version',
+        scope: `Version ${result.deletedVersion}; result: success`,
+        recordCount: 0,
+        deleted: true,
+      });
+    }
+    return true;
   }
 
   async openDetail(taskId: string): Promise<void> {
@@ -191,16 +227,10 @@ export class TrainingTasksService {
     };
   }
 
-  private applyJobs(items: TrainingJob[], initial: boolean): void {
-    for (const job of items) {
-      if (!initial) {
-        this.trackJob(job);
-      } else {
-        this.previousStatuses.set(job.task_id, job.status);
-      }
+  private trackPreviousStatuses(items: TrainingJob[]): void {
+    for (const item of items) {
+      this.previousStatuses.set(item.task_id, item.status);
     }
-    this.jobs.set(items);
-    this.listState.set(items.length > 0 ? 'ok' : 'empty');
   }
 
   private trackJob(job: TrainingJob): void {
@@ -213,57 +243,32 @@ export class TrainingTasksService {
       this.handleSettled(job);
     }
     this.previousStatuses.set(job.task_id, job.status);
-    this.jobs.update((list) => {
-      if (!list.some((item) => item.task_id === job.task_id)) {
-        return list;
-      }
-      return list.map((item) => (item.task_id === job.task_id ? job : item));
-    });
   }
 
   private handleSettled(job: TrainingJob): void {
     this.operationLog.add({
       operator: this.operatorName(),
-      format: job.status === 'done' ? 'Training completed' : job.status === 'cancelled' ? 'Terminate training' : 'Training failed',
+      format:
+        job.status === 'done'
+          ? 'Training completed'
+          : job.status === 'cancelled'
+            ? 'Terminate training'
+            : 'Training failed',
       scope: `Task ${job.task_id}; ${trainingScopeLabel(job.scope)}; ${job.sample_count ?? 0} samples`,
       recordCount: job.sample_count ?? 0,
       deleted: false,
     });
 
     if (job.status === 'done') {
-      const metrics = job.metrics;
-      const version = this.versions.addVersion({
-        version: job.model_version ?? this.versions.nextVersion(),
-        trainedAt: job.finished_at,
-        sampleCount: job.sample_count,
-        accuracy: metrics?.accuracy_macro ?? null,
-        metrics:
-          metrics === null
-            ? null
-            : {
-                accuracyMacro: metrics.accuracy_macro,
-                accuracyWeighted: null,
-                perClass: { ...metrics.per_class },
-                byCombo: null,
-                sampleCount: job.sample_count,
-                droppedCount: 0,
-                evalMode: metrics.eval_mode,
-                isPlaceholder: metrics.is_placeholder,
-              },
-        trainingScope: job.scope,
-        parentVersionId: this.versions.activeVersion()?.versionId ?? null,
-        type: 'local',
-      });
-      this.api.markCorrectionsIncluded();
       this.operationLog.add({
         operator: this.operatorName(),
         format: 'Create model version',
-        scope: `Version ${version.version}; result: success`,
+        scope: `Version ${job.model_version}; result: success`,
         recordCount: job.sample_count ?? 0,
         deleted: false,
       });
       this.toast.show(
-        `Training completed. Candidate version ${version.version} is available.`,
+        `Training completed. Candidate version ${job.model_version} is available.`,
         'success',
       );
       this.versions.setTrainingInProgress(false);
@@ -302,9 +307,9 @@ export class TrainingTasksService {
         this.api.getJobs(1, 20),
       ]);
       this.preview.set(this.decoratePreview(preview));
-      this.applyJobs(list.items, false);
       this.isPreviewLoading.set(false);
       this.loadError.set(null);
+      this.trackPreviousStatuses(list.items);
       if (!this.hasActiveJob()) {
         this.stopPolling();
       }
@@ -358,18 +363,6 @@ export class TrainingTasksService {
     }
   }
 
-  private upsertJob(job: TrainingJob): void {
-    this.jobs.update((list) => {
-      if (!list.some((item) => item.task_id === job.task_id)) {
-        return [job, ...list];
-      }
-      return list.map((item) => (item.task_id === job.task_id ? job : item));
-    });
-    if (this.listState() !== 'ok') {
-      this.listState.set('ok');
-    }
-  }
-
   private report(error: unknown, message: string): void {
     this.traceId.set(this.traceOf(error));
     this.toast.show(message, 'error');
@@ -382,4 +375,38 @@ export class TrainingTasksService {
     }
     return '';
   }
+}
+
+function toJob(task: {
+  taskId: string;
+  status: string;
+  scope: string;
+  sampleCount: number | null;
+  createdAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+  durationMs: number | null;
+  progress: number;
+  modelVersion: string | null;
+  modelVersionId: string | null;
+  createdVersionId: number | null;
+  deleted: boolean;
+}): TrainingJob {
+  return {
+    task_id: task.taskId,
+    status: task.status as TrainingJob['status'],
+    scope: task.scope as TrainingJob['scope'],
+    sample_count: task.sampleCount,
+    created_at: task.createdAt,
+    started_at: task.startedAt,
+    finished_at: task.finishedAt,
+    duration_ms: task.durationMs,
+    progress: task.progress,
+    model_version: task.modelVersion,
+    model_version_id: task.modelVersionId,
+    created_version_id: task.createdVersionId,
+    deleted: task.deleted,
+    log_summary: null,
+    metrics: null,
+  };
 }

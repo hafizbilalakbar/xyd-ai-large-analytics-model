@@ -13,6 +13,7 @@ import { VersionTimelineComponent } from '../../components/version-timeline/vers
 import { AccuracyComparisonCardComponent } from '../../components/accuracy-comparison-card/accuracy-comparison-card.component';
 import { VersionDetailsDialogComponent } from '../../components/version-details-dialog/version-details-dialog.component';
 import { ActivateVersionDialogComponent } from '../../components/activate-version-dialog/activate-version-dialog.component';
+import { VersionDeleteDialogComponent } from '../../components/version-delete-dialog/version-delete-dialog.component';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import { ToastContainerComponent } from '../../../../shared/components/toast-container/toast-container.component';
 
@@ -25,6 +26,7 @@ import { ToastContainerComponent } from '../../../../shared/components/toast-con
     AccuracyComparisonCardComponent,
     VersionDetailsDialogComponent,
     ActivateVersionDialogComponent,
+    VersionDeleteDialogComponent,
     IconComponent,
     ToastContainerComponent,
   ],
@@ -51,11 +53,20 @@ export class VersionManagementPageComponent implements OnInit {
   readonly activateOpen = signal(false);
   readonly activationPending = signal(false);
 
+  readonly deleteVersion = signal<string | null>(null);
+  readonly deleteOpen = signal(false);
+  readonly deletionPending = signal(false);
+  readonly deleteTaskDeleted = signal(false);
+  readonly deleteTaskId = signal<string | null>(null);
+
   readonly isLoading = computed(
     () => this.listState() === 'loading' && this.versions().length === 0,
   );
   readonly isError = computed(() => this.listState() === 'error');
   readonly showContent = computed(() => this.listState() === 'ok');
+
+  readonly canDeleteVersion = (versionId: number): boolean =>
+    this.service.canDeleteVersion(versionId);
 
   readonly skeletonRows = [0, 1];
 
@@ -80,13 +91,13 @@ export class VersionManagementPageComponent implements OnInit {
   async onActivateConfirm(version: string): Promise<void> {
     this.activationPending.set(true);
     const versionId = this.versions().find((item) => item.version === version)?.versionId;
-    if (versionId === undefined) {
+    try {
+      if (versionId === undefined) {
+        return;
+      }
+      await this.service.activateVersion(versionId);
+    } finally {
       this.activationPending.set(false);
-      return;
-    }
-    const activated = await this.service.activateVersion(versionId);
-    this.activationPending.set(false);
-    if (activated) {
       this.activateOpen.set(false);
       this.activateVersion.set(null);
     }
@@ -112,5 +123,47 @@ export class VersionManagementPageComponent implements OnInit {
   onDetailsClose(): void {
     this.detailsOpen.set(false);
     this.details.set(null);
+  }
+
+  onDeleteVersion(versionId: number): void {
+    const version = this.versions().find((item) => item.versionId === versionId);
+    if (version === undefined) {
+      return;
+    }
+    this.deleteVersion.set(version.version);
+    this.deleteTaskDeleted.set(version.sourceTaskId !== null);
+    this.deleteTaskId.set(version.sourceTaskId ?? null);
+    this.deleteOpen.set(true);
+  }
+
+  async onDeleteConfirm(): Promise<void> {
+    const version = this.versions().find((item) => item.version === this.deleteVersion());
+    if (version === undefined) {
+      this.deleteOpen.set(false);
+      this.deleteVersion.set(null);
+      this.deleteTaskDeleted.set(false);
+      this.deleteTaskId.set(null);
+      return;
+    }
+    this.deletionPending.set(true);
+    try {
+      await this.service.deleteVersionWithTask(version.versionId);
+    } finally {
+      this.deletionPending.set(false);
+      this.deleteOpen.set(false);
+      this.deleteVersion.set(null);
+      this.deleteTaskDeleted.set(false);
+      this.deleteTaskId.set(null);
+    }
+  }
+
+  onDeleteClose(): void {
+    if (this.deletionPending()) {
+      return;
+    }
+    this.deleteOpen.set(false);
+    this.deleteVersion.set(null);
+    this.deleteTaskDeleted.set(false);
+    this.deleteTaskId.set(null);
   }
 }

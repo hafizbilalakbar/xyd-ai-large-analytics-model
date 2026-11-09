@@ -19,9 +19,11 @@ import type { VersionTimelineItem } from '../../data-access/version-management.m
 export class VersionTimelineComponent {
   readonly versions = input.required<readonly VersionTimelineItem[]>();
   readonly activeVersion = input.required<string>();
+  readonly canDelete = input<(versionId: number) => boolean>(() => false);
 
   readonly activate = output<number>();
   readonly details = output<number>();
+  readonly delete = output<number>();
 
   readonly modelTypeLabel = (type: 'basic' | 'local'): string =>
     type === 'basic' ? 'Basic Model' : 'Local Model';
@@ -34,6 +36,9 @@ export class VersionTimelineComponent {
 
   readonly barWidth = (accuracy: number | null): number =>
     accuracy === null ? 0 : Math.max(0, Math.min(100, accuracy * 100));
+
+  readonly versionCanDelete = (version: VersionTimelineItem): boolean =>
+    this.canDelete()(version.versionId);
 
   private readonly displayValues = signal<Record<
     number,

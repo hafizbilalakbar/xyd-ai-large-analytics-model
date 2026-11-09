@@ -35,6 +35,8 @@ export interface TrainingJob {
   progress: number;
   model_version: string | null;
   model_version_id: string | null;
+  created_version_id: number | null;
+  deleted: boolean;
   log_summary: string | null;
   metrics: TrainingMetrics | null;
 }

@@ -7,6 +7,7 @@ import type {
   ApiEvaluationMetrics,
   ApiModelVersion,
   ClassAccuracy,
+  DeleteVersionResponse,
   GetClassAccuracyResponse,
   GetVersionsResponse,
 } from './version-management.models';
@@ -182,6 +183,30 @@ export class VersionManagementApiService {
       throw await parseError(response, 'Failed to activate version.');
     }
     return (await response.json()) as ActivationApiResponse;
+  }
+
+  async deleteVersion(versionId: number): Promise<DeleteVersionResponse> {
+    if (USE_VERSION_MANAGEMENT_MOCK) {
+      await delayMs(340);
+      const record = this.versionStore.findById(versionId);
+      if (record === null) {
+        throw new Error('Version not found.');
+      }
+      if (record.active) {
+        throw new Error(`${record.version} is in use. Activate another version before deleting.`);
+      }
+      return {
+        version_id: record.versionId,
+        version: record.version,
+      };
+    }
+    const response = await fetch(`/api/v1/models/${versionId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw await parseError(response, 'Failed to delete version.');
+    }
+    return (await response.json()) as DeleteVersionResponse;
   }
 }
 

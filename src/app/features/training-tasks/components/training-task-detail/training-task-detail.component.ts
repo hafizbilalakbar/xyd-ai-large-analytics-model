@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { ModelVersionService } from '../../../../shared/services/model-version.service';
 import {
   TrainingJob,
   formatAccuracy,
@@ -23,6 +24,8 @@ export class TrainingTaskDetailComponent {
   readonly open = input.required<boolean>();
   readonly job = input<TrainingJob | null>(null);
   readonly cancelling = input(false);
+
+  private readonly modelVersions = inject(ModelVersionService);
 
   readonly close = output<void>();
   readonly cancelTask = output<string>();
@@ -64,10 +67,14 @@ export class TrainingTaskDetailComponent {
     if (!job) {
       return '—';
     }
-    if (job.model_version) {
-      return job.model_version;
+    if (!job.model_version) {
+      return job.model_version_id ? 'Produced' : '(Not yet produced)';
     }
-    return job.model_version_id ? 'Produced' : '(Not yet produced)';
+    const exists = this.modelVersions.findByVersion(job.model_version) !== null;
+    if (!exists) {
+      return `${job.model_version} (Version deleted)`;
+    }
+    return job.model_version;
   });
 
   readonly logText = computed(() => this.job()?.log_summary || '(No logs available.)');

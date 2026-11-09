@@ -2,6 +2,10 @@ import { Injectable, inject } from '@angular/core';
 import { ParametersAndFormulasService } from '../../parameters-and-formulas/data-access/parameters-and-formulas.service';
 import { LowConfidenceReviewService } from '../../low-confidence-review/data-access/low-confidence-review.service';
 import { ModelVersionService } from '../../../shared/services/model-version.service';
+import type {
+  TrainingTask,
+  TrainingTaskDraft,
+} from '../../../shared/services/model-version.service';
 import {
   TrainingJob,
   TrainingJobList,
@@ -19,7 +23,6 @@ import {
   createMockTaskId,
 } from './training-task.mock';
 
-const STORAGE_KEY_JOBS = 'xyd_training_jobs_v1';
 const STORAGE_KEY_CORRECTION_BASELINE = 'xyd_training_correction_baseline_v1';
 const API_BASE = '/api/v1/training';
 
@@ -43,13 +46,49 @@ function logTime(value: Date): string {
   return value.toLocaleTimeString('en-GB', { hour12: false });
 }
 
+function toTaskDraft(job: TrainingJob): TrainingTaskDraft {
+  return {
+    taskId: job.task_id,
+    status: job.status,
+    scope: job.scope,
+    sampleCount: job.sample_count,
+    createdAt: job.created_at,
+    startedAt: job.started_at,
+    finishedAt: job.finished_at,
+    durationMs: job.duration_ms,
+    progress: job.progress,
+    modelVersion: job.model_version,
+    modelVersionId: job.model_version_id,
+    createdVersionId: null,
+  };
+}
+
+function toJob(task: TrainingTask): TrainingJob {
+  return {
+    task_id: task.taskId,
+    status: task.status,
+    scope: task.scope,
+    sample_count: task.sampleCount,
+    created_at: task.createdAt,
+    started_at: task.startedAt,
+    finished_at: task.finishedAt,
+    duration_ms: task.durationMs,
+    progress: task.progress,
+    model_version: task.modelVersion,
+    model_version_id: task.modelVersionId,
+    created_version_id: task.createdVersionId,
+    deleted: task.deleted,
+    log_summary: null,
+    metrics: null,
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class TrainingTaskApiService {
   private readonly parameters = inject(ParametersAndFormulasService);
   private readonly review = inject(LowConfidenceReviewService);
   private readonly versions = inject(ModelVersionService);
 
-  private jobs: TrainingJob[] = this.loadJobs();
   private correctionBaseline: number | null = this.loadCorrectionBaseline();
 
   async getPreview(): Promise<TrainingPreview> {
@@ -69,8 +108,11 @@ export class TrainingTaskApiService {
   async startTraining(): Promise<TrainingJob> {
     if (USE_TRAINING_TASK_MOCK) {
       await delay(420);
-      this.advanceJobs();
-      if (this.jobs.some((job) => job.status === 'pending' || job.status === 'running')) {
+      if (
+        this.versions.tasks().some(
+          (item) => item.status === 'pending' || item.status === 'running',
+        )
+      ) {
         throw new Error('A training task is already in progress.');
       }
       const now = new Date();
@@ -86,11 +128,12 @@ export class TrainingTaskApiService {
         progress: 0,
         model_version: null,
         model_version_id: null,
+        created_version_id: null,
+        deleted: false,
         log_summary: `[${logTime(now)}] Task queued.`,
         metrics: null,
       };
-      this.jobs = [job, ...this.jobs];
-      this.persistJobs();
+      this.versions.addTask(toTaskDraft(job));
       return clone(job);
     }
     const response = await this.request<StartTrainingResponse>('POST', `${API_BASE}/start`);
@@ -101,9 +144,12 @@ export class TrainingTaskApiService {
     if (USE_TRAINING_TASK_MOCK) {
       await delay(160);
       this.advanceJobs();
-      const ordered = [...this.jobs].sort(
-        (left, right) => Date.parse(right.created_at) - Date.parse(left.created_at),
-      );
+      const tasks = this.versions.tasks();
+      const ordered = [...tasks]
+        .map((item) => toJob(item))
+        .sort(
+          (left, right) => Date.parse(right.created_at) - Date.parse(left.created_at),
+        );
       const start = Math.max(0, (page - 1) * pageSize);
       return clone({
         items: ordered.slice(start, start + pageSize),
@@ -122,11 +168,11 @@ export class TrainingTaskApiService {
     if (USE_TRAINING_TASK_MOCK) {
       await delay(150);
       this.advanceJobs();
-      const job = this.jobs.find((item) => item.task_id === taskId);
-      if (!job) {
+      const task = this.versions.findTask(taskId);
+      if (!task) {
         throw new Error(`Training task ${taskId} was not found.`);
       }
-      return clone(job);
+      return clone(toJob(task));
     }
     return this.request<TrainingJob>('GET', `${API_BASE}/jobs/${encodeURIComponent(taskId)}`);
   }
@@ -135,25 +181,46 @@ export class TrainingTaskApiService {
     if (USE_TRAINING_TASK_MOCK) {
       await delay(220);
       this.advanceJobs();
-      const job = this.jobs.find((item) => item.task_id === taskId);
-      if (!job) {
+      const task = this.versions.findTask(taskId);
+      if (!task) {
         throw new Error(`Training task ${taskId} was not found.`);
       }
-      if (job.status !== 'pending' && job.status !== 'running') {
+      if (task.status !== 'pending' && task.status !== 'running') {
         throw new Error('The training task is no longer running.');
       }
       const now = new Date();
-      job.status = 'cancelled';
-      job.finished_at = now.toISOString();
-      job.duration_ms = now.getTime() - Date.parse(job.created_at);
-      this.appendLog(job, 'Training task terminated by the operator.', now);
-      this.persistJobs();
-      return clone(job);
+      const startedAt = task.startedAt ?? task.createdAt;
+      const elapsed = now.getTime() - Date.parse(startedAt);
+      const updated = this.versions.updateTask(taskId, {
+        status: 'cancelled',
+        finishedAt: now.toISOString(),
+        durationMs: elapsed,
+      });
+      if (updated === null) {
+        throw new Error(`Training task ${taskId} was not found.`);
+      }
+      return clone(toJob(updated));
     }
     return this.request<TrainingJob>(
       'POST',
       `${API_BASE}/jobs/${encodeURIComponent(taskId)}/cancel`,
     );
+  }
+
+  async deleteTrainingTask(taskId: string): Promise<void> {
+    if (USE_TRAINING_TASK_MOCK) {
+      await delay(220);
+      const task = this.versions.findTask(taskId);
+      if (!task) {
+        throw new Error(`Training task ${taskId} was not found.`);
+      }
+      if (task.status === 'pending' || task.status === 'running') {
+        throw new Error('Running tasks cannot be deleted.');
+      }
+      this.versions.updateTask(taskId, { status: 'cancelled', deleted: true });
+      return;
+    }
+    await this.request('DELETE', `${API_BASE}/jobs/${encodeURIComponent(taskId)}`);
   }
 
   markCorrectionsIncluded(): void {
@@ -167,58 +234,83 @@ export class TrainingTaskApiService {
   private advanceJobs(): void {
     const now = new Date();
     const nowMs = now.getTime();
-    let changed = false;
 
-    for (const job of this.jobs) {
-      if (job.status === 'pending') {
-        const createdAt = Date.parse(job.created_at);
+    for (const task of this.versions.tasks()) {
+      if (task.status === 'pending') {
+        const createdAt = Date.parse(task.createdAt);
         if (nowMs - createdAt >= TRAINING_QUEUE_MS) {
-          job.status = 'running';
-          job.started_at = new Date(createdAt + TRAINING_QUEUE_MS).toISOString();
-          job.progress = 1;
-          this.appendLog(job, 'Training started.', new Date(createdAt + TRAINING_QUEUE_MS));
-          changed = true;
+          this.versions.updateTask(task.taskId, {
+            status: 'running',
+            startedAt: new Date(createdAt + TRAINING_QUEUE_MS).toISOString(),
+            progress: 1,
+          });
         }
       }
 
-      if (job.status === 'running') {
-        const startedAt = Date.parse(job.started_at ?? job.created_at);
+      if (task.status === 'running') {
+        const startedAt = Date.parse(task.startedAt ?? task.createdAt);
         const elapsed = Math.max(0, nowMs - startedAt);
         const progress = Math.min(99, Math.floor((elapsed / TRAINING_RUN_MS) * 100));
-        if (progress > job.progress) {
-          job.progress = progress;
-          changed = true;
+        const current = this.versions.findTask(task.taskId);
+        if (current && progress > current.progress) {
+          this.versions.updateTask(task.taskId, { progress });
         }
         if (elapsed >= TRAINING_RUN_MS) {
-          this.finishJob(job, now);
-          changed = true;
+          this.finishJob(task, now);
         }
       }
-    }
-
-    if (changed) {
-      this.persistJobs();
     }
   }
 
-  private finishJob(job: TrainingJob, now: Date): void {
+  private finishJob(task: TrainingTask, now: Date): void {
+    const job = toJob(task);
     const failureReason = this.failureReason(job);
-    job.finished_at = now.toISOString();
-    job.duration_ms = now.getTime() - Date.parse(job.created_at);
+    const nowIso = now.toISOString();
+    const elapsed = now.getTime() - Date.parse(task.createdAt);
+    const baseUpdates: { finishedAt: string; durationMs: number } = {
+      finishedAt: nowIso,
+      durationMs: elapsed,
+    };
 
     if (failureReason) {
-      job.status = 'failed';
-      this.appendLog(job, failureReason, now);
+      this.versions.updateTask(task.taskId, {
+        ...baseUpdates,
+        status: 'failed',
+      });
       return;
     }
 
-    job.status = 'done';
-    job.progress = 100;
-    job.model_version = this.versions.nextVersion();
-    job.model_version_id = `candidate-${job.task_id}`;
-    job.metrics = this.buildMetrics();
-    this.appendLog(job, 'Grouped rotation validation completed.', now);
-    this.appendLog(job, `Candidate version ${job.model_version} produced.`, now);
+    const nextVersion = this.versions.nextVersion();
+    this.versions.updateTask(task.taskId, {
+      ...baseUpdates,
+      status: 'done',
+      progress: 100,
+      modelVersion: nextVersion,
+      modelVersionId: `candidate-${task.taskId}`,
+    });
+
+    const metrics = this.buildMetrics();
+    const version = this.versions.addVersion({
+      version: nextVersion,
+      trainedAt: nowIso,
+      sampleCount: task.sampleCount,
+      accuracy: metrics.accuracy_macro,
+      metrics: {
+        accuracyMacro: metrics.accuracy_macro,
+        accuracyWeighted: null,
+        perClass: { ...metrics.per_class },
+        byCombo: null,
+        sampleCount: task.sampleCount,
+        droppedCount: 0,
+        evalMode: metrics.eval_mode,
+        isPlaceholder: metrics.is_placeholder,
+      },
+      trainingScope: task.scope,
+      parentVersionId: this.versions.activeVersion()?.versionId ?? null,
+      type: 'local',
+    });
+    this.versions.updateTask(task.taskId, { createdVersionId: version.versionId });
+    this.markCorrectionsIncluded();
   }
 
   private failureReason(job: TrainingJob): string | null {
@@ -239,46 +331,12 @@ export class TrainingTaskApiService {
     return buildTrainingMetrics();
   }
 
-  private appendLog(job: TrainingJob, message: string, at: Date): void {
-    const line = `[${logTime(at)}] ${message}`;
-    job.log_summary = job.log_summary ? `${job.log_summary}\n${line}` : line;
-  }
-
   private ensureCorrectionBaseline(corrected: number): number {
     if (this.correctionBaseline === null) {
       this.correctionBaseline = corrected;
       this.saveCorrectionBaseline();
     }
     return this.correctionBaseline;
-  }
-
-  private loadJobs(): TrainingJob[] {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY_JOBS);
-      if (stored) {
-        const parsed: unknown = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          return (parsed as unknown[]).filter((item): item is TrainingJob => {
-            if (typeof item !== 'object' || item === null) {
-              return false;
-            }
-            const candidate = item as Partial<TrainingJob>;
-            return typeof candidate.task_id === 'string' && typeof candidate.created_at === 'string';
-          });
-        }
-      }
-    } catch {
-      return [];
-    }
-    return [];
-  }
-
-  private persistJobs(): void {
-    try {
-      localStorage.setItem(STORAGE_KEY_JOBS, JSON.stringify(this.jobs));
-    } catch {
-      return;
-    }
   }
 
   private loadCorrectionBaseline(): number | null {
@@ -307,7 +365,7 @@ export class TrainingTaskApiService {
     }
   }
 
-  private async request<T>(method: 'GET' | 'POST', path: string): Promise<T> {
+  private async request<T>(method: 'GET' | 'POST' | 'DELETE', path: string): Promise<T> {
     const response = await fetch(path, { method });
     if (!response.ok) {
       const error = new Error(

@@ -62,6 +62,7 @@ function toRecord(item: ApiModelVersion): ModelVersionRecord {
           },
     parentVersionId: item.parent_version_id ?? null,
     trainingScope: item.training_scope ?? null,
+    sourceTaskId: null,
   };
 }
 
@@ -76,6 +77,7 @@ function toDetails(item: ApiModelVersion): VersionDetails {
     active: item.is_active,
     evalMode: item.metrics?.eval_mode ?? null,
     trainingScope: item.training_scope ?? null,
+    sourceTaskId: null,
   };
 }
 
@@ -104,6 +106,7 @@ export class VersionManagementService {
       sampleSize: record.sampleCount,
       accuracy: record.accuracy,
       active: record.active,
+      sourceTaskId: record.sourceTaskId,
     })),
   );
 
@@ -233,6 +236,55 @@ export class VersionManagementService {
     } finally {
       this.isActivating.set(false);
     }
+  }
+
+  async deleteVersionWithTask(versionId: number): Promise<boolean> {
+    const target = this.modelVersion.findById(versionId);
+    if (target === null) {
+      this.toast.show('Version not found.', 'error');
+      return false;
+    }
+    if (target.active) {
+      this.toast.show(`${target.version} is in use. Activate another version before deleting.`, 'warning');
+      return false;
+    }
+    const versionCount = this.modelVersion.versions().length;
+    if (versionCount <= 2) {
+      this.toast.show('Cannot delete the last remaining version.', 'warning');
+      return false;
+    }
+
+    const result = this.modelVersion.deleteVersionWithTask(versionId);
+    if (!result.ok) {
+      this.toast.show(result.reason ?? 'Unable to delete version.', 'error');
+      return false;
+    }
+
+    this.toast.dismissAll();
+    await this.refreshComparison();
+    this.toast.show(`Deleted version ${target.version}.`, 'success');
+    this.operationLog.add({
+      operator: this.auth.user()?.name ?? 'Administrator',
+      format: 'Delete model version',
+      scope: `Version ${target.version}; result: success`,
+      recordCount: 0,
+      deleted: true,
+    });
+    if (result.deletedTaskId !== undefined) {
+      this.operationLog.add({
+        operator: this.auth.user()?.name ?? 'Administrator',
+        format: 'Delete training task',
+        scope: `Task ${result.deletedTaskId}; result: success`,
+        recordCount: 0,
+        deleted: true,
+      });
+    }
+    return true;
+  }
+
+  canDeleteVersion(versionId: number): boolean {
+    const result = this.modelVersion.canDeleteVersion(versionId);
+    return result.allowed;
   }
 
   async retryComparison(): Promise<void> {

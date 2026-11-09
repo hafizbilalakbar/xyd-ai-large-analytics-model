@@ -179,10 +179,24 @@
                           }
                           Terminate
                         </button>
-                      } @else if (isDone(job)) {
+                      } @else {
                         <span class="row-actions__sep" aria-hidden="true">|</span>
-                        <button type="button" class="row-action" (click)="onGoVersions()">
-                          Go to Version Management
+                        @if (isDone(job)) {
+                          @if (versionExists(job.created_version_id)) {
+                            <button type="button" class="row-action" (click)="onGoVersions()">
+                              Go to Version Management
+                            </button>
+                          } @else {
+                            <span class="row-action row-action--muted">Version deleted</span>
+                          }
+                        }
+                        <span class="row-actions__sep" aria-hidden="true">|</span>
+                        <button
+                          type="button"
+                          class="row-action row-action--delete"
+                          [disabled]="!isDeletable(job)"
+                          (click)="onDeleteTask(job.task_id)">
+                          Delete
                         </button>
                       }
                     </div>
@@ -211,3 +225,12 @@
   (close)="onCloseDetail()"
   (cancelTask)="onCancelTask($event)"
   (goToVersions)="onGoVersions()" />
+
+<app-task-delete-dialog
+  [open]="deleteOpen()"
+  [taskId]="deleteTaskId() ?? ''"
+  [pending]="deletionPending()"
+  [versionDeleted]="deleteVersionDeleted()"
+  [version]="deleteVersion()"
+  (close)="onDeleteClose()"
+  (confirm)="onDeleteConfirm()" />

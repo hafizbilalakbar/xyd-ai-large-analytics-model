@@ -40,8 +40,10 @@
       <app-version-timeline
         [versions]="versions()"
         [activeVersion]="activeVersion()"
+        [canDelete]="canDeleteVersion"
         (activate)="onActivateVersion($event)"
-        (details)="onDetailsVersion($event)">
+        (details)="onDetailsVersion($event)"
+        (delete)="onDeleteVersion($event)">
       </app-version-timeline>
 
       <app-accuracy-comparison-card
@@ -68,6 +70,16 @@
     (close)="onActivateClose()"
     (confirm)="onActivateConfirm($event)">
   </app-activate-version-dialog>
+
+  <app-version-delete-dialog
+    [open]="deleteOpen()"
+    [version]="deleteVersion() ?? ''"
+    [pending]="deletionPending()"
+    [taskDeleted]="deleteTaskDeleted()"
+    [taskId]="deleteTaskId()"
+    (close)="onDeleteClose()"
+    (confirm)="onDeleteConfirm()">
+  </app-version-delete-dialog>
 
   <app-toast-container />
 </div>
