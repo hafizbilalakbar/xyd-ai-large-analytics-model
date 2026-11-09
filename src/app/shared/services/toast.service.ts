@@ -41,6 +41,10 @@ export class ToastService {
     }, 250);
   }
 
+  dismissAll() {
+    this.toasts().forEach(t => this.dismiss(t.id));
+  }
+
   pause(id: number) {
     this.clearTimer(id);
   }

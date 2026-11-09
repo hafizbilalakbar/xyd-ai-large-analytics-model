@@ -1,0 +1,32 @@
+<div class="accuracy-card">
+  <div class="accuracy-card__header">
+    <h2 class="accuracy-card__title">Accuracy comparison of each category</h2>
+
+    @if (olderVersion() && newerVersion()) {
+      <div
+        class="accuracy-card__legend"
+        [attr.aria-label]="olderVersion() + ' compared with ' + newerVersion()">
+        <span class="legend-swatch legend-swatch--older" aria-hidden="true"></span>
+        <span class="legend-version">{{ olderVersion() }}</span>
+        <span class="legend-vs">vs</span>
+        <span class="legend-swatch legend-swatch--newer" aria-hidden="true"></span>
+        <span class="legend-version">{{ newerVersion() }}</span>
+      </div>
+    }
+  </div>
+
+  <div class="accuracy-card__chart-box">
+    <div
+      #chartHost
+      class="accuracy-chart"
+      role="img"
+      [attr.aria-label]="chartAriaLabel()">
+    </div>
+  </div>
+
+  @if (showNoDataNote()) {
+    <p class="no-data-note">
+      No category-level accuracy data is available for these versions.
+    </p>
+  }
+</div>

@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   OnDestroy,
   output,
@@ -11,6 +12,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { APP_SETTINGS } from '../../core/config/app-settings';
 import { NAVIGATION_ITEMS } from '../../core/config/navigation.config';
 import { IconComponent } from '../../shared/components/icon/icon.component';
+import { ModelVersionService } from '../../shared/services/model-version.service';
 
 type SidebarMode = 'desktop' | 'tablet' | 'mobile';
 
@@ -30,8 +32,11 @@ export class SidebarComponent implements OnDestroy {
   readonly toggleCollapse = output<void>();
   readonly closeDrawer = output<void>();
 
+  private readonly modelVersions = inject(ModelVersionService);
+
   protected readonly navigationItems = NAVIGATION_ITEMS;
   protected readonly settings = APP_SETTINGS;
+  protected readonly activeModelVersion = this.modelVersions.activeVersionLabel;
   protected readonly toggleLabel = computed(() =>
     this.collapsed() ? 'Expand sidebar' : 'Collapse sidebar',
   );

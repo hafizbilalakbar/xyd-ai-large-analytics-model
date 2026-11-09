@@ -38,9 +38,7 @@ export class TrainingTasksService {
   readonly detailOpen = signal(false);
   readonly confirmOpen = signal(false);
 
-  readonly activeVersion = computed(
-    () => this.preview()?.active_version ?? this.versions.activeVersionLabel(),
-  );
+  readonly activeVersion = computed(() => this.versions.activeVersionLabel());
 
   readonly hasActiveJob = computed(
     () =>

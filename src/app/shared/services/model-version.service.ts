@@ -31,6 +31,8 @@ const INITIAL_VERSIONS: readonly ModelVersionRecord[] = [
   },
 ];
 
+export const ACTIVE_MODEL_VERSION_STORAGE_KEY = 'xyd_active_version_v1';
+
 @Injectable({ providedIn: 'root' })
 export class ModelVersionService {
   private readonly versionState = signal<ModelVersionRecord[]>([...INITIAL_VERSIONS]);
@@ -42,6 +44,10 @@ export class ModelVersionService {
   );
 
   readonly activeVersionLabel = computed(() => this.activeVersion()?.version ?? '—');
+
+  constructor() {
+    this.restoreActiveVersion();
+  }
 
   addVersion(draft: ModelVersionDraft): ModelVersionRecord {
     const existing = this.versionState().find((item) => item.version === draft.version);
@@ -57,6 +63,58 @@ export class ModelVersionService {
     };
     this.versionState.update((list) => [record, ...list]);
     return record;
+  }
+
+  ensureVersions(records: readonly ModelVersionRecord[]): void {
+    this.versionState.update((list) => {
+      const next = [...list];
+      for (const record of records) {
+        const index = next.findIndex((item) => item.version === record.version);
+        if (index === -1) {
+          next.push({ ...record });
+          continue;
+        }
+        next[index] = {
+          ...next[index],
+          type: record.type,
+          trainedAt: record.trainedAt ?? next[index].trainedAt,
+          sampleCount: record.sampleCount ?? next[index].sampleCount,
+        };
+      }
+      return next;
+    });
+  }
+
+  setActiveVersion(version: string): void {
+    this.versionState.update((list) =>
+      list.map((item) => ({ ...item, active: item.version === version })),
+    );
+  }
+
+  private restoreActiveVersion(): void {
+    try {
+      const stored = localStorage.getItem(ACTIVE_MODEL_VERSION_STORAGE_KEY);
+      if (stored === null || stored.length === 0) {
+        return;
+      }
+      this.versionState.update((list) => {
+        if (list.some((item) => item.version === stored)) {
+          return list.map((item) => ({ ...item, active: item.version === stored }));
+        }
+        return [
+          {
+            version: stored,
+            type: 'base',
+            trainedAt: null,
+            sampleCount: null,
+            active: true,
+          },
+          ...list.map((item) => ({ ...item, active: false })),
+        ];
+      });
+    } catch {
+      return;
+    }
   }
 
   nextVersion(): string {

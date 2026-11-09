@@ -1,0 +1,72 @@
+<div class="version-management">
+  <app-page-header
+    title="Model Evaluation and Version Management"
+    subtitle="Accuracy comparison, version activation and rollback">
+  </app-page-header>
+
+  @if (isLoading()) {
+    <div
+      class="skeleton"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading version management">
+      <div class="skeleton__timeline" aria-hidden="true">
+        @for (row of skeletonRows; track row) {
+          <div class="skeleton-row">
+            <span class="skeleton skeleton--dot"></span>
+            <span class="skeleton skeleton--name"></span>
+            <div class="skeleton-metrics">
+              <span class="skeleton skeleton--metric"></span>
+              <span class="skeleton skeleton--metric"></span>
+              <span class="skeleton skeleton--metric"></span>
+            </div>
+            <span class="skeleton skeleton--action"></span>
+          </div>
+        }
+      </div>
+      <div class="skeleton__chart" aria-hidden="true"></div>
+      <span class="sr-only">Loading version management…</span>
+    </div>
+  } @else if (isError()) {
+    <div class="state-card" role="alert">
+      <span class="state-card__icon" aria-hidden="true">
+        <app-icon name="alert-triangle" [size]="28" />
+      </span>
+      <p class="state-card__title">{{ loadError() }}</p>
+      <button type="button" class="state-card__retry" (click)="retry()">Retry</button>
+    </div>
+  } @else if (showContent()) {
+    <div class="version-content">
+      <app-version-timeline
+        [versions]="versions()"
+        [activeVersion]="activeVersion()"
+        (activate)="onActivateVersion($event)"
+        (details)="onDetailsVersion($event)">
+      </app-version-timeline>
+
+      @if (hasComparison()) {
+        <app-accuracy-comparison-card
+          [olderVersion]="comparison().olderVersion"
+          [newerVersion]="comparison().newerVersion"
+          [classAccuracies]="classAccuracies()">
+        </app-accuracy-comparison-card>
+      }
+    </div>
+  }
+
+  <app-version-details-dialog
+    [open]="detailsOpen()"
+    [version]="details()"
+    (close)="onDetailsClose()">
+  </app-version-details-dialog>
+
+  <app-activate-version-dialog
+    [open]="activateOpen()"
+    [version]="activateVersion() ?? ''"
+    [pending]="activationPending()"
+    (close)="onActivateClose()"
+    (confirm)="onActivateConfirm($event)">
+  </app-activate-version-dialog>
+
+  <app-toast-container />
+</div>
