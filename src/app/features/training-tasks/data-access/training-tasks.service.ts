@@ -118,6 +118,7 @@ export class TrainingTasksService {
       this.logStart(job);
       this.toast.show('Training task started.', 'success');
       this.versions.setTrainingInProgress(true);
+      this.listState.set('ok');
       this.startPolling();
     } catch (error) {
       this.versions.setTrainingInProgress(false);
@@ -184,6 +185,7 @@ export class TrainingTasksService {
         deleted: true,
       });
     }
+    this.listState.set(this.jobs().length > 0 ? 'ok' : 'empty');
     return true;
   }
 

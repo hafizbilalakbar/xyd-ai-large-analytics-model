@@ -2,9 +2,9 @@ import { TrainingPreview, TrainingMetrics, estimateTrainingEta } from './trainin
 
 export const USE_TRAINING_TASK_MOCK = true;
 
-export const TRAINING_POLL_INTERVAL_MS = 2000;
+export const TRAINING_POLL_INTERVAL_MS = 500;
 
-export const TRAINING_QUEUE_MS = 1800;
+export const TRAINING_QUEUE_MS = 300;
 
 export const TRAINING_RUN_MS = 16000;
 

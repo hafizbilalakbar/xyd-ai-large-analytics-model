@@ -251,10 +251,10 @@ export class TrainingTaskApiService {
         const startedAt = Date.parse(task.startedAt ?? task.createdAt);
         const elapsed = Math.max(0, nowMs - startedAt);
         const progress = Math.min(99, Math.floor((elapsed / TRAINING_RUN_MS) * 100));
-        const current = this.versions.findTask(task.taskId);
-        if (current && progress > current.progress) {
-          this.versions.updateTask(task.taskId, { progress });
-        }
+        this.versions.updateTask(task.taskId, {
+          progress,
+          durationMs: elapsed,
+        });
         if (elapsed >= TRAINING_RUN_MS) {
           this.finishJob(task, now);
         }
