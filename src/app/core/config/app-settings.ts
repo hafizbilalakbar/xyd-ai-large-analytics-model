@@ -3,6 +3,7 @@ export interface AppSettings {
   readonly shortName: string;
   readonly version: string;
   readonly statusLabel: string;
+  readonly brand: string;
 }
 
 export const APP_SETTINGS: AppSettings = {
@@ -10,4 +11,5 @@ export const APP_SETTINGS: AppSettings = {
   shortName: 'XYD AI Analytics',
   version: 'v1.0.0',
   statusLabel: 'All systems operational',
+  brand: 'XYD AI',
 };

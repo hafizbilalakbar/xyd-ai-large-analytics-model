@@ -7,6 +7,6 @@ export const PARAMETERS_AND_FORMULAS_ROUTES: Routes = [
       import(
         './pages/parameters-and-formulas-page/parameters-and-formulas-page.component'
       ).then((m) => m.ParametersAndFormulasPageComponent),
-    title: 'Parameter & Formula Configuration | XYD AI Platform',
+    title: 'Parameter & Formula Configuration',
   },
 ];

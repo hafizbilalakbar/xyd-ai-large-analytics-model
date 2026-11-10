@@ -7,6 +7,6 @@ export const REALTIME_MONITORING_ROUTES: Routes = [
       import('./pages/realtime-monitoring-page/realtime-monitoring-page.component').then(
         (component) => component.RealtimeMonitoringPageComponent,
       ),
-    title: 'Real-time Lock Monitoring | XYD AI Platform',
+    title: 'Real-time Lock Monitoring',
   },
 ];

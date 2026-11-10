@@ -7,6 +7,6 @@ export const LOGS_AND_MONITORING_ROUTES: Routes = [
       import('./pages/logs-and-monitoring/logs-and-monitoring.component').then(
         (component) => component.LogsAndMonitoringComponent,
       ),
-    title: 'Logs & Monitoring | XYD AI Platform',
+    title: 'Logs & Monitoring',
   },
 ];

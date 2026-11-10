@@ -7,6 +7,6 @@ export const TRAINING_TASKS_ROUTES: Routes = [
       import('./pages/training-tasks/training-tasks.component').then(
         (component) => component.TrainingTasksComponent,
       ),
-    title: 'Training Task Management | XYD AI Platform',
+    title: 'Training Task Management',
   },
 ];

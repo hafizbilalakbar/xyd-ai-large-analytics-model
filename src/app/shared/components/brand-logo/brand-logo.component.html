@@ -1,0 +1,42 @@
+<button
+  class="brand-logo"
+  type="button"
+  (click)="navigateHome()"
+  [attr.aria-label]="'XYD AI logo'"
+  [attr.aria-hidden]="showName() ? null : 'true'"
+>
+  <svg
+    class="brand-logo__mark"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 32 32"
+    [attr.width]="size()"
+    [attr.height]="size()"
+    [class.reduced-motion]="isReducedMotion()"
+  >
+    <defs>
+      <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#3b82f6" />
+        <stop offset="100%" stop-color="#2563eb" />
+      </linearGradient>
+    </defs>
+    <rect class="brand-logo__square" width="32" height="32" rx="6" fill="url(#brandGrad)" />
+    <path
+      class="brand-logo__x"
+      d="M10 10 L22 22 M22 10 L10 22"
+      stroke="#ffffff"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      fill="none"
+    />
+  </svg>
+
+  @if (showName()) {
+    <span class="brand-logo__name">
+      @if (shortName()) {
+        XYD AI
+      } @else {
+        XYD AI Large Model Locking Data Analysis and Learning Platform
+      }
+    </span>
+  }
+</button>

@@ -5,6 +5,6 @@ export const SAMPLE_SEARCH_ROUTES: Routes = [
   {
     path: '',
     component: SampleSearchPageComponent,
-    title: 'Sample Query | XYD AI Platform',
+    title: 'Sample Query',
   },
 ];

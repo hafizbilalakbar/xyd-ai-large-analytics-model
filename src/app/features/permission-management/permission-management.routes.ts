@@ -7,6 +7,6 @@ export const PERMISSION_MANAGEMENT_ROUTES: Routes = [
       import('./pages/permission-management/permission-management.component').then(
         (component) => component.PermissionManagementComponent,
       ),
-    title: 'Permission Management | XYD AI Platform',
+    title: 'Permission Management',
   },
 ];

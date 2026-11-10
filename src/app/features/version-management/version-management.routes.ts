@@ -7,6 +7,6 @@ export const VERSION_MANAGEMENT_ROUTES: Routes = [
       import('./pages/version-management-page/version-management-page.component').then(
         (component) => component.VersionManagementPageComponent,
       ),
-    title: 'Version Management | XYD AI Platform',
+    title: 'Version Management',
   },
 ];

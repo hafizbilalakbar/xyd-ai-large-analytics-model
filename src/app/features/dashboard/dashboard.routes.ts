@@ -7,6 +7,6 @@ export const DASHBOARD_ROUTES: Routes = [
       import('./pages/dashboard/dashboard.component').then(
         (component) => component.DashboardComponent,
       ),
-    title: 'Homepage Overview | XYD AI Platform',
+    title: 'Homepage Overview',
   },
 ];

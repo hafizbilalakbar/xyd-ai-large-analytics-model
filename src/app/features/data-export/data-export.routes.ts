@@ -7,6 +7,6 @@ export const DATA_EXPORT_ROUTES: Routes = [
       import('./pages/data-export/data-export.component').then(
         (component) => component.DataExportComponent,
       ),
-    title: 'Data Export | XYD AI Platform',
+    title: 'Data Export',
   },
 ];

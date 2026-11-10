@@ -10,7 +10,11 @@
       <app-icon name="menu" />
     </button>
 
-    <span class="app-header__logo" aria-hidden="true">X</span>
+    <app-brand-logo
+      [size]="36"
+      [showName]="true"
+      [shortName]="false"
+    />
 
     <span class="app-header__title app-header__title--full">{{ settings.name }}</span>
     <span class="app-header__title app-header__title--short">{{ settings.shortName }}</span>

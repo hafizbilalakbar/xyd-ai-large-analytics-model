@@ -2,10 +2,12 @@ import { ChangeDetectionStrategy, Component, inject, output } from '@angular/cor
 import { AuthService } from '../../core/auth/auth.service';
 import { APP_SETTINGS } from '../../core/config/app-settings';
 import { IconComponent } from '../../shared/components/icon/icon.component';
+import { BrandLogoComponent } from '../../shared/components/brand-logo/brand-logo.component';
 
 @Component({
   selector: 'app-header',
-  imports: [IconComponent],
+  standalone: true,
+  imports: [IconComponent, BrandLogoComponent],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

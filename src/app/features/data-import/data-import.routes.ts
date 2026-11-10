@@ -5,6 +5,6 @@ export const DATA_IMPORT_ROUTES: Routes = [
   {
     path: '',
     component: DataImportPageComponent,
-    title: 'Data Import | XYD AI Platform',
+    title: 'Data Import',
   },
 ];
