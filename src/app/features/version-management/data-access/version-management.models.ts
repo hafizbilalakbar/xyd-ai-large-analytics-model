@@ -1,5 +1,34 @@
 import type { ModelEvaluationMode, ModelVersionType } from '../../../shared/services/model-version.store';
 
+export type AccuracyTone = 'pass' | 'warn' | 'fail' | 'muted';
+
+export const ACCURACY_PASS_THRESHOLD = 0.95;
+export const ACCURACY_WARN_THRESHOLD = 0.90;
+
+export function accuracyTone(accuracy: number | null): AccuracyTone {
+  if (accuracy === null) {
+    return 'muted';
+  }
+  if (accuracy >= ACCURACY_PASS_THRESHOLD) {
+    return 'pass';
+  }
+  if (accuracy >= ACCURACY_WARN_THRESHOLD) {
+    return 'warn';
+  }
+  return 'fail';
+}
+
+export function accuracyBarWidth(accuracy: number | null): number {
+  if (accuracy === null) {
+    return 0;
+  }
+  return Math.max(0, Math.min(100, accuracy * 100));
+}
+
+export function accuracyText(accuracy: number | null): string {
+  return accuracy === null ? '—' : `${(accuracy * 100).toFixed(1)}%`;
+}
+
 export interface ClassAccuracy {
   readonly category: string;
   readonly code: string;

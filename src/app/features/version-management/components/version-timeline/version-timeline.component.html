@@ -41,9 +41,20 @@
           <div class="timeline-metric-divider" aria-hidden="true"></div>
           <div class="timeline-metric timeline-metric--accuracy">
             <span class="metric__label">Accuracy</span>
-            <span class="metric__value">{{ accuracyText(accuracyDisplay(version.versionId)) }}</span>
-            <span class="metric__bar" aria-hidden="true">
-              <i [style.--bar-to]="barWidth(accuracyDisplay(version.versionId)) + '%'"></i>
+            <span
+              class="metric__value"
+              [title]="'Accuracy ' + accuracyValueText(version.versionId) + ', ' + accuracyBarTone(version.versionId)"
+              [attr.aria-label]="'Accuracy ' + accuracyValueText(version.versionId) + ', ' + accuracyBarTone(version.versionId)">
+              {{ accuracyValueText(version.versionId) }}
+            </span>
+            <span
+              class="metric__bar"
+              [class.metric__bar--pass]="accuracyBarTone(version.versionId) === 'pass'"
+              [class.metric__bar--warn]="accuracyBarTone(version.versionId) === 'warn'"
+              [class.metric__bar--fail]="accuracyBarTone(version.versionId) === 'fail'"
+              [class.metric__bar--muted]="accuracyBarTone(version.versionId) === 'muted'"
+              aria-hidden="true">
+              <i [style.--bar-to]="accuracyBarWidthValue(version.versionId) + '%'"></i>
             </span>
           </div>
         </div>

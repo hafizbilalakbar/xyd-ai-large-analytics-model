@@ -1,6 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  output,
+} from '@angular/core';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import type { VersionDetails } from '../../data-access/version-management.models';
+import { accuracyBarWidth, accuracyTone } from '../../data-access/version-management.models';
 
 @Component({
   selector: 'app-version-details-dialog',
@@ -34,6 +41,12 @@ export class VersionDetailsDialogComponent {
       ? '—'
       : `${(version.accuracy * 100).toFixed(1)}%`;
   });
+
+  readonly accuracyTone = computed(() => accuracyTone(this.version()?.accuracy ?? null));
+
+  readonly accuracyBarWidth = computed(() =>
+    accuracyBarWidth(this.version()?.accuracy ?? null),
+  );
 
   readonly evalModeText = computed(() => {
     const version = this.version();

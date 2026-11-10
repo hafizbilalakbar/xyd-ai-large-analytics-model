@@ -101,6 +101,13 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
       `Category accuracy comparison between ${this.olderVersion()} and ${this.newerVersion()}.`,
   );
 
+  readonly sameValueCodes = computed<readonly string[]>(() => {
+    const points = this.points();
+    return points
+      .filter((point) => point.older !== null && point.newer !== null && point.older === point.newer)
+      .map((point) => point.code);
+  });
+
   private readonly pointerOutside = (event: PointerEvent): void => {
     if (event.pointerType !== 'touch') {
       return;
@@ -174,6 +181,7 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
     const older = this.olderVersion();
     const newer = this.newerVersion();
     const points = this.points();
+    const sameValueCodes = this.sameValueCodes();
     const width =
       this.chart?.getWidth() ??
       (this.chartHost().nativeElement.clientWidth || 1280);
@@ -222,6 +230,21 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
     const allValues = [...olderData, ...newerData].filter((value): value is number => value !== null);
     const dataMin = allValues.length > 0 ? Math.min(...allValues) : 80;
     const yMin = Math.min(80, Math.floor(dataMin / 10) * 10);
+
+    const getItemStyle = (color: string, isSameValue: boolean) => {
+      if (isSameValue) {
+        return {
+          color: '#fff',
+          borderColor: color,
+          borderWidth: 2.5,
+        };
+      }
+      return {
+        color: '#fff',
+        borderColor: color,
+        borderWidth: 2,
+      };
+    };
 
     return {
       backgroundColor: 'transparent',
@@ -277,7 +300,7 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
         axisLine: { lineStyle: { color: '#dde5f0' } },
         axisLabel: {
           interval: 0,
-          rotate: 0,
+          rotate: isPhone ? 30 : 0,
           margin: isPhone ? 8 : 10,
           color: (_value?: string | number | undefined, index?: number | undefined): string => {
             const point = points[index ?? 0];
@@ -317,13 +340,12 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
           name: older,
           type: 'line',
           z: 2,
-          data: olderData,
+          data: olderData.map((v, i) => ({ value: v, itemStyle: getItemStyle(OLDER_COLOR, sameValueCodes.includes(points[i].code)) })),
           connectNulls: false,
           showSymbol: true,
           symbol: 'circle',
           symbolSize: isPhone ? 10 : 12,
           lineStyle: { opacity: 0 },
-          itemStyle: { color: '#fff', borderColor: OLDER_COLOR, borderWidth: 2 },
           emphasis: {
             scale: 1.4,
             itemStyle: { color: '#fff', borderColor: OLDER_COLOR, borderWidth: 2 },
@@ -336,13 +358,12 @@ export class AccuracyComparisonCardComponent implements AfterViewInit, OnDestroy
           name: newer,
           type: 'line',
           z: 3,
-          data: newerData,
+          data: newerData.map((v, i) => ({ value: v, itemStyle: getItemStyle(NEWER_COLOR, sameValueCodes.includes(points[i].code)) })),
           connectNulls: false,
           showSymbol: true,
           symbol: 'circle',
           symbolSize: isPhone ? 7 : 8,
           lineStyle: { opacity: 0 },
-          itemStyle: { color: NEWER_COLOR, borderColor: NEWER_COLOR, borderWidth: 0 },
           emphasis: {
             scale: 1.4,
             itemStyle: { color: NEWER_COLOR, borderColor: NEWER_COLOR, borderWidth: 0 },

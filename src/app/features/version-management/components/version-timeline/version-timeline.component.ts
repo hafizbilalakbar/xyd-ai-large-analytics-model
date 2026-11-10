@@ -6,7 +6,12 @@ import {
   output,
   signal,
 } from '@angular/core';
-import type { VersionTimelineItem } from '../../data-access/version-management.models';
+import type { AccuracyTone, VersionTimelineItem } from '../../data-access/version-management.models';
+import {
+  accuracyBarWidth,
+  accuracyText,
+  accuracyTone,
+} from '../../data-access/version-management.models';
 
 @Component({
   selector: 'app-version-timeline',
@@ -31,14 +36,7 @@ export class VersionTimelineComponent {
   readonly isActive = (version: VersionTimelineItem): boolean =>
     version.version === this.activeVersion();
 
-  readonly accuracyText = (accuracy: number | null): string =>
-    accuracy === null ? '—' : `${(accuracy * 100).toFixed(1)}%`;
-
-  readonly barWidth = (accuracy: number | null): number =>
-    accuracy === null ? 0 : Math.max(0, Math.min(100, accuracy * 100));
-
-  readonly versionCanDelete = (version: VersionTimelineItem): boolean =>
-    this.canDelete()(version.versionId);
+  readonly accuracyTone = accuracyTone;
 
   private readonly displayValues = signal<Record<
     string,
@@ -60,6 +58,22 @@ export class VersionTimelineComponent {
   sampleDisplay(versionId: string): number | null {
     return this.displayValues()[versionId]?.sample ?? null;
   }
+
+  accuracyValueText(versionId: string): string {
+    const acc = this.accuracyDisplay(versionId);
+    return accuracyText(acc);
+  }
+
+  accuracyBarTone(versionId: string): AccuracyTone {
+    return accuracyTone(this.accuracyDisplay(versionId));
+  }
+
+  accuracyBarWidthValue(versionId: string): number {
+    return accuracyBarWidth(this.accuracyDisplay(versionId));
+  }
+
+  versionCanDelete = (version: VersionTimelineItem): boolean =>
+    this.canDelete()(version.versionId);
 
   private startAnimations(list: readonly VersionTimelineItem[]): void {
     if (this.animFrame !== null) {

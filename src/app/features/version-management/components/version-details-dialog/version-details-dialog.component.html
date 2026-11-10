@@ -24,9 +24,17 @@
         <div class="details-row">
           <dt>Accuracy</dt>
           <dd class="details-accuracy">
-            <span class="details-accuracy__value">{{ accuracyText() }}</span>
+            <span
+              class="details-accuracy__value"
+              [title]="'Accuracy ' + accuracyText() + ', ' + accuracyTone()"
+              [attr.aria-label]="'Accuracy ' + accuracyText() + ', ' + accuracyTone()">
+              {{ accuracyText() }}
+            </span>
             <span class="details-accuracy__note">
               Macro average accuracy, each class weighted equally.
+            </span>
+            <span class="details-accuracy__bar" aria-hidden="true">
+              <i [style.--bar-to]="accuracyBarWidth() + '%'" [class]="accuracyTone()"></i>
             </span>
           </dd>
         </div>

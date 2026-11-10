@@ -51,6 +51,60 @@
   color: var(--color-text-muted);
 }
 
+.details-accuracy__bar {
+  margin-top: 4px;
+  height: 3px;
+  border-radius: 2px;
+  background-color: #e2e8f0;
+  overflow: hidden;
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.details-accuracy__bar i {
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  width: var(--bar-to, 0%);
+  animation: bar-grow 500ms ease-out both;
+}
+
+.details-accuracy__bar--pass i {
+  background-color: var(--color-chart-green);
+}
+
+.details-accuracy__bar--warn i {
+  background-color: var(--color-chart-amber);
+}
+
+.details-accuracy__bar--fail i {
+  background-color: var(--color-chart-red);
+}
+
+.details-accuracy__bar--muted {
+  background-color: #cbd5e1;
+}
+
+.details-accuracy__bar--muted i {
+  background-color: #94a3b8;
+}
+
+@keyframes bar-grow {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: var(--bar-to);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .details-accuracy__bar i {
+    animation: none;
+  }
+}
+
 @media (max-width: 639px) {
   .details-row {
     grid-template-columns: minmax(0, 1fr);
