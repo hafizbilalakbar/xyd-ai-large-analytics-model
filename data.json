@@ -1,5 +1,5 @@
 {
-  "nextVersionId": 5,
+  "nextVersionId": 6,
   "versions": [
     {
       "version_id": 2,
@@ -45,74 +45,31 @@
       "source_task_id": null
     },
     {
-      "version_id": 1,
-      "version": "V2.0",
-      "type": "basic",
-      "trained_at": "2026/11/2",
-      "sample_count": 1499,
-      "accuracy_macro": 0.9581,
-      "is_active": false,
-      "metrics": {
-        "accuracy_macro": 0.9581,
-        "accuracy_weighted": 0.9893,
-        "per_class": {
-          "PASS": 0.9975,
-          "F01": 1,
-          "F02": 1,
-          "F03": 0.9857,
-          "F04": 0.8696,
-          "F05": 0.9293,
-          "F06": 0.8824,
-          "F07": null,
-          "F08": 1,
-          "F09": null,
-          "F10": null,
-          "F11": null,
-          "F12": null,
-          "F13": null
-        },
-        "by_combo": {
-          "C1": null,
-          "C2": null,
-          "C3": null,
-          "C4": null
-        },
-        "sample_count": 1499,
-        "dropped_count": 0,
-        "eval_mode": "cv5",
-        "is_placeholder": false,
-        "local_count": 0
-      },
-      "parent_version_id": null,
-      "training_scope": null,
-      "source_task_id": null
-    },
-    {
-      "version_id": 3,
+      "version_id": 5,
       "version": "V3.1",
       "type": "local",
-      "trained_at": "2026-11-09T18:38:26.577Z",
+      "trained_at": "2026-11-10T13:44:41.712Z",
       "sample_count": 3254,
-      "accuracy_macro": 0.924,
+      "accuracy_macro": 0.917,
       "is_active": false,
       "metrics": {
-        "accuracy_macro": 0.924,
-        "accuracy_weighted": 0.984,
+        "accuracy_macro": 0.917,
+        "accuracy_weighted": 0.982,
         "per_class": {
-          "PASS": 1,
-          "F01": 0.979,
-          "F02": 0.945,
-          "F03": 0.906,
-          "F04": 0.874,
-          "F05": 0.857,
+          "PASS": 0.987,
+          "F01": 0.824,
+          "F02": 0.955,
+          "F03": 0.894,
+          "F04": 0.972,
+          "F05": 0.927,
           "F06": null,
-          "F07": 0.975,
-          "F08": 0.927,
-          "F09": null,
-          "F10": 0.952,
-          "F11": 0.86,
-          "F12": 0.89,
-          "F13": 0.918
+          "F07": null,
+          "F08": 0.918,
+          "F09": 0.924,
+          "F10": 0.848,
+          "F11": 0.945,
+          "F12": 0.887,
+          "F13": 0.921
         },
         "by_combo": {
           "C1": null,
@@ -121,7 +78,7 @@
           "C4": null
         },
         "sample_count": 3254,
-        "dropped_count": 24,
+        "dropped_count": 4,
         "eval_mode": "cv5",
         "is_placeholder": false,
         "local_count": 0,
@@ -148,106 +105,43 @@
       },
       "parent_version_id": 2,
       "training_scope": "all_stations",
-      "source_task_id": "T20261109-70da60"
-    },
-    {
-      "version_id": 4,
-      "version": "V3.2",
-      "type": "local",
-      "trained_at": "2026-11-09T18:49:08.252Z",
-      "sample_count": 3254,
-      "accuracy_macro": 0.907,
-      "is_active": false,
-      "metrics": {
-        "accuracy_macro": 0.907,
-        "accuracy_weighted": 0.972,
-        "per_class": {
-          "PASS": 0.982,
-          "F01": 0.961,
-          "F02": 0.934,
-          "F03": null,
-          "F04": 0.815,
-          "F05": 0.877,
-          "F06": 0.902,
-          "F07": 0.936,
-          "F08": 0.928,
-          "F09": 0.835,
-          "F10": 0.954,
-          "F11": 0.934,
-          "F12": 0.881,
-          "F13": 0.853
-        },
-        "by_combo": {
-          "C1": null,
-          "C2": null,
-          "C3": null,
-          "C4": null
-        },
-        "sample_count": 3254,
-        "dropped_count": 18,
-        "eval_mode": "cv5",
-        "is_placeholder": false,
-        "local_count": 0,
-        "train_params": {
-          "feature_dim": 50,
-          "cv_folds": 5,
-          "hyperparams": {
-            "objective": "multi:softprob",
-            "max_depth": 6,
-            "learning_rate": 0.1,
-            "subsample": 0.8,
-            "colsample_bytree": 0.8,
-            "min_child_weight": 5,
-            "gamma": 0.1,
-            "reg_alpha": 0.1,
-            "reg_lambda": 1,
-            "tree_method": "hist",
-            "nthread": -1,
-            "seed": 42,
-            "num_class": 13,
-            "num_boost_round": 300
-          }
-        }
-      },
-      "parent_version_id": 3,
-      "training_scope": "all_stations",
-      "source_task_id": "T20261109-63107b"
+      "source_task_id": "T20261110-aa23c9"
     }
   ],
   "tasks": [
     {
-      "task_id": "T20261109-70da60",
+      "task_id": "T20261110-aa23c9",
       "status": "done",
       "scope": "all_stations",
       "sample_count": 3254,
-      "created_at": "2026-11-09T18:29:55.240Z",
-      "started_at": "2026-11-09T18:29:55.540Z",
-      "finished_at": "2026-11-09T18:38:26.577Z",
-      "duration_ms": 511337,
+      "created_at": "2026-11-10T13:44:25.332Z",
+      "started_at": "2026-11-10T13:44:25.632Z",
+      "finished_at": "2026-11-10T13:44:41.712Z",
+      "duration_ms": 16380,
       "progress": 100,
       "model_version": "V3.1",
-      "model_version_id": "candidate-T20261109-70da60",
+      "model_version_id": "candidate-T20261110-aa23c9",
       "created_version_id": 301,
       "deleted": false,
-      "log_summary": "[23:29:55] Task queued.\n[23:29:55] Training started.\n[23:38:26] Grouped rotation validation completed.\n[23:38:26] Candidate version V3.1 produced.",
+      "log_summary": "[18:44:25] Task queued.\n[18:44:25] Training started.\n[18:44:41] Grouped rotation validation completed.\n[18:44:41] Candidate version V3.1 produced.",
       "metrics": {
-        "accuracy_macro": 0.924,
-        "accuracy_weighted": 0.984,
+        "accuracy_macro": 0.917,
+        "accuracy_weighted": 0.982,
         "per_class": {
-          "PASS": 1,
-          "F01": 0.979,
-          "F02": 0.945,
-          "F03": 0.906,
-          "F04": 0.874,
-          "F05": 0.857,
+          "PASS": 0.987,
+          "F01": 0.824,
+          "F02": 0.955,
+          "F03": 0.894,
+          "F04": 0.972,
+          "F05": 0.927,
           "F06": null,
-          "F07": 0.975,
-          "F08": 0.927,
-          "F09": null,
-          "F10": 0.952,
-          "F11": 0.86,
-          "F12": 0.89,
-          "F13": 0.918
+          "F07": null,
+          "F08": 0.918,
+          "F09": 0.924,
+          "F10": 0.848,
+          "F11": 0.945,
+          "F12": 0.887,
+          "F13": 0.921
         },
         "by_combo": {
           "C1": null,
@@ -256,7 +150,7 @@
           "C4": null
         },
         "sample_count": 3254,
-        "dropped_count": 24,
+        "dropped_count": 4,
         "eval_mode": "cv5",
         "is_placeholder": false,
         "local_count": 0,
@@ -281,73 +175,296 @@
           }
         }
       }
+    }
+  ],
+  "monitors": [
+    {
+      "id": "M-0001",
+      "sample_no": 1025,
+      "created_at": "2026-11-10T08:15:30.000Z",
+      "pass_fail": true,
+      "top_code": null,
+      "top_confidence": 0.94,
+      "model_version": "V3.0",
+      "workstation": "WS-01",
+      "torque": 13.8,
+      "angle": 74.2,
+      "curve": [
+        {
+          "angle": 0,
+          "torque": 0.2
+        },
+        {
+          "angle": 6,
+          "torque": 1.6
+        },
+        {
+          "angle": 14,
+          "torque": 4.2
+        },
+        {
+          "angle": 22,
+          "torque": 7.4
+        },
+        {
+          "angle": 31,
+          "torque": 10.1
+        },
+        {
+          "angle": 41,
+          "torque": 12.3
+        },
+        {
+          "angle": 52,
+          "torque": 13.5
+        },
+        {
+          "angle": 62,
+          "torque": 13.9
+        },
+        {
+          "angle": 70,
+          "torque": 13.8
+        },
+        {
+          "angle": 74.2,
+          "torque": 13.8
+        }
+      ],
+      "results": [
+        {
+          "code": "PASS",
+          "name": "Pass"
+        }
+      ]
     },
     {
-      "task_id": "T20261109-63107b",
-      "status": "done",
-      "scope": "all_stations",
-      "sample_count": 3254,
-      "created_at": "2026-11-09T18:48:51.568Z",
-      "started_at": "2026-11-09T18:48:51.868Z",
-      "finished_at": "2026-11-09T18:49:08.252Z",
-      "duration_ms": 16684,
-      "progress": 100,
-      "model_version": "V3.2",
-      "model_version_id": "candidate-T20261109-63107b",
-      "created_version_id": 302,
-      "deleted": false,
-      "log_summary": "[23:48:51] Task queued.\n[23:48:51] Training started.\n[23:49:08] Grouped rotation validation completed.\n[23:49:08] Candidate version V3.2 produced.",
-      "metrics": {
-        "accuracy_macro": 0.907,
-        "accuracy_weighted": 0.972,
-        "per_class": {
-          "PASS": 0.982,
-          "F01": 0.961,
-          "F02": 0.934,
-          "F03": null,
-          "F04": 0.815,
-          "F05": 0.877,
-          "F06": 0.902,
-          "F07": 0.936,
-          "F08": 0.928,
-          "F09": 0.835,
-          "F10": 0.954,
-          "F11": 0.934,
-          "F12": 0.881,
-          "F13": 0.853
+      "id": "M-0002",
+      "sample_no": 1024,
+      "created_at": "2026-11-10T08:14:45.000Z",
+      "pass_fail": true,
+      "top_code": null,
+      "top_confidence": 0.91,
+      "model_version": "V3.0",
+      "workstation": "WS-02",
+      "torque": 13.5,
+      "angle": 73.6,
+      "curve": [
+        {
+          "angle": 0,
+          "torque": 0.2
         },
-        "by_combo": {
-          "C1": null,
-          "C2": null,
-          "C3": null,
-          "C4": null
+        {
+          "angle": 6,
+          "torque": 1.6
         },
-        "sample_count": 3254,
-        "dropped_count": 18,
-        "eval_mode": "cv5",
-        "is_placeholder": false,
-        "local_count": 0,
-        "train_params": {
-          "feature_dim": 50,
-          "cv_folds": 5,
-          "hyperparams": {
-            "objective": "multi:softprob",
-            "max_depth": 6,
-            "learning_rate": 0.1,
-            "subsample": 0.8,
-            "colsample_bytree": 0.8,
-            "min_child_weight": 5,
-            "gamma": 0.1,
-            "reg_alpha": 0.1,
-            "reg_lambda": 1,
-            "tree_method": "hist",
-            "nthread": -1,
-            "seed": 42,
-            "num_class": 13,
-            "num_boost_round": 300
-          }
+        {
+          "angle": 14,
+          "torque": 4.2
+        },
+        {
+          "angle": 22,
+          "torque": 7.4
+        },
+        {
+          "angle": 31,
+          "torque": 10.1
+        },
+        {
+          "angle": 41,
+          "torque": 12.3
+        },
+        {
+          "angle": 52,
+          "torque": 13.5
+        },
+        {
+          "angle": 62,
+          "torque": 13.9
+        },
+        {
+          "angle": 70,
+          "torque": 13.8
+        },
+        {
+          "angle": 74.2,
+          "torque": 13.8
         }
-      }
+      ],
+      "results": [
+        {
+          "code": "PASS",
+          "name": "Pass"
+        }
+      ]
+    },
+    {
+      "id": "M-0003",
+      "sample_no": 1023,
+      "created_at": "2026-11-10T08:14:00.000Z",
+      "pass_fail": false,
+      "top_code": "F04",
+      "top_confidence": 0.72,
+      "model_version": "V3.0",
+      "workstation": "WS-01",
+      "torque": 9.4,
+      "angle": 58.1,
+      "curve": [
+        {
+          "angle": 0,
+          "torque": 0.2
+        },
+        {
+          "angle": 10,
+          "torque": 3.1
+        },
+        {
+          "angle": 20,
+          "torque": 6
+        },
+        {
+          "angle": 30,
+          "torque": 8.2
+        },
+        {
+          "angle": 40,
+          "torque": 9.1
+        },
+        {
+          "angle": 50,
+          "torque": 9.4
+        },
+        {
+          "angle": 58.1,
+          "torque": 9.4
+        }
+      ],
+      "results": [
+        {
+          "code": "F04",
+          "name": "Angled lock"
+        }
+      ]
+    },
+    {
+      "id": "M-0004",
+      "sample_no": 1022,
+      "created_at": "2026-11-10T08:13:15.000Z",
+      "pass_fail": true,
+      "top_code": null,
+      "top_confidence": 0.93,
+      "model_version": "V3.0",
+      "workstation": "WS-03",
+      "torque": 13.9,
+      "angle": 74.8,
+      "curve": [
+        {
+          "angle": 0,
+          "torque": 0.2
+        },
+        {
+          "angle": 6,
+          "torque": 1.6
+        },
+        {
+          "angle": 14,
+          "torque": 4.2
+        },
+        {
+          "angle": 22,
+          "torque": 7.4
+        },
+        {
+          "angle": 31,
+          "torque": 10.1
+        },
+        {
+          "angle": 41,
+          "torque": 12.3
+        },
+        {
+          "angle": 52,
+          "torque": 13.5
+        },
+        {
+          "angle": 62,
+          "torque": 13.9
+        },
+        {
+          "angle": 70,
+          "torque": 13.8
+        },
+        {
+          "angle": 74.2,
+          "torque": 13.8
+        }
+      ],
+      "results": [
+        {
+          "code": "PASS",
+          "name": "Pass"
+        }
+      ]
+    },
+    {
+      "id": "M-0005",
+      "sample_no": 1021,
+      "created_at": "2026-11-10T08:12:30.000Z",
+      "pass_fail": true,
+      "top_code": null,
+      "top_confidence": 0.89,
+      "model_version": "V3.0",
+      "workstation": "WS-02",
+      "torque": 13.2,
+      "angle": 72.4,
+      "curve": [
+        {
+          "angle": 0,
+          "torque": 0.2
+        },
+        {
+          "angle": 6,
+          "torque": 1.6
+        },
+        {
+          "angle": 14,
+          "torque": 4.2
+        },
+        {
+          "angle": 22,
+          "torque": 7.4
+        },
+        {
+          "angle": 31,
+          "torque": 10.1
+        },
+        {
+          "angle": 41,
+          "torque": 12.3
+        },
+        {
+          "angle": 52,
+          "torque": 13.5
+        },
+        {
+          "angle": 62,
+          "torque": 13.9
+        },
+        {
+          "angle": 70,
+          "torque": 13.8
+        },
+        {
+          "angle": 74.2,
+          "torque": 13.8
+        }
+      ],
+      "results": [
+        {
+          "code": "PASS",
+          "name": "Pass"
+        }
+      ]
     }
   ]
 }

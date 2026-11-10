@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import type { MonitoringServiceStatus } from '../../data-access/monitoring.models';
+
+type BadgeStatus = 'idle' | 'receiving' | 'timeout' | 'error';
 
 @Component({
   selector: 'app-monitoring-status-badges',
@@ -8,18 +9,19 @@ import type { MonitoringServiceStatus } from '../../data-access/monitoring.model
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MonitoringStatusBadgesComponent {
-  readonly serviceStatus = input.required<MonitoringServiceStatus>();
+  readonly serviceStatus = input.required<BadgeStatus>();
   readonly modelVersion = input.required<string>();
 
   protected readonly serviceLabel = computed(() => {
-    if (this.serviceStatus() === 'receiving') {
-      return 'Receiving';
+    switch (this.serviceStatus()) {
+      case 'receiving':
+        return 'Receiving';
+      case 'timeout':
+        return 'Timeout';
+      case 'error':
+        return 'Error';
+      default:
+        return 'Idle';
     }
-
-    if (this.serviceStatus() === 'error') {
-      return 'Error';
-    }
-
-    return 'Idle';
   });
 }

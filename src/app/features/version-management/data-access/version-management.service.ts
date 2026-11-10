@@ -227,26 +227,28 @@ export class VersionManagementService {
       this.toast.show('Version not found.', 'error');
       return false;
     }
-    if (target.active) {
-      this.toast.show(`${target.id} is in use. Activate another version before deleting.`, 'warning');
-      return false;
-    }
     const versionCount = this.store.versions().length;
-    if (versionCount <= 2) {
+    if (versionCount <= 1) {
       this.toast.show('Cannot delete the last remaining version.', 'warning');
       return false;
     }
 
-    const result = this.store.deleteVersionWithTask(versionId);
-    if (!result.ok) {
-      this.toast.show(result.reason ?? 'Unable to delete version.', 'error');
+    try {
+      await this.api.deleteVersion(versionId);
+    } catch (error) {
+      const message = error instanceof Error && error.message.length > 0
+        ? error.message
+        : `Unable to delete version ${target.id}.`;
+      this.toast.show(message, 'error');
       return false;
     }
+    // Reload from the backend so the deleted version (and its linked task)
+    // disappear here and in the shared training-tasks store, and the fallback
+    // active version is reflected.
+    await this.load();
 
     this.toast.dismissAll();
-    await this.refreshComparison();
-    const extra = result.deletedTaskId ? ` (and linked task ${result.deletedTaskId})` : '';
-    this.toast.show(`Deleted version ${target.id}${extra}.`, 'success');
+    this.toast.show(`Deleted version ${target.id}.`, 'success');
     this.operationLog.add({
       operator: this.auth.user()?.name ?? 'Administrator',
       format: 'Delete model version',
@@ -265,7 +267,7 @@ export class VersionManagementService {
     if (record.active) {
       return false;
     }
-    return this.store.versions().length > 2;
+    return this.store.versions().length > 1;
   }
 
   async retryComparison(): Promise<void> {

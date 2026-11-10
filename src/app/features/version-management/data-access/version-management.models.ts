@@ -1,4 +1,4 @@
-import type { ModelEvaluationMode, ModelVersionType } from '../../../shared/services/model-version.service';
+import type { ModelEvaluationMode, ModelVersionType } from '../../../shared/services/model-version.store';
 
 export interface ClassAccuracy {
   readonly category: string;

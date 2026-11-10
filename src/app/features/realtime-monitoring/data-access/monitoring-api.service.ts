@@ -48,16 +48,25 @@ function toRecord(item: unknown): MonitoringRecord {
   };
 }
 
+interface MonitorLatestResponse {
+  readonly items?: readonly unknown[];
+  readonly active_version?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class MonitoringApiService {
-  async getLatest(): Promise<readonly MonitoringRecord[]> {
+  async getLatest(): Promise<{
+    readonly items: readonly MonitoringRecord[];
+    readonly activeVersion: string | null;
+  }> {
     const response = await fetch(`${API_BASE}/latest`, { method: 'GET' });
     if (!response.ok) {
       throw await parseError(response, 'Failed to load monitoring data.');
     }
-    const data = (await response.json()) as {
-      readonly items?: readonly unknown[];
+    const data = (await response.json()) as MonitorLatestResponse;
+    return {
+      items: (data.items ?? []).map((item) => toRecord(item)),
+      activeVersion: data.active_version ?? null,
     };
-    return (data.items ?? []).map((item) => toRecord(item));
   }
 }

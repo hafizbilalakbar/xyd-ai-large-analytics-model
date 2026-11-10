@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { ModelVersionStore } from '../../../../shared/services/model-version.store';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { MonitoringEmptyStateComponent } from '../../components/monitoring-empty-state/monitoring-empty-state.component';
 import { MonitoringLiveResultComponent } from '../../components/monitoring-live-result/monitoring-live-result.component';
 import { MonitoringStatusBadgesComponent } from '../../components/monitoring-status-badges/monitoring-status-badges.component';
 import { MonitoringStatusBarComponent } from '../../components/monitoring-status-bar/monitoring-status-bar.component';
-import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { MonitoringService } from '../../data-access/monitoring.service';
+
+type MonitorStatus = 'idle' | 'receiving' | 'timeout' | 'error';
 
 @Component({
   selector: 'app-realtime-monitoring-page',
@@ -22,17 +23,34 @@ import { MonitoringService } from '../../data-access/monitoring.service';
 })
 export class RealtimeMonitoringPageComponent {
   protected readonly monitoring = inject(MonitoringService);
-  protected readonly modelVersions = inject(ModelVersionStore);
+
+  protected readonly status = computed<MonitorStatus>(() => this.monitoring.status());
+  protected readonly loadError = this.monitoring.loadError$;
+  protected readonly activeModelVersion = computed(
+    () => this.monitoring.activeVersion() ?? '—',
+  );
+
   protected readonly serviceRunning = computed(
-    () => this.monitoring.serviceStatus() !== 'error',
+    () => this.status() !== 'error',
   );
   protected readonly devicePushed = computed(
     () => this.monitoring.deviceStatus() === 'pushed',
   );
-  protected readonly activeModelVersion = computed(
-    () => this.modelVersions.activeVersion()?.id ?? '—',
-  );
-  protected readonly loadError = this.monitoring.loadError$;
+
+  protected readonly badgeLabel = computed(() => {
+    switch (this.status()) {
+      case 'receiving':
+        return 'Receiving';
+      case 'timeout':
+        return 'Timeout';
+      case 'error':
+        return 'Error';
+      default:
+        return 'Idle';
+    }
+  });
+
+  protected readonly barTimedOut = computed(() => this.status() === 'timeout');
 
   retry(): void {
     void this.monitoring.refresh();

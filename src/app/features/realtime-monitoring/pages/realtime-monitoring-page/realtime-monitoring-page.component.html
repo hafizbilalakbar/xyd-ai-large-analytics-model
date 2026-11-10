@@ -4,13 +4,13 @@
     subtitle="Workstation status and judgment results are updated in real time."
   >
     <app-monitoring-status-badges
-      [serviceStatus]="monitoring.serviceStatus()"
+      [serviceStatus]="status()"
       [modelVersion]="activeModelVersion()"
     />
   </app-page-header>
 
   <div class="monitoring__card">
-    @if (monitoring.serviceStatus() === 'error') {
+    @if (status() === 'error') {
       <div class="monitoring__error" role="alert">
         <p class="monitoring__error-title">{{ loadError() }}</p>
         <button type="button" class="monitoring__error-retry" (click)="retry()">Retry</button>
@@ -29,7 +29,7 @@
   </div>
 
   <app-monitoring-status-bar
-    [isTimedOut]="monitoring.isTimedOut()"
+    [isTimedOut]="barTimedOut()"
     [frequency]="monitoring.receiveFrequency()"
     [lastReceivedAt]="monitoring.lastReceivedAt()"
   />

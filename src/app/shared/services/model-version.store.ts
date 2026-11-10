@@ -3,6 +3,8 @@ import type { TrainingMetrics } from '../../features/training-tasks/data-access/
 
 export type ModelVersionType = 'basic' | 'local';
 
+export type ModelEvaluationMode = 'cv5' | 'trainset';
+
 export type TrainingTaskStatus = 'pending' | 'running' | 'done' | 'failed' | 'cancelled';
 
 export type TrainingScope = 'single_station' | 'all_stations';
@@ -43,69 +45,6 @@ const STORAGE_KEY_TASKS = 'xyd_model_versions_tasks_v3';
 
 const VERSION_ID_PATTERN = /^V(\d+)\.(\d+)$/;
 
-const INITIAL_VERSIONS: readonly ModelVersionStoreVersion[] = [
-  {
-    id: 'V3.0',
-    type: 'basic',
-    trainingDate: '2026/11/2',
-    sampleSize: 3254,
-    accuracy: 0.9563,
-    perClassAccuracy: [
-      { code: 'PASS', accuracy: 99.63 },
-      { code: 'F01', name: 'Buoyancy', accuracy: 100 },
-      { code: 'F02', name: 'Poor fit', accuracy: 96.15 },
-      { code: 'F03', name: 'Clamping abnormality', accuracy: 100 },
-      { code: 'F04', name: 'Angled lock', accuracy: 86.96 },
-      { code: 'F05', name: 'Slipped teeth', accuracy: 94.06 },
-      { code: 'F06', name: 'Slipping bit', accuracy: 88.24 },
-      { code: 'F08', name: 'Idling', accuracy: 100 },
-    ],
-    status: 'Active',
-    active: true,
-    sourceTaskId: null,
-  },
-  {
-    id: 'V2.0',
-    type: 'basic',
-    trainingDate: '2026/11/2',
-    sampleSize: 1499,
-    accuracy: 0.9581,
-    perClassAccuracy: [
-      { code: 'PASS', accuracy: 99.75 },
-      { code: 'F01', name: 'Buoyancy', accuracy: 100 },
-      { code: 'F02', name: 'Poor fit', accuracy: 100 },
-      { code: 'F03', name: 'Clamping abnormality', accuracy: 98.57 },
-      { code: 'F04', name: 'Angled lock', accuracy: 86.96 },
-      { code: 'F05', name: 'Slipped teeth', accuracy: 92.93 },
-      { code: 'F06', name: 'Slipping bit', accuracy: 88.24 },
-      { code: 'F08', name: 'Idling', accuracy: 100 },
-    ],
-    status: 'Inactive',
-    active: false,
-    sourceTaskId: null,
-  },
-  {
-    id: 'V1.0',
-    type: 'basic',
-    trainingDate: '2026/11/2',
-    sampleSize: 800,
-    accuracy: 0.945,
-    perClassAccuracy: [
-      { code: 'PASS', accuracy: 99.0 },
-      { code: 'F01', name: 'Buoyancy', accuracy: 98.5 },
-      { code: 'F02', name: 'Poor fit', accuracy: 95.0 },
-      { code: 'F03', name: 'Clamping abnormality', accuracy: 97.0 },
-      { code: 'F04', name: 'Angled lock', accuracy: 88.0 },
-      { code: 'F05', name: 'Slipped teeth', accuracy: 93.0 },
-      { code: 'F06', name: 'Slipping bit', accuracy: 89.0 },
-      { code: 'F08', name: 'Idling', accuracy: 99.0 },
-    ],
-    status: 'Inactive',
-    active: false,
-    sourceTaskId: null,
-  },
-];
-
 function versionWeight(version: string): number {
   const match = VERSION_ID_PATTERN.exec(version);
   if (match === null) {
@@ -122,47 +61,6 @@ function sortDescending(records: readonly ModelVersionStoreVersion[]): ModelVers
 
 function isValidVersionId(id: string): boolean {
   return VERSION_ID_PATTERN.test(id);
-}
-
-function readStored(): ModelVersionStoreVersion[] | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw === null) {
-      return null;
-    }
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      return null;
-    }
-    return parsed as ModelVersionStoreVersion[];
-  } catch {
-    return null;
-  }
-}
-
-function readStoredActive(): string | null {
-  try {
-    const value = localStorage.getItem(STORAGE_KEY_ACTIVE);
-    return value !== null && value.length > 0 ? value : null;
-  } catch {
-    return null;
-  }
-}
-
-function readStoredTasks(): TrainingTaskStoreTask[] | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_TASKS);
-    if (raw === null) {
-      return null;
-    }
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) {
-      return null;
-    }
-    return parsed as TrainingTaskStoreTask[];
-  } catch {
-    return null;
-  }
 }
 
 function persistToStorage(versions: ModelVersionStoreVersion[], active: string | null): void {
@@ -184,28 +82,9 @@ function persistTasks(tasks: TrainingTaskStoreTask[]): void {
   }
 }
 
-function cleanStoredVersions(
-  versions: ModelVersionStoreVersion[],
-): ModelVersionStoreVersion[] {
-  // Remove versions without a valid "Vx.y" id
-  const valid = versions.filter((item) => isValidVersionId(item.id));
-
-  // Remove duplicate versions of the same task (keep first)
-  const seenTaskIds = new Set<string>();
-  return valid.filter((item) => {
-    if (item.sourceTaskId !== null && seenTaskIds.has(item.sourceTaskId)) {
-      return false;
-    }
-    if (item.sourceTaskId !== null) {
-      seenTaskIds.add(item.sourceTaskId);
-    }
-    return true;
-  });
-}
-
 @Injectable({ providedIn: 'root' })
 export class ModelVersionStore {
-  private readonly versionsState = signal<ModelVersionStoreVersion[]>([...INITIAL_VERSIONS]);
+  private readonly versionsState = signal<ModelVersionStoreVersion[]>([]);
   private readonly tasksState = signal<TrainingTaskStoreTask[]>([]);
   private readonly trainingState = signal(false);
   private readonly loadingState = signal(false);
@@ -240,57 +119,23 @@ export class ModelVersionStore {
   readonly sortedVersions = computed(() => sortDescending(this.versionsState()));
 
   constructor() {
-    this.restore();
-  }
-
-  private restore(): void {
-    const stored = readStored();
-    const activeLabel = readStoredActive();
-    const list = stored ?? INITIAL_VERSIONS;
-
-    let restored: ModelVersionStoreVersion[];
-    if (activeLabel !== null && list.some((item) => item.id === activeLabel)) {
-      restored = list.map((item) => ({ ...item, active: item.id === activeLabel }));
-    } else if (list.some((item) => item.active)) {
-      restored = [...list];
-    } else {
-      restored = list.map((item) => ({ ...item, active: item.id === list[0].id }));
-    }
-
-    const storedTasks = readStoredTasks();
-    if (storedTasks !== null) {
-      this.tasksState.set(storedTasks);
-    }
-
-    const cleaned = cleanStoredVersions(restored);
-    this.versionsState.set(sortDescending(cleaned));
-    persistToStorage(this.versionsState(), this.activeVersionId());
-    persistTasks(this.tasksState());
+    // Start empty; pages populate from the backend via load(). No localStorage restore,
+    // so deleted items never come back from a stale local copy.
+    this.versionsState.set([]);
+    this.tasksState.set([]);
   }
 
   loadVersions(): void {
     this.loadingState.set(true);
     this.errorState.set(null);
-    try {
-      const stored = readStored();
-      if (stored !== null) {
-        const activeLabel = readStoredActive();
-        let restored: ModelVersionStoreVersion[];
-        if (activeLabel !== null && stored.some((item) => item.id === activeLabel)) {
-          restored = stored.map((item) => ({ ...item, active: item.id === activeLabel }));
-        } else if (stored.some((item) => item.active)) {
-          restored = [...stored];
-        } else {
-          restored = stored.map((item) => ({ ...item, active: item.id === stored[0].id }));
-        }
-        const cleaned = cleanStoredVersions(restored);
-        this.versionsState.set(sortDescending(cleaned));
-      }
-      this.loadingState.set(false);
-    } catch {
-      this.loadingState.set(false);
-      this.errorState.set('Failed to load model versions.');
-    }
+    this.loadingState.set(false);
+  }
+
+  setTasks(tasks: readonly TrainingTaskStoreTask[]): void {
+    this.tasksState.update(() => [...tasks].sort(
+      (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt),
+    ));
+    persistTasks(this.tasksState());
   }
 
   activateVersion(id: string): void {

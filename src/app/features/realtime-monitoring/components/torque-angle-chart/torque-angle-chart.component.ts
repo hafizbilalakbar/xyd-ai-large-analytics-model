@@ -1,113 +1,175 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import type { TorqueAnglePoint } from '../../data-access/monitoring.models';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  effect,
+  inject,
+  input,
+  NgZone,
+} from '@angular/core';
+import * as echarts from 'echarts';
+import type { ECharts, EChartsOption } from 'echarts';
 
-interface ChartPoint {
-  readonly x: number;
-  readonly y: number;
+interface TorqueAnglePoint {
+  readonly angle: number;
+  readonly torque: number;
 }
-
-interface ChartTick {
-  readonly label: string;
-  readonly position: number;
-}
-
-interface ChartGeometry {
-  readonly points: readonly ChartPoint[];
-  readonly xTicks: readonly ChartTick[];
-  readonly yTicks: readonly ChartTick[];
-  readonly linePath: string;
-  readonly areaPath: string;
-  readonly plotLeft: number;
-  readonly plotRight: number;
-  readonly plotTop: number;
-  readonly plotBottom: number;
-  readonly axisCenter: number;
-}
-
-const CHART_WIDTH = 640;
-const CHART_HEIGHT = 280;
-const PLOT_LEFT = 58;
-const PLOT_RIGHT = 24;
-const PLOT_TOP = 24;
-const PLOT_BOTTOM = 48;
 
 @Component({
   selector: 'app-torque-angle-chart',
   templateUrl: './torque-angle-chart.component.html',
   styleUrl: './torque-angle-chart.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
 })
-export class TorqueAngleChartComponent {
+export class TorqueAngleChartComponent implements AfterViewInit {
   readonly points = input.required<readonly TorqueAnglePoint[]>();
 
-  protected readonly geometry = computed<ChartGeometry>(() => {
-    const data = this.points();
-    const plotRight = CHART_WIDTH - PLOT_RIGHT;
-    const plotBottom = CHART_HEIGHT - PLOT_BOTTOM;
-    const plotTop = PLOT_TOP;
-    const axisCenter = (plotTop + plotBottom) / 2;
+  private readonly el = inject(ElementRef);
+  private readonly zone = inject(NgZone);
+  private readonly destroyRef = inject(DestroyRef);
 
-    if (data.length === 0) {
-      return {
-        points: [],
-        xTicks: [],
-        yTicks: [],
-        linePath: '',
-        areaPath: '',
-        plotLeft: PLOT_LEFT,
-        plotRight,
-        plotTop,
-        plotBottom,
-        axisCenter,
-      };
+  private chart: ECharts | null = null;
+  private resizeObserver: ResizeObserver | null = null;
+
+  constructor() {
+    this.destroyRef.onDestroy(() => {
+      this.zone.runOutsideAngular(() => {
+        if (this.resizeObserver) {
+          this.resizeObserver.disconnect();
+          this.resizeObserver = null;
+        }
+        if (this.chart) {
+          this.chart.dispose();
+          this.chart = null;
+        }
+      });
+    });
+
+    effect(() => {
+      const pts = this.points();
+      if (this.chart && pts.length > 0) {
+        this.render();
+      }
+    });
+  }
+
+  ngAfterViewInit(): void {
+    this.zone.runOutsideAngular(() => {
+      const container = this.el.nativeElement.querySelector(
+        '.chart__ec-container',
+      ) as HTMLElement;
+      this.chart = echarts.init(container, null, {
+        renderer: 'canvas',
+        width: '100%',
+        height: '100%',
+      });
+      this.createResizeObserver(container);
+      this.render();
+    });
+  }
+
+  private render(): void {
+    const pts = this.points();
+    if (!this.chart || pts.length === 0) {
+      return;
     }
+    const chart = this.chart;
+    this.zone.runOutsideAngular(() => {
+      chart.setOption(this.buildOption(pts), false);
+    });
+  }
 
-    const plotWidth = plotRight - PLOT_LEFT;
-    const plotHeight = plotBottom - plotTop;
-    const maxAngle = Math.max(...data.map((point) => point.angle));
-    const maxTorque = Math.max(...data.map((point) => point.torque));
+  private createResizeObserver(container: HTMLElement): void {
+    this.resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === container && this.chart) {
+          const chart = this.chart;
+          this.zone.runOutsideAngular(() => {
+            chart.resize();
+          });
+        }
+      }
+    });
+    this.resizeObserver.observe(container);
+  }
+
+  private buildOption(pts: readonly TorqueAnglePoint[]): EChartsOption {
+    const maxAngle = Math.max(...pts.map((p) => p.angle));
+    const maxTorque = Math.max(...pts.map((p) => p.torque));
     const angleStep = maxAngle > 80 ? 20 : 10;
     const torqueStep = maxTorque > 10 ? 5 : maxTorque > 4 ? 2 : 1;
     const angleMax = Math.max(angleStep, Math.ceil(maxAngle / angleStep) * angleStep);
     const torqueMax = Math.max(torqueStep, Math.ceil(maxTorque / torqueStep) * torqueStep);
 
-    const points = data.map((point) => ({
-      x: PLOT_LEFT + (point.angle / angleMax) * plotWidth,
-      y: plotTop + plotHeight - (point.torque / torqueMax) * plotHeight,
-    }));
-
-    const linePath = points
-      .map(
-        (point, index) =>
-          `${index === 0 ? 'M' : 'L'} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`,
-      )
-      .join(' ');
-    const firstPoint = points[0];
-    const lastPoint = points[points.length - 1];
-    const areaPath = `${linePath} L ${lastPoint.x.toFixed(1)} ${plotBottom} L ${firstPoint.x.toFixed(1)} ${plotBottom} Z`;
-
-    const xTicks = [0, 0.25, 0.5, 0.75, 1].map((ratio) => ({
-      label: `${Math.round(angleMax * ratio)}`,
-      position: PLOT_LEFT + plotWidth * ratio,
-    }));
-
-    const torqueSteps = torqueMax / torqueStep;
-    const yTicks = Array.from({ length: torqueSteps + 1 }, (_, index) => ({
-      label: `${torqueMax - index * torqueStep}`,
-      position: plotTop + (index / torqueSteps) * plotHeight,
-    }));
+    const seriesData = pts.map((p) => [p.angle, p.torque] as [number, number]);
 
     return {
-      points,
-      xTicks,
-      yTicks,
-      linePath,
-      areaPath,
-      plotLeft: PLOT_LEFT,
-      plotRight,
-      plotTop,
-      plotBottom,
-      axisCenter,
+      animation: false,
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'cross' },
+        confine: true,
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        borderColor: '#e2e8f0',
+        borderWidth: 1,
+        textStyle: { color: '#0f172a', fontSize: 12 },
+        extraCssText: 'box-shadow: 0 4px 12px rgb(15 23 42 / 8%);',
+        formatter: (params: unknown) => {
+          const item = Array.isArray(params) ? params[0] : params;
+          const data = (item as { data?: [number, number] } | null)?.data;
+          if (!data) {
+            return '';
+          }
+          return `Angle: ${data[0].toFixed(1)}°<br/>Torque: ${data[1].toFixed(2)} N·m`;
+        },
+      },
+      grid: {
+        left: 56,
+        right: 28,
+        top: 24,
+        bottom: 70,
+        containLabel: true,
+      },
+      xAxis: {
+        type: 'category',
+        name: 'Angle (°)',
+        nameLocation: 'middle',
+        nameTextStyle: { fontSize: 11, color: '#64748b', padding: [10, 0, 0, 0] },
+        axisLine: { lineStyle: { color: '#e2e8f0' } },
+        axisTick: { show: false },
+        axisLabel: { fontSize: 11, color: '#64748b' },
+        splitLine: { show: true, lineStyle: { type: 'dashed', color: '#e8edf5' } },
+        min: 0,
+        max: angleMax,
+        data: pts.map((p) => p.angle),
+      },
+      yAxis: {
+        type: 'value',
+        name: 'Torque (N·m)',
+        nameLocation: 'middle',
+        nameTextStyle: { fontSize: 11, color: '#64748b', padding: [0, 0, 0, 10] },
+        axisLine: { lineStyle: { color: '#e2e8f0' } },
+        axisTick: { show: false },
+        axisLabel: { fontSize: 11, color: '#64748b' },
+        splitLine: { show: true, lineStyle: { type: 'dashed', color: '#e8edf5' } },
+        min: 0,
+        max: torqueMax,
+      },
+      series: [
+        {
+          type: 'line',
+          data: seriesData,
+          showSymbol: true,
+          symbol: 'circle',
+          symbolSize: 6,
+          itemStyle: { color: '#2563eb', borderColor: '#ffffff', borderWidth: 2 },
+          lineStyle: { color: '#2563eb', width: 2.5 },
+          areaStyle: { color: 'rgba(37, 99, 235, 0.08)' },
+        },
+      ],
     };
-  });
+  }
 }

@@ -118,6 +118,29 @@ function sortVersionsDesc(list) {
   return [...list].sort((a, b) => versionWeight(b.version) - versionWeight(a.version));
 }
 
+function findActiveVersion() {
+  return data.versions.find((v) => v.is_active) || null;
+}
+
+function activateFallbackVersion() {
+  // Activate the newest remaining version when the active one is removed.
+  const remaining = data.versions.filter((v) => !v.is_active);
+  if (remaining.length === 0) {
+    return null;
+  }
+  const newest = sortVersionsDesc(remaining)[0];
+  for (const v of data.versions) {
+    v.is_active = v.version_id === newest.version_id;
+  }
+  saveData();
+  return newest;
+}
+
+function activeVersionLabel() {
+  const active = findActiveVersion();
+  return active ? active.version : null;
+}
+
 function defaultData() {
   const now = new Date();
   const base = new Date(now);
@@ -151,6 +174,7 @@ function defaultData() {
       },
     ],
     tasks: [],
+    monitors: [],
   };
 }
 
@@ -316,6 +340,13 @@ app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'ok', version: 'v0.0.33', model_version: activeVersionLabel(), xyd: { online: true } });
 });
 
+function ensureMonitors() {
+  if (!Array.isArray(data.monitors)) {
+    data.monitors = [];
+    saveData();
+  }
+}
+
 // ---------- Training ----------
 app.get('/api/v1/training/preview', requireAuth, (req, res) => {
   advanceJobs();
@@ -369,7 +400,7 @@ app.post('/api/v1/training/start', requireAuth, (req, res) => {
     task_id: taskId,
     status: 'pending',
     scope: 'all_stations',
-    sample_count: active ? active.sample_count : 3254,
+    sample_count: active ? active.sample_count : 0,
     created_at: now.toISOString(),
     started_at: null,
     finished_at: null,
@@ -418,9 +449,9 @@ app.delete('/api/v1/training/jobs/:id', requireAuth, (req, res) => {
     const version = findVersionBySourceTaskId(task.task_id);
     if (version) {
       if (version.is_active) {
-        return res.status(409).json(apiError(`${version.version} is in use. Activate another version before deleting.`, 'ACTIVE_VERSION', 409));
+        activateFallbackVersion();
       }
-      if (data.versions.length <= 2) {
+      if (data.versions.length <= 1) {
         return res.status(409).json(apiError('Cannot delete the last remaining version.', 'LAST_VERSION', 409));
       }
       data.versions = data.versions.filter((v) => v.version_id !== version.version_id);
@@ -467,8 +498,10 @@ app.post('/api/v1/models/:id/activate', requireAuth, (req, res) => {
 app.delete('/api/v1/models/:id', requireAuth, (req, res) => {
   const record = findVersion(req.params.id);
   if (!record) return res.status(404).json(apiError('Version not found.', 'NOT_FOUND', 404));
-  if (record.is_active) return res.status(409).json(apiError(`${record.version} is in use. Activate another version before deleting.`, 'ACTIVE_VERSION', 409));
-  if (data.versions.length <= 2) return res.status(409).json(apiError('Cannot delete the last remaining version.', 'LAST_VERSION', 409));
+  if (record.is_active) {
+    activateFallbackVersion();
+  }
+  if (data.versions.length <= 1) return res.status(409).json(apiError('Cannot delete the last remaining version.', 'LAST_VERSION', 409));
   let deletedTaskId = null;
   if (record.source_task_id) {
     const task = findTask(record.source_task_id);
@@ -498,31 +531,55 @@ function lockCurve() {
 
 // ---------- Monitor ----------
 app.get('/api/v1/monitor/latest', requireAuth, (req, res) => {
-  const active = data.versions.find((v) => v.is_active);
-  const curve = lockCurve();
-  const items = [];
-  const now = Date.now();
-  for (let i = 0; i < 12; i++) {
-    const createdAt = new Date(now - (11 - i) * 45000).toISOString();
-    const pass = Math.random() > 0.2;
-    const torque = round3(8 + Math.random() * 6);
-    const angle = round3(50 + Math.random() * 25);
-    const code = pass ? 'PASS' : ('F0' + Math.floor(Math.random() * 6 + 1));
-    items.push({
-      sample_no: 1000 + i,
-      created_at: createdAt,
+  advanceJobs();
+  ensureMonitors();
+  const active = findActiveVersion();
+  const monitors = (data.monitors || [])
+    .slice()
+    .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+  const items = monitors.map((record) => {
+    const pass = record.pass_fail === true;
+    return {
+      sample_no: record.sample_no ?? record.id,
+      created_at: record.created_at,
       pass_fail: pass,
-      top_code: pass ? null : code,
-      top_confidence: pass ? 0.92 + Math.random() * 0.06 : 0.6 + Math.random() * 0.3,
-      model_version: active ? active.version : 'V3.0',
-      workstation: `WS-${(i % 3) + 1}`,
-      torque,
-      angle,
-      curve,
-      results: pass ? [{ code: 'PASS', name: 'Pass' }] : [{ code, name: code }],
-    });
+      top_code: pass ? null : (record.top_code ?? null),
+      top_confidence: record.top_confidence ?? null,
+      model_version: record.model_version ?? (active ? active.version : null),
+      workstation: record.workstation ?? 'WS-01',
+      torque: typeof record.torque === 'number' ? record.torque : 0,
+      angle: typeof record.angle === 'number' ? record.angle : 0,
+      curve: Array.isArray(record.curve) ? record.curve : lockCurve(),
+      results: pass ? [{ code: 'PASS', name: 'Pass' }] : [{ code: record.top_code ?? 'F01', name: record.top_code ?? 'Fail' }],
+    };
+  });
+  res.json({ items, active_version: active ? active.version : null });
+});
+
+// Ingest a single lock/monitor record from the device or test harness.
+app.post('/api/v1/monitor/ingest', requireAuth, (req, res) => {
+  ensureMonitors();
+  const record = req.body || {};
+  if (!record.created_at) {
+    return res.status(400).json(apiError('created_at is required.', 'INVALID_RECORD', 400));
   }
-  res.json({ items });
+  const entry = {
+    id: record.id || `M-${Date.now()}`,
+    sample_no: record.sample_no,
+    created_at: record.created_at,
+    pass_fail: record.pass_fail === true,
+    top_code: record.top_code ?? null,
+    top_confidence: typeof record.top_confidence === 'number' ? record.top_confidence : null,
+    model_version: record.model_version ?? null,
+    workstation: record.workstation ?? 'WS-01',
+    torque: typeof record.torque === 'number' ? record.torque : 0,
+    angle: typeof record.angle === 'number' ? record.angle : 0,
+    curve: Array.isArray(record.curve) ? record.curve : lockCurve(),
+    results: record.results ?? null,
+  };
+  data.monitors.push(entry);
+  saveData();
+  res.json({ ok: true, id: entry.id });
 });
 
 app.listen(PORT, () => {

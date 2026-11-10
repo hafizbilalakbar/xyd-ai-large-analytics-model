@@ -84,9 +84,11 @@ export class TrainingTasksService {
       this.isPreviewLoading.set(false);
       this.listState.set(list.items.length > 0 ? 'ok' : 'empty');
       this.loadError.set(null);
-      this.syncJobsToStore(list.items);
+      this.store.setTasks(convertJobsToStore(list.items));
       this.trackPreviousStatuses(list.items);
       this.backfillVersions(list.items);
+      // Refresh versions from the backend so version deletions cascade to this store.
+      await this.versionApi.getVersions();
       if (this.hasActiveJob()) {
         this.startPolling();
       }
@@ -228,11 +230,15 @@ export class TrainingTasksService {
       return false;
     }
 
-    const result = this.store.deleteTaskWithVersion(taskId);
-    if (!result.ok) {
-      this.toast.show(result.reason ?? 'Unable to delete task.', 'error');
+    try {
+      await this.api.deleteTrainingTask(taskId);
+    } catch (error) {
+      this.report(error, 'Unable to delete task.');
       return false;
     }
+    // Reload from the backend so the deleted task and its linked version
+    // disappear from this store and from the shared version store.
+    await this.load();
 
     this.toast.dismissAll();
     this.toast.show(`Deleted task ${taskId}.`, 'success');
@@ -243,15 +249,6 @@ export class TrainingTasksService {
       recordCount: 0,
       deleted: true,
     });
-    if (result.deletedVersion !== undefined) {
-      this.operationLog.add({
-        operator: this.operatorName(),
-        format: 'Delete model version',
-        scope: `Version ${result.deletedVersion}; result: success`,
-        recordCount: 0,
-        deleted: true,
-      });
-    }
     this.listState.set(this.jobs().length > 0 ? 'ok' : 'empty');
     return true;
   }
@@ -383,7 +380,7 @@ export class TrainingTasksService {
       this.preview.set(this.decoratePreview(preview));
       this.isPreviewLoading.set(false);
       this.loadError.set(null);
-      this.syncJobsToStore(list.items);
+      this.store.setTasks(convertJobsToStore(list.items));
       this.trackPreviousStatuses(list.items);
       this.backfillVersions(list.items);
       if (!this.hasActiveJob()) {
@@ -485,4 +482,24 @@ function toJob(task: {
     log_summary: null,
     metrics: null,
   };
+}
+
+function convertJobsToStore(jobs: TrainingJob[]): TrainingTaskStoreTask[] {
+  return jobs.map((job) => ({
+    taskId: job.task_id,
+    status: job.status,
+    scope: job.scope,
+    sampleCount: job.sample_count,
+    createdAt: job.created_at,
+    startedAt: job.started_at,
+    finishedAt: job.finished_at,
+    durationMs: job.duration_ms,
+    progress: job.progress,
+    modelVersion: job.model_version,
+    modelVersionId: job.model_version_id,
+    createdVersionId: job.created_version_id,
+    deleted: !!job.deleted,
+    logSummary: job.log_summary ?? null,
+    metrics: job.metrics ?? null,
+  }));
 }

@@ -3,6 +3,7 @@
     <span
       class="badge__dot"
       [class.badge__dot--receiving]="serviceStatus() === 'receiving'"
+      [class.badge__dot--timeout]="serviceStatus() === 'timeout'"
       [class.badge__dot--error]="serviceStatus() === 'error'"
       role="img"
       [attr.aria-label]="'Data access status: ' + serviceLabel()"
