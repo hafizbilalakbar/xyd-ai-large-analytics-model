@@ -6,6 +6,7 @@ import {
   input,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { APP_SETTINGS } from '../../../core/config/app-settings';
 
 @Component({
   selector: 'app-brand-logo',
@@ -21,6 +22,15 @@ export class BrandLogoComponent {
   readonly shortName = input<boolean>(false);
 
   private readonly router = inject(Router);
+
+  readonly settings = APP_SETTINGS;
+
+  readonly displayName = computed(() => {
+    if (this.shortName()) {
+      return this.settings.shortName;
+    }
+    return this.settings.name;
+  });
 
   readonly isReducedMotion = computed<boolean>(() => {
     if (typeof window === 'undefined') {

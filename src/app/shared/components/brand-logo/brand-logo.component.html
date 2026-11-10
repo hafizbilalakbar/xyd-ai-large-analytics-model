@@ -32,11 +32,7 @@
 
   @if (showName()) {
     <span class="brand-logo__name">
-      @if (shortName()) {
-        XYD AI
-      } @else {
-        XYD AI Large Model Locking Data Analysis and Learning Platform
-      }
+      {{ displayName() }}
     </span>
   }
 </button>

@@ -1,5 +1,6 @@
 :host {
   display: block;
+  width: 100%;
   min-width: 0;
 }
 
@@ -12,6 +13,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background-color: var(--color-surface);
+  min-width: 0;
 }
 
 .chart__head {
@@ -19,18 +21,21 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
+  flex-shrink: 0;
 }
 
 .chart__title {
   color: var(--color-text);
   font-size: var(--font-size-base);
   font-weight: 650;
+  min-width: 0;
 }
 
 .chart__subtitle {
   margin-top: 0.125rem;
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
+  min-width: 0;
 }
 
 .chart__unit {
@@ -41,16 +46,18 @@
   color: var(--color-primary-700);
   font-size: 0.6875rem;
   font-weight: 600;
+  min-width: 0;
 }
 
 .chart__canvas {
   width: 100%;
-  max-width: 48rem;
+  max-width: none;
   margin-top: auto;
-  margin-inline: auto;
+  margin-inline: 0;
   min-height: 280px;
   height: 280px;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .chart__ec-container {
@@ -69,6 +76,7 @@
   background-color: var(--color-surface-muted);
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
+  min-width: 0;
 }
 
 @media (max-width: 1024px) {

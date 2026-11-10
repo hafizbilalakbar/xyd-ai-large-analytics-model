@@ -61,21 +61,6 @@
 
 
 
-.app-header__title {
-  min-width: 0;
-  flex: 1 1 auto;
-  overflow: hidden;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.app-header__title--short {
-  display: none;
-}
-
 .app-header__actions {
   display: flex;
   flex: none;
@@ -158,16 +143,6 @@
   .app-header {
     padding-right: calc(var(--space-4) + env(safe-area-inset-right));
     padding-left: calc(var(--space-4) + env(safe-area-inset-left));
-  }
-}
-
-@media (max-width: 900px) {
-  .app-header__title--full {
-    display: none;
-  }
-
-  .app-header__title--short {
-    display: block;
   }
 }
 
