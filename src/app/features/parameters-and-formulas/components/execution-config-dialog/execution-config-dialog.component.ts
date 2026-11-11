@@ -2,12 +2,12 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { ParametersAndFormulasService } from '../../data-access/parameters-and-formulas.service';
 import { ExecutionConfigFormData } from '../../data-access/parameters-and-formulas.models';
 import { FormsModule } from '@angular/forms';
-import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { IconComponent } from '../../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-execution-config-dialog',
   standalone: true,
-  imports: [FormsModule, ModalComponent],
+  imports: [FormsModule, IconComponent],
   templateUrl: './execution-config-dialog.component.html',
   styleUrl: './execution-config-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

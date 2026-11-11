@@ -1,16 +1,17 @@
-<app-modal [open]="open()" [title]="title()" [maxWidth]="420" (close)="cancel.emit()">
+<app-modal [open]="open()" [title]="title()" (close)="cancel.emit()">
   <div modalBody>
     <p class="confirm-message">{{ message() }}</p>
   </div>
-  <div modalFooter class="confirm-actions">
-    <button type="button" class="btn btn-reset" (click)="cancel.emit()">{{ cancelLabel() }}</button>
+  <div modalFooter>
+    <button type="button" class="btn btn-reset" (click)="cancel.emit()" [attr.autofocus]="autofocusCancel() ? '' : null">{{ cancelLabel() }}</button>
     <button
       type="button"
       class="btn"
       [class.btn-danger]="danger()"
       [class.btn-query]="!danger()"
       [disabled]="confirmDisabled()"
-      (click)="confirm.emit()">
+      (click)="confirm.emit()"
+      [attr.autofocus]="!autofocusCancel() ? '' : null">
       {{ confirmLabel() }}
     </button>
   </div>

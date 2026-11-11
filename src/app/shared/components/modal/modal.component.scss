@@ -1,217 +1,215 @@
-/*
- * Shared dialog design system.
- * Every popup in the app (app-modal, app-confirm-dialog and their projected
- * content) is built on top of these styles. Page dialogs only override form
- * and button specifics - never the popup shell.
- */
-
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgb(15 23 42 / 45%);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgb(15 23 42 / 50%);
   z-index: 500;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 14px;
   overflow-y: auto;
-  overscroll-behavior: none;
-  animation: modal-overlay-fade 0.2s ease-out;
 }
 
 .modal {
-  position: relative;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  box-shadow: var(--shadow-raised);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgb(15 23 42 / 16%);
   width: 100%;
-  max-width: min(var(--modal-max-width, 520px), calc(100vw - 32px));
-  max-height: calc(100dvh - 48px);
+  max-height: calc(100dvh - 28px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   margin: auto;
-  animation: modal-content-scale 0.2s ease-out;
+}
+
+.modal--sm {
+  max-width: 92vw;
+  max-height: calc(100dvh - 36px);
+}
+
+.modal--md {
+  max-width: var(--modal-max-width, 520px);
+}
+
+.modal--lg {
+  max-width: var(--modal-max-width, 720px);
+}
+
+.modal--xl {
+  max-width: var(--modal-max-width, 1000px);
 }
 
 .modal__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
-  background: var(--color-surface);
 }
 
 .modal__title {
   margin: 0;
-  flex: 1 1 auto;
-  min-width: 0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .modal__close {
-  flex: 0 0 auto;
-  width: 38px;
-  height: 38px;
-  min-width: 38px;
-  min-height: 38px;
-  display: grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   padding: 0;
-  margin: 0;
   background: transparent;
   border: none;
-  border-radius: 10px;
   cursor: pointer;
   color: var(--color-text-muted);
-  transition: background 0.15s ease, color 0.15s ease;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
 
-  &:hover {
-    background: var(--color-surface-muted);
-    color: var(--color-text);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-primary-400);
-    outline-offset: 2px;
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
-    display: block;
-  }
+.modal__close:hover {
+  background: var(--color-surface-muted);
 }
 
 .modal__body {
   min-height: 0;
-  flex: 1 1 auto;
-  padding: 20px;
+  padding: 16px;
   overflow-y: auto;
   font-size: 13px;
   color: var(--color-text);
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
 }
 
 .modal__footer {
   display: flex;
-  align-items: center;
   justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 16px 20px;
+  align-items: center;
+  flex-wrap: nowrap;
+  padding: 12px 16px;
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
-  background: var(--color-surface);
 }
 
-.modal__footer--compact {
+:host ::ng-deep .modal__footer [modalFooter] {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: nowrap;
   gap: 8px;
-  padding: 12px 16px;
 }
 
-/* Tablet: wider side margins so the popup never touches the screen edges. */
-@media (min-width: 600px) and (max-width: 1024px) {
+:host ::ng-deep .modal__footer [modalFooter] .btn {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  margin: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+:host ::ng-deep .modal__footer--compact [modalFooter] .btn {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 1023px) {
+  :host ::ng-deep .modal__footer--compact [modalFooter] .btn {
+    height: 30px;
+  }
+}
+
+@media (max-width: 639px) {
   .modal-overlay {
-    padding: 24px;
+    padding: 12px;
+    align-items: flex-end;
   }
 
   .modal {
-    max-width: min(var(--modal-max-width, 520px), calc(100vw - 48px));
-  }
-}
-
-/* Mobile: bottom sheet anchored to the bottom of the screen. */
-@media (max-width: 599px) {
-  .modal-overlay {
-    padding: 0;
-    align-items: stretch;
-    justify-content: flex-end;
-    overflow: hidden;
-  }
-
-  .modal {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    max-width: none;
-    max-height: 92dvh;
-    border-radius: 16px 16px 0 0;
-    margin: 0;
-    animation: modal-slide-up 0.25s ease-out;
-  }
-
-  .modal__body {
-    overscroll-behavior: contain;
+    max-width: 92vw;
+    max-height: calc(100dvh - 24px);
   }
 
   .modal__footer {
-    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    padding: 12px 16px;
+  }
+
+  :host ::ng-deep .modal__footer [modalFooter] {
+    gap: 8px;
+  }
+
+  :host ::ng-deep .modal__footer [modalFooter] .btn {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  :host ::ng-deep .modal__footer--compact [modalFooter] .btn {
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .modal-overlay--fullscreen {
+    padding: 0;
+    align-items: stretch;
+    overflow: hidden;
   }
 
   .modal--mobile-fullscreen {
+    max-width: none;
+    width: 100%;
+    height: 100dvh;
     max-height: 100dvh;
     border-radius: 0;
   }
-}
 
-/* Landscape phone: use the full height, keep the body scrollable and the buttons visible. */
-@media (max-width: 599px) and (max-height: 500px) {
-  .modal {
-    max-height: 100dvh;
-    border-radius: 12px 12px 0 0;
+  .modal--mobile-fullscreen .modal__header {
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
+  }
+
+  .modal--mobile-fullscreen .modal__footer {
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .modal--mobile-fullscreen .modal__body {
+    overscroll-behavior: contain;
+  }
+
+  :host ::ng-deep .modal--mobile-fullscreen .modal__footer [modalFooter] {
+    width: 100%;
+  }
+
+  :host ::ng-deep .modal--mobile-fullscreen .modal__footer [modalFooter] > * {
+    flex: 1 1 0;
+    min-width: 0;
   }
 }
 
-@keyframes modal-overlay-fade {
-  from {
-    opacity: 0;
+@media (max-width: 339px) {
+  :host ::ng-deep .modal__footer [modalFooter] {
+    flex-direction: column-reverse;
+    gap: 8px;
   }
 
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes modal-content-scale {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
+  :host ::ng-deep .modal__footer [modalFooter] .btn {
+    width: 100%;
   }
 
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes modal-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  :host ::ng-deep .modal--mobile-fullscreen .modal__footer [modalFooter] > * {
+    flex: none;
+    width: 100%;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .modal-overlay,
-  .modal {
-    animation: none;
+  .modal__close {
+    transition: none;
   }
 }

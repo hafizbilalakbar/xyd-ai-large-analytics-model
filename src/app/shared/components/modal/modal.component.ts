@@ -17,7 +17,6 @@ export class ModalComponent {
   readonly mobileFullscreen = input(false);
   readonly footerVisible = input(true);
   readonly compactFooter = input(false);
-  readonly closeDisabled = input(false);
 
   readonly close = output<void>();
   readonly titleId = `modal-title-${ModalComponent.titleSequence++}`;
@@ -42,7 +41,6 @@ export class ModalComponent {
   }
 
   onBackdropClick() {
-    if (this.closeDisabled()) return;
     this.close.emit();
   }
 
@@ -52,22 +50,7 @@ export class ModalComponent {
 
   @HostListener('keydown.escape')
   onEscape() {
-    if (this.closeDisabled()) return;
     this.close.emit();
-  }
-
-  @HostListener('focusin', ['$event'])
-  onFocusIn(event: FocusEvent): void {
-    const dialog = this.dialogRef()?.nativeElement;
-    const target = event.target as HTMLElement;
-    if (!dialog || !target || !dialog.contains(target)) return;
-
-    const focusable =
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-    if (!target.matches(focusable)) return;
-
-    // Keeps the focused field reachable when the on-screen keyboard is open.
-    target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }
 
   @HostListener('keydown.tab', ['$event'])

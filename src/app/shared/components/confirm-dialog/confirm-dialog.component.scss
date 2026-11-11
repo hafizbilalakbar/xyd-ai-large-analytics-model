@@ -5,94 +5,52 @@
   color: var(--color-text);
 }
 
-.confirm-actions {
-  display: flex;
-  gap: 12px;
-}
-
 .btn {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 40px;
-  min-width: 96px;
-  padding: 0 20px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  font-size: 14px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+  gap: 6px;
 }
 
 .btn-query {
   background: var(--color-primary-600);
-  color: #ffffff;
+  color: var(--color-text-inverse);
   font-weight: 600;
+}
 
-  &:hover:not(:disabled) {
-    background: var(--color-primary-500);
-  }
+.btn-query:hover {
+  background: var(--color-primary-500);
 }
 
 .btn-danger {
   background: var(--color-danger);
-  color: #ffffff;
+  color: var(--color-text-inverse);
   font-weight: 600;
+}
 
-  &:hover:not(:disabled) {
-    background: var(--color-danger-dark, #a51919);
-  }
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-danger-dark, var(--color-danger));
+}
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-reset {
   background: var(--color-surface);
   color: var(--color-text);
-  border: 1px solid var(--color-border);
-
-  &:hover:not(:disabled) {
-    background: var(--color-surface-muted);
-    border-color: var(--color-primary-400);
-    color: var(--color-primary-600);
-  }
+  border: 1px solid #d9dee7;
 }
 
-@media (max-width: 599px) {
-  .btn {
-    height: 44px;
-  }
-
-  .confirm-actions {
-    gap: 8px;
-  }
-
-  .confirm-actions > .btn {
-    flex: 1 1 0;
-    min-width: 0;
-    width: calc(50% - 4px);
-  }
-}
-
-@media (max-width: 339px) {
-  .confirm-actions {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .confirm-actions > .btn {
-    width: 100%;
-  }
+.btn-reset:hover {
+  border-color: var(--color-primary-400);
+  color: var(--color-primary-600);
 }
