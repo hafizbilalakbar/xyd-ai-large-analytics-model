@@ -1,5 +1,154 @@
-<app-feature-placeholder
+<app-page-header
   title="Logs and Monitoring"
-  description="Inspect platform logs, service health, and operational events."
-  icon="terminal"
+  subtitle="Service status, data access, and operation logs"
 />
+
+<div class="monitor-cards">
+  <section class="panel" aria-labelledby="monitor-system-title">
+    <header class="panel__head">
+      <h2 class="panel__title" id="monitor-system-title">System status</h2>
+      <span class="panel__note">Refreshes every 10 seconds</span>
+    </header>
+
+    <div class="resource">
+      <div class="resource__top">
+        <span>CPU utilization</span>
+        <b>{{ cpuPercent() }}%</b>
+      </div>
+      <div
+        class="progress"
+        role="progressbar"
+        aria-label="CPU utilization"
+        [attr.aria-valuenow]="cpuPercent()"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      >
+        <span class="progress__fill" [style.width.%]="cpuPercent()"></span>
+      </div>
+    </div>
+
+    <div class="resource">
+      <div class="resource__top">
+        <span>Memory usage</span>
+        <b>{{ memPercent() }}%</b>
+      </div>
+      <div
+        class="progress"
+        role="progressbar"
+        aria-label="Memory usage"
+        [attr.aria-valuenow]="memPercent()"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        [class.progress--warn]="memWarn()"
+      >
+        <span class="progress__fill" [style.width.%]="memPercent()"></span>
+      </div>
+    </div>
+
+    <div class="resource">
+      <div class="resource__top">
+        <span>Disk usage</span>
+        <b>{{ diskLabel() }}</b>
+      </div>
+      <div
+        class="progress"
+        role="progressbar"
+        aria-label="Disk usage"
+        [attr.aria-valuenow]="diskPercent()"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      >
+        <span class="progress__fill" [style.width.%]="diskPercent()"></span>
+      </div>
+    </div>
+
+    <p class="panel__footnote">System runtime {{ uptimeLabel() }}</p>
+    @if (metricsSource() === 'local') {
+      <p class="panel__footnote panel__footnote--muted">
+        Backend not reachable — showing local metrics simulation.
+      </p>
+    }
+  </section>
+
+  <section class="panel" aria-labelledby="monitor-ingest-title">
+    <header class="panel__head">
+      <h2 class="panel__title" id="monitor-ingest-title">Data access</h2>
+      <span class="panel__note">Real-time push notifications for electric screwdrivers</span>
+    </header>
+
+    <div class="stat-grid">
+      <div class="stat">
+        <span class="stat__label">Today's data volume</span>
+        <span class="stat__value">{{ todayIngestLabel() }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat__label">Number of data access anomalies</span>
+        <span class="stat__value stat__value--ok">{{ anomalyLabel() }}</span>
+      </div>
+    </div>
+
+    <p class="panel__footnote">The latest data time&nbsp; {{ latestDataLabel() }}</p>
+  </section>
+
+  <section class="panel" aria-labelledby="monitor-model-title">
+    <header class="panel__head">
+      <h2 class="panel__title" id="monitor-model-title">Model determination</h2>
+      <span class="panel__note">Real-time classification</span>
+    </header>
+
+    <dl class="kv">
+      <div class="kv__row">
+        <dt>Current activation model</dt>
+        <dd>{{ activeVersionLabel() }}</dd>
+      </div>
+      <div class="kv__row">
+        <dt>Number of deductions today</dt>
+        <dd>{{ inferenceTodayLabel() }}</dd>
+      </div>
+      <div class="kv__row">
+        <dt>Average inference time</dt>
+        <dd>{{ avgDurationLabel() }}</dd>
+      </div>
+    </dl>
+  </section>
+</div>
+
+<section class="panel log-panel" aria-labelledby="monitor-log-title">
+  <header class="panel__head log-panel__head">
+    <h2 class="panel__title" id="monitor-log-title">Log</h2>
+    <div class="log-panel__actions">
+      <input
+        class="log-filter"
+        type="search"
+        placeholder="Quickly filter the results by: Sample ID / API / user / action"
+        aria-label="Quick filter log results"
+        [value]="filterTerm()"
+        (input)="onFilterInput($event)"
+      />
+      <button class="log-export" type="button" (click)="exportLogs()">
+        <app-icon name="download" />
+        <span>Export Logs</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="log-viewer" role="log" aria-label="Operation and interface logs">
+    @for (entry of filteredLogs(); track entry.id) {
+      <div class="log-line">
+        <span class="log-line__time">{{ formatEntryTime(entry.time) }}</span>
+        <span
+          class="log-line__tag"
+          [class.log-line__tag--interface]="entry.kind === 'interface'"
+          [class.log-line__tag--operate]="entry.kind === 'operate'"
+        >
+          {{ entry.kind }}
+        </span>
+        <span class="log-line__text">{{ entry.message }}</span>
+      </div>
+    } @empty {
+      <div class="log-viewer__empty">No records to display</div>
+    }
+  </div>
+</section>
+
+<app-toast-container />

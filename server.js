@@ -4,6 +4,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const os = require('os');
 
 const app = express();
 app.use(express.json());
@@ -630,6 +631,90 @@ app.post('/api/v1/monitor/samples', requireAuth, (req, res) => {
   data.monitors.push(entry);
   saveData();
   res.json({ ok: true, id: entry.id, model_version: versionId });
+});
+
+// ---------- System metrics (Logs and Monitoring page) ----------
+let prevCpuTimes = os.cpus().map((c) => ({ ...c.times }));
+
+function cpuPercent() {
+  const cpus = os.cpus();
+  let idleDelta = 0;
+  let totalDelta = 0;
+  cpus.forEach((cpu, index) => {
+    const prev = prevCpuTimes[index] || cpu.times;
+    let prevTotal = 0;
+    let currTotal = 0;
+    for (const type of Object.keys(cpu.times)) {
+      prevTotal += prev[type] || 0;
+      currTotal += cpu.times[type];
+    }
+    idleDelta += cpu.times.idle - (prev.idle || 0);
+    totalDelta += currTotal - prevTotal;
+  });
+  prevCpuTimes = cpus.map((c) => ({ ...c.times }));
+  if (totalDelta <= 0) return 0;
+  return Math.round((1 - idleDelta / totalDelta) * 1000) / 10;
+}
+
+function diskUsageMb() {
+  try {
+    const stats = fs.statfsSync(__dirname);
+    const totalMb = (stats.blocks * stats.bsize) / 1048576;
+    const freeMb = (stats.bfree * stats.bsize) / 1048576;
+    return {
+      disk_used_mb: Math.round((totalMb - freeMb) * 10) / 10,
+      disk_total_mb: Math.round(totalMb * 10) / 10,
+    };
+  } catch {
+    return { disk_used_mb: null, disk_total_mb: null };
+  }
+}
+
+app.get('/api/v1/system/metrics', requireAuth, (req, res) => {
+  advanceJobs();
+  ensureMonitors();
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  let todayCount = 0;
+  let passCount = 0;
+  let failCount = 0;
+  let lastAtMs = null;
+  for (const record of data.monitors || []) {
+    const at = Date.parse(record.created_at);
+    if (Number.isNaN(at)) continue;
+    if (at > lastAtMs) lastAtMs = at;
+    if (at >= startOfDay) {
+      todayCount++;
+      if (record.pass_fail === true) passCount++;
+      else failCount++;
+    }
+  }
+  const active = findActiveVersion();
+  const ingestRand = lcg(hashCode(String(startOfDay)) * 31 + todayCount);
+  const totalMem = os.totalmem();
+  const freeMem = os.freemem();
+  const disk = diskUsageMb();
+  res.json({
+    system: {
+      cpu_percent: cpuPercent(),
+      mem_percent: Math.round((1 - freeMem / totalMem) * 1000) / 10,
+      disk_used_mb: disk.disk_used_mb,
+      disk_total_mb: disk.disk_total_mb,
+      uptime_s: Math.floor(os.uptime()),
+    },
+    ingest: {
+      today_count: todayCount,
+      error_count: failCount,
+      last_at: lastAtMs === null ? null : new Date(lastAtMs).toISOString(),
+    },
+    inference: {
+      active_version: active ? active.version : null,
+      today_count: todayCount,
+      avg_dur_ms: todayCount === 0 ? null : round3(9 + ingestRand() * 5),
+      pass_count: passCount,
+      fail_count: failCount,
+    },
+  });
 });
 
 app.listen(PORT, () => {

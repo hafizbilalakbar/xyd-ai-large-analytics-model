@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { APP_SETTINGS } from '../../core/config/app-settings';
-import { NAVIGATION_ITEMS } from '../../core/config/navigation.config';
+import { PermissionService } from '../../core/permissions/permission.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { ModelVersionStore } from '../../shared/services/model-version.store';
 
@@ -33,8 +33,10 @@ export class SidebarComponent implements OnDestroy {
   readonly closeDrawer = output<void>();
 
   private readonly modelVersions = inject(ModelVersionStore);
+  private readonly permissions = inject(PermissionService);
 
-  protected readonly navigationItems = NAVIGATION_ITEMS;
+  /** Sidebar entries filtered to the pages the current user may open. */
+  protected readonly navigationItems = this.permissions.visibleNavigation;
   protected readonly settings = APP_SETTINGS;
   protected readonly activeModelVersion = computed(() => this.modelVersions.activeVersion()?.id ?? '—');
   protected readonly toggleLabel = computed(() =>

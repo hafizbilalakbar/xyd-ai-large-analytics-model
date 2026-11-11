@@ -83,7 +83,7 @@
   </div>
 
   <nav class="sidebar__nav" aria-label="Main navigation">
-    @for (item of navigationItems; track item.route) {
+    @for (item of navigationItems(); track item.route) {
       <a
         class="nav-item"
         [routerLink]="item.route"

@@ -21,7 +21,8 @@ export type IconName =
   | 'plus'
   | 'x'
   | 'inbox'
-  | 'alert-triangle';
+  | 'alert-triangle'
+  | 'eye-off';
 
 export const ICON_PATHS: Record<IconName, readonly string[]> = {
   home: ['M3 10.5 12 3l9 7.5', 'M5 9.5V21h14V9.5', 'M9.5 21v-6h5v6'],
@@ -30,6 +31,12 @@ export const ICON_PATHS: Record<IconName, readonly string[]> = {
   eye: [
     'M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z',
     'M12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z',
+  ],
+  'eye-off': [
+    'M4 4l16 16',
+    'M9.9 5.9A10.7 10.7 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17.4 17.4 0 0 1-3.2 3.9',
+    'M6.6 6.8C4 8.7 2.5 12 2.5 12S6 18.5 12 18.5a10.7 10.7 0 0 0 3.1-.5',
+    'M9.9 9.9a2.5 2.5 0 0 0 3.4 3.4',
   ],
   download: ['M12 3v12', 'M7.5 10.5 12 15l4.5-4.5', 'M4 17v3h16v-3'],
   upload: ['M12 15V3', 'M7.5 7.5 12 3l4.5 4.5', 'M4 17v3h16v-3'],

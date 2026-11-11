@@ -1,5 +1,475 @@
-<app-feature-placeholder
+<app-page-header
   title="Permission Management"
-  description="Control user roles, access scopes, and platform permissions."
-  icon="shield"
+  subtitle="Roles, page permissions, and member accounts"
 />
+
+<div class="access-layout">
+  <!-- Left: role list -->
+  <aside class="panel role-panel" aria-labelledby="role-panel-title">
+    <header class="role-panel__head">
+      <div class="role-panel__head-copy">
+        <h2 class="role-panel__title" id="role-panel-title">Role</h2>
+        <p class="role-panel__subtitle">Roles bundle page permissions for member accounts</p>
+      </div>
+      <button class="btn btn--primary btn--sm" type="button" (click)="openCreateRoleModal()">
+        <app-icon name="plus" [size]="14" />
+        <span>Create</span>
+      </button>
+    </header>
+
+    @if (roles().length > 0) {
+      <ul class="role-list" role="listbox" aria-label="Roles">
+        @for (role of roles(); track role.id) {
+          <li class="role-list__row">
+            <button
+              type="button"
+              class="role-list__item"
+              role="option"
+              [class.role-list__item--active]="selectedRoleId() === role.id"
+              [attr.aria-selected]="selectedRoleId() === role.id"
+              (click)="selectRole(role.id)"
+            >
+              <span class="role-list__icon" aria-hidden="true">
+                <app-icon name="shield" [size]="15" />
+              </span>
+              <span class="role-list__copy">
+                <span class="role-list__name">{{ role.name }}</span>
+                @if (role.description) {
+                  <span class="role-list__desc">{{ role.description }}</span>
+                }
+              </span>
+            </button>
+          </li>
+        }
+      </ul>
+      <footer class="role-panel__foot">
+        There are {{ roles().length }} characters in total
+      </footer>
+    } @else {
+      <div class="role-panel__empty">
+        <p class="role-panel__empty-title">
+          No character available yet, please create one first.
+        </p>
+        <button class="btn btn--primary btn--sm" type="button" (click)="openCreateRoleModal()">
+          <app-icon name="plus" [size]="14" />
+          <span>Create a new character</span>
+        </button>
+      </div>
+    }
+  </aside>
+
+  <!-- Right: permissions + members -->
+  <div class="access-main">
+    @if (selectedRole(); as role) {
+      <section class="panel perms-panel" aria-labelledby="perms-title">
+        <header class="perms-panel__head">
+          <div class="perms-panel__head-copy">
+            <h2 class="perms-panel__title" id="perms-title">Role Permissions</h2>
+            <p class="perms-panel__subtitle">
+              {{ members().length }} {{ members().length === 1 ? 'member' : 'members' }} · pages
+              this role can open
+            </p>
+          </div>
+          <div class="perms-panel__head-actions">
+            <span
+              class="save-state"
+              [class.save-state--dirty]="hasUnsavedChanges()"
+              [class.save-state--saved]="!hasUnsavedChanges()"
+            >
+              <span class="save-state__dot" aria-hidden="true"></span>
+              {{ hasUnsavedChanges() ? 'Unsaved changes' : 'Saved' }}
+            </span>
+            <button class="btn btn--danger-ghost btn--sm" type="button" (click)="requestDeleteRole()">
+              Delete role
+            </button>
+            <button
+              class="btn btn--primary btn--sm"
+              type="button"
+              [disabled]="!hasUnsavedChanges()"
+              (click)="saveRoleChanges()"
+            >
+              Save changes
+            </button>
+          </div>
+        </header>
+
+        <div class="form-field">
+          <label class="form-label" for="role-name-edit">Role name</label>
+          <input
+            id="role-name-edit"
+            class="form-input"
+            type="text"
+            name="roleName"
+            autocomplete="off"
+            placeholder="Role name"
+            [(ngModel)]="draftRoleName"
+          />
+        </div>
+
+        <div class="perms-toolbar">
+          <span class="perms-toolbar__label">Page permissions</span>
+          <div class="perms-toolbar__actions">
+            <button class="link-btn" type="button" (click)="selectAllPermissions()">Select all</button>
+            <button class="link-btn" type="button" (click)="invertPermissions()">Invert</button>
+          </div>
+        </div>
+
+        <div class="perm-tree">
+          @for (group of groups; track group.key) {
+            <div class="perm-group">
+              <label class="perm-group__head">
+                <input
+                  class="perm-check"
+                  type="checkbox"
+                  [attr.aria-label]="'Toggle all permissions of ' + group.label"
+                  [checked]="groupState(group) === 'on'"
+                  [indeterminate]="groupState(group) === 'half'"
+                  (change)="toggleGroup(group)"
+                />
+                <span class="perm-group__label">{{ group.label }}</span>
+                @if (group.items.length > 1) {
+                  <span class="perm-group__count">{{ group.items.length }} permissions</span>
+                }
+              </label>
+              <ul class="perm-group__items">
+                @for (item of group.items; track item.id) {
+                  <li>
+                    <label class="perm-item">
+                      <input
+                        class="perm-check"
+                        type="checkbox"
+                        [checked]="isPermissionChecked(item.id)"
+                        (change)="togglePermission(item.id)"
+                      />
+                      <span class="perm-item__label">{{ item.label }}</span>
+                    </label>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="panel members-panel" aria-labelledby="members-title">
+        <header class="members-panel__head">
+          <div class="members-panel__head-copy">
+            <h2 class="members-panel__title" id="members-title">Characters</h2>
+            <p class="members-panel__caption">{{ membersCaption() }}</p>
+          </div>
+          <div class="members-panel__actions">
+            <button class="btn btn--secondary btn--sm" type="button" (click)="downloadTemplate()">
+              <app-icon name="download" [size]="14" />
+              <span>Download template</span>
+            </button>
+            <label class="btn btn--secondary btn--sm">
+              <app-icon name="upload" [size]="14" />
+              <span>Import CSV</span>
+              <input
+                class="file-input"
+                type="file"
+                accept=".csv,text/csv"
+                (change)="onCsvSelected($event)"
+              />
+            </label>
+            <button class="btn btn--primary btn--sm" type="button" (click)="openCreateUserModal()">
+              <app-icon name="plus" [size]="14" />
+              <span>Add User</span>
+            </button>
+            @if (selectedMemberIds().size > 0) {
+              <button
+                class="btn btn--danger-ghost btn--sm"
+                type="button"
+                (click)="requestRemoveSelectedMembers()"
+              >
+                Remove selected ({{ selectedMemberIds().size }})
+              </button>
+            }
+          </div>
+        </header>
+
+        @if (members().length > 0) {
+          <div class="table-wrap">
+            <table class="members-table">
+              <thead>
+                <tr>
+                  <th class="members-table__check">
+                    <input
+                      class="perm-check"
+                      type="checkbox"
+                      aria-label="Select all members"
+                      [checked]="allMembersSelected()"
+                      [indeterminate]="someMembersSelected()"
+                      (change)="toggleAllMembers($any($event.target).checked)"
+                    />
+                  </th>
+                  <th class="members-table__username" scope="col">Username</th>
+                  <th class="members-table__status" scope="col">Status</th>
+                  <th class="members-table__ops" scope="col">Operations</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (member of members(); track member.id) {
+                  <tr [class.members-table__row--selected]="isMemberSelected(member.id)">
+                    <td class="members-table__check">
+                      <input
+                        class="perm-check"
+                        type="checkbox"
+                        [attr.aria-label]="'Select ' + member.username"
+                        [checked]="isMemberSelected(member.id)"
+                        (change)="toggleMember(member.id)"
+                      />
+                    </td>
+                    <td class="members-table__username">
+                      <span class="members-table__user-cell">
+                        <span class="members-table__avatar" aria-hidden="true">
+                          <app-icon name="user" [size]="13" />
+                        </span>
+                        {{ member.username }}
+                      </span>
+                    </td>
+                    <td class="members-table__status">
+                      <span
+                        class="status-badge"
+                        [class.status-badge--off]="!member.enabled"
+                      >
+                        {{ member.enabled ? 'Enabled' : 'Disabled' }}
+                      </span>
+                    </td>
+                    <td class="members-table__ops">
+                      <div class="row-actions">
+                        <button
+                          class="row-actions__btn"
+                          type="button"
+                          [attr.aria-label]="'Edit ' + member.username"
+                          (click)="openEditUserModal(member)"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          class="row-actions__btn"
+                          type="button"
+                          [attr.aria-label]="(member.enabled ? 'Disable ' : 'Enable ') + member.username"
+                          (click)="toggleUserEnabled(member)"
+                        >
+                          {{ member.enabled ? 'Disable' : 'Enable' }}
+                        </button>
+                        <button
+                          class="row-actions__btn row-actions__btn--danger"
+                          type="button"
+                          [attr.aria-label]="'Delete ' + member.username"
+                          (click)="requestDeleteUser(member)"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="members-table__empty">
+            No members in this character yet. Use “Import CSV” or “Add User” to create accounts.
+          </div>
+        }
+      </section>
+    } @else {
+      <section class="panel perms-panel" aria-labelledby="perms-empty-title">
+        <div class="perms-empty">
+          <span class="perms-empty__mark" aria-hidden="true">＋</span>
+          <h2 class="perms-empty__title" id="perms-empty-title">
+            There are no configurable characters yet
+          </h2>
+          <p class="perms-empty__hint">
+            Create a character to choose which pages its members can open.
+          </p>
+          <button class="btn btn--primary btn--sm" type="button" (click)="openCreateRoleModal()">
+            <app-icon name="plus" [size]="14" />
+            <span>Create a new character</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="panel members-panel" aria-labelledby="members-empty-title">
+        <header class="members-panel__head">
+          <div class="members-panel__head-copy">
+            <h2 class="members-panel__title" id="members-empty-title">Characters</h2>
+            <p class="members-panel__caption">{{ membersCaption() }}</p>
+          </div>
+        </header>
+        <div class="members-table__empty members-table__empty--plain">
+          Please select a character first.
+        </div>
+      </section>
+    }
+  </div>
+</div>
+
+<!-- Create role modal -->
+<app-modal
+  [open]="roleModalOpen()"
+  title="Create a new character"
+  (close)="roleModalOpen.set(false)"
+>
+  <div modalBody>
+    <div class="form-field">
+      <label class="form-label" for="new-role-name">
+        Name <span class="required-mark">*</span>
+      </label>
+      <input
+        id="new-role-name"
+        class="form-input"
+        type="text"
+        name="newRoleName"
+        autocomplete="off"
+        placeholder="e.g. Quality inspector"
+        [(ngModel)]="roleFormName"
+      />
+    </div>
+    <div class="form-field">
+      <label class="form-label" for="new-role-description">Description</label>
+      <textarea
+        id="new-role-description"
+        class="form-input form-input--area"
+        name="newRoleDescription"
+        rows="3"
+        placeholder="What does this role do?"
+        [(ngModel)]="roleFormDescription"
+      ></textarea>
+    </div>
+    @if (roleFormError()) {
+      <p class="form-error" role="alert">{{ roleFormError() }}</p>
+    }
+  </div>
+  <div modalFooter>
+    <button class="btn btn--secondary btn--sm" type="button" (click)="roleModalOpen.set(false)">
+      Cancel
+    </button>
+    <button class="btn btn--primary btn--sm" type="button" (click)="submitRoleModal()">Create</button>
+  </div>
+</app-modal>
+
+<!-- User create/edit modal -->
+<app-modal
+  [open]="userModalOpen()"
+  [title]="userModalMode() === 'create' ? 'Add user' : 'Edit user'"
+  (close)="userModalOpen.set(false)"
+>
+  <div modalBody>
+    <div class="form-field">
+      <label class="form-label" for="user-form-username">
+        Username <span class="required-mark">*</span>
+      </label>
+      <input
+        id="user-form-username"
+        class="form-input"
+        type="text"
+        name="userFormUsername"
+        autocomplete="off"
+        placeholder="2–32 characters, letters and numbers"
+        [(ngModel)]="userFormUsername"
+      />
+    </div>
+
+    <div class="form-field">
+      <label class="form-label" for="user-form-password">
+        @if (userModalMode() === 'create') {
+          Initial password <span class="required-mark">*</span>
+        } @else {
+          New password
+        }
+      </label>
+      <input
+        id="user-form-password"
+        class="form-input"
+        type="text"
+        name="userFormPassword"
+        autocomplete="new-password"
+        [placeholder]="userModalMode() === 'create' ? 'At least 8 characters with letters and numbers' : 'New password'"
+        [(ngModel)]="userFormPassword"
+      />
+      @if (userModalMode() === 'edit') {
+        <p class="form-hint">Leave blank to keep the current password</p>
+      }
+    </div>
+
+    <div class="form-field">
+      <span class="form-label">Characters</span>
+      <p class="form-hint">Choose the characters this account belongs to</p>
+      <div class="role-picker">
+        @for (role of roles(); track role.id) {
+          <label class="role-picker__item">
+            <input
+              class="perm-check"
+              type="checkbox"
+              [checked]="isUserRoleToggled(role.id)"
+              (change)="toggleUserRole(role.id)"
+            />
+            <span class="role-picker__name">{{ role.name }}</span>
+          </label>
+        } @empty {
+          <p class="form-hint">No characters yet — create a character first to assign permissions.</p>
+        }
+      </div>
+    </div>
+
+    @if (userFormError()) {
+      <p class="form-error" role="alert">{{ userFormError() }}</p>
+    }
+  </div>
+  <div modalFooter>
+    <button class="btn btn--secondary btn--sm" type="button" (click)="userModalOpen.set(false)">
+      Cancel
+    </button>
+    <button class="btn btn--primary btn--sm" type="button" (click)="submitUserModal()">
+      {{ userModalMode() === 'create' ? 'Add user' : 'Save changes' }}
+    </button>
+  </div>
+</app-modal>
+
+<!-- CSV import result modal -->
+<app-modal
+  [open]="importResultOpen()"
+  title="Import result"
+  (close)="importResultOpen.set(false)"
+>
+  <div modalBody>
+    @if (importResult(); as result) {
+      <p class="import-summary">
+        {{ result.addedCount }}
+        {{ result.addedCount === 1 ? 'user was' : 'users were' }} imported.
+      </p>
+      @if (result.errors.length > 0) {
+        <p class="import-summary import-summary--error">
+          {{ result.errors.length }} {{ result.errors.length === 1 ? 'row' : 'rows' }} could not be
+          imported:
+        </p>
+        <ul class="import-errors">
+          @for (error of result.errors; track error.row) {
+            <li>Row {{ error.row }}: {{ error.message }}</li>
+          }
+        </ul>
+      }
+    }
+  </div>
+  <div modalFooter>
+    <button class="btn btn--primary btn--sm" type="button" (click)="importResultOpen.set(false)">
+      Close
+    </button>
+  </div>
+</app-modal>
+
+<!-- Generic confirm dialog -->
+<app-confirm-dialog
+  [open]="confirmOpen()"
+  [title]="confirmTitle()"
+  [message]="confirmMessage()"
+  [confirmLabel]="confirmLabel()"
+  [danger]="true"
+  (confirm)="onConfirm()"
+  (cancel)="onCancelConfirm()"
+/>
+
+<app-toast-container />
