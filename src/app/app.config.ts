@@ -9,6 +9,7 @@ import {
 } from '@angular/router';
 import { routes } from './app.routes';
 import { httpAuditInterceptor } from './core/logging/http-audit.interceptor';
+import { NavigationLogger } from './core/logging/navigation-logger.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -18,5 +19,6 @@ export const appConfig: ApplicationConfig = {
       withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
     ),
     provideHttpClient(withInterceptors([httpAuditInterceptor])),
+    NavigationLogger,
   ],
 };

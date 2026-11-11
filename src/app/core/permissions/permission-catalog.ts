@@ -92,7 +92,10 @@ export const PERMISSION_GROUPS: readonly PermissionGroup[] = [
     key: 'logs-and-monitoring',
     label: 'Logs & Monitoring',
     route: '/logs-and-monitoring',
-    items: [{ id: 'log:view', label: 'View logs and monitoring' }],
+    items: [
+      { id: 'log:view', label: 'View logs and monitoring' },
+      { id: 'log:clear', label: 'Clear logs' },
+    ],
   },
 ];
 

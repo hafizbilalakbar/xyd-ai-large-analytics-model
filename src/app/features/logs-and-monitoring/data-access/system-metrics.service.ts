@@ -1,6 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, OnDestroy, inject, signal } from '@angular/core';
 import { ModelVersionStore } from '../../../shared/services/model-version.store';
+import { LOG_SILENT } from '../../../core/logging/http-audit.interceptor';
 
 export interface SystemMetrics {
   readonly system: {
@@ -67,8 +68,10 @@ export class SystemMetricsService implements OnDestroy {
     this.clearTimer();
   }
 
-  private poll(): void {
-    this.http.get<SystemMetrics>(API_URL).subscribe({
+  poll(): void {
+    this.http.get<SystemMetrics>(API_URL, {
+      context: new HttpContext().set(LOG_SILENT, true),
+    }).subscribe({
       next: (metrics) => {
         this.metrics.set(metrics);
         this.source.set('live');

@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AUTH_CONFIG } from './auth.config';
 import { AccessStoreService, AccessUser } from '../permissions/access-store.service';
 import { AuditLogService } from '../logging/audit-log.service';
+import { LOG_ACTIONS } from '../logging/log-actions';
 
 export interface AuthenticatedUser {
   /** Display name (used in the header and operation logs). */
@@ -90,6 +91,11 @@ export class AuthService implements OnDestroy {
       }
       user = result.value ?? null;
       if (!user) {
+        this.auditLog.logOperate(
+          LOG_ACTIONS.authLoginFailed,
+          trimmedUsername,
+          'invalid credentials',
+        );
         return { ok: false, error: 'Incorrect account or password.' };
       }
     }
@@ -133,6 +139,10 @@ export class AuthService implements OnDestroy {
       return;
     }
     if (Date.now() >= expiresAt) {
+      this.auditLog.logOperate(
+        LOG_ACTIONS.authSessionExpired,
+        this.userState()?.username ?? 'unknown',
+      );
       this.signOut(false);
       void this.router.navigate(['/login'], {
         queryParams: { reason: 'expired' },
@@ -146,6 +156,11 @@ export class AuthService implements OnDestroy {
         .users()
         .find((candidate) => candidate.username.toLowerCase() === user.username.toLowerCase());
       if (!stored || !stored.enabled) {
+        this.auditLog.logOperate(
+          LOG_ACTIONS.authLoginFailed,
+          user.username,
+          'account disabled',
+        );
         this.signOut(false);
         void this.router.navigate(['/login'], { queryParams: { reason: 'disabled' } });
       }

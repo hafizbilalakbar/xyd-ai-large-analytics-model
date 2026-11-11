@@ -1,38 +1,40 @@
-import { HttpErrorResponse, HttpEventType, HttpInterceptorFn } from '@angular/common/http';
+import {
+  HttpErrorResponse,
+  HttpEventType,
+  HttpInterceptorFn,
+  HttpContextToken,
+} from '@angular/common/http';
 import { inject } from '@angular/core';
 import { tap } from 'rxjs';
 import { AuditLogService } from './audit-log.service';
 
-const SUMMARY_MAX_LENGTH = 400;
-
-function summarize(body: unknown): string {
-  if (body === null || body === undefined) {
-    return '';
-  }
-  try {
-    const text = JSON.stringify(body);
-    if (text === undefined) {
-      return '';
-    }
-    return text.length > SUMMARY_MAX_LENGTH
-      ? `${text.slice(0, SUMMARY_MAX_LENGTH)}…`
-      : text;
-  } catch {
-    return '';
-  }
-}
+/**
+ * Mark an HttpClient request as silent so the interceptor skips logging it.
+ * Used for background polling (system metrics, capacity, status checks) and
+ * any timer-driven call.
+ */
+export const LOG_SILENT = new HttpContextToken(() => false);
 
 /**
  * Records an `interface` audit log entry for every API call made through
  * `HttpClient`. Calls issued with `window.fetch` (all pre-existing services)
- * are captured by the fetch patch inside `AuditLogService` instead.
+ * are NOT patched here — only HttpClient calls go through this interceptor.
+ *
+ * Logs only: METHOD PATH STATUS TIME — never response bodies.
+ * Silent requests (LOG_SILENT context) and static assets are skipped.
+ * Failed requests (4xx/5xx) are always logged.
  */
 export const httpAuditInterceptor: HttpInterceptorFn = (req, next) => {
+  const auditLog = inject(AuditLogService);
+
+  if (req.context.get(LOG_SILENT)) {
+    return next(req);
+  }
+
   if (!req.url.includes('/api/')) {
     return next(req);
   }
 
-  const auditLog = inject(AuditLogService);
   const started = performance.now();
 
   return next(req).pipe(
@@ -44,7 +46,6 @@ export const httpAuditInterceptor: HttpInterceptorFn = (req, next) => {
             req.urlWithParams,
             event.status,
             performance.now() - started,
-            summarize(event.body),
           );
         }
       },
@@ -55,7 +56,6 @@ export const httpAuditInterceptor: HttpInterceptorFn = (req, next) => {
             req.urlWithParams,
             error.status,
             performance.now() - started,
-            summarize(error.error),
           );
         }
       },

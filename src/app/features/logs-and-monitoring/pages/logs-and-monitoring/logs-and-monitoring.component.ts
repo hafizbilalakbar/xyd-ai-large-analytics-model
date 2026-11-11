@@ -9,9 +9,11 @@ import {
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { ToastContainerComponent } from '../../../../shared/components/toast-container/toast-container.component';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ToastService } from '../../../../shared/services/toast.service';
-import { AuditLogService } from '../../../../core/logging/audit-log.service';
+import { AuditLogService, formatTimestamp } from '../../../../core/logging/audit-log.service';
 import { SystemMetricsService } from '../../data-access/system-metrics.service';
+import { PermissionService } from '../../../../core/permissions/permission.service';
 
 const MEMORY_WARN_PERCENT = 80;
 
@@ -50,7 +52,12 @@ function exportStamp(date: Date): string {
 
 @Component({
   selector: 'app-logs-and-monitoring',
-  imports: [PageHeaderComponent, ToastContainerComponent, IconComponent],
+  imports: [
+    PageHeaderComponent,
+    ToastContainerComponent,
+    IconComponent,
+    ConfirmDialogComponent,
+  ],
   templateUrl: './logs-and-monitoring.component.html',
   styleUrl: './logs-and-monitoring.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,28 +66,29 @@ export class LogsAndMonitoringComponent implements OnDestroy {
   private readonly metricsService = inject(SystemMetricsService);
   private readonly auditLog = inject(AuditLogService);
   private readonly toastService = inject(ToastService);
+  private readonly permissions = inject(PermissionService);
 
   protected readonly metrics = this.metricsService.metrics;
   protected readonly metricsSource = this.metricsService.source;
-  protected readonly logs = this.auditLog.entries;
+  protected readonly entries = this.auditLog.entries;
+  protected readonly filteredEntries = this.auditLog.filteredEntries;
 
   protected readonly filterTerm = signal('');
+
+  protected readonly metricsLoading = signal(false);
+  protected readonly metricsError = signal(false);
 
   private readonly nowTick = signal(Date.now());
   private readonly tickTimer = window.setInterval(() => {
     this.nowTick.set(Date.now());
   }, 1000);
 
-  protected readonly filteredLogs = computed(() => {
-    const term = this.filterTerm().trim().toLowerCase();
-    if (term === '') {
-      return this.logs();
-    }
-    return this.logs().filter(
-      (entry) =>
-        entry.message.toLowerCase().includes(term) || entry.kind.includes(term),
-    );
-  });
+  private exportTimer: number | null = null;
+
+  constructor() {
+    // Log that this page was opened
+    this.auditLog.logOperate('ui.navigate', 'Logs & Monitoring');
+  }
 
   protected readonly cpuPercent = computed(() =>
     Math.round(this.metrics()?.system.cpu_percent ?? 0),
@@ -113,7 +121,6 @@ export class LogsAndMonitoringComponent implements OnDestroy {
     return used === null ? '—' : `${used} / ${mbToGb(system.disk_total_mb)} GB`;
   });
 
-  /** Uptime keeps counting between polls so the label ticks every second. */
   protected readonly uptimeLabel = computed(() => {
     const current = this.metrics();
     if (!current) {
@@ -135,7 +142,7 @@ export class LogsAndMonitoringComponent implements OnDestroy {
 
   protected readonly latestDataLabel = computed(() => {
     const lastAt = this.metrics()?.ingest.last_at;
-    return lastAt ? this.auditLog.formatTimestamp(lastAt) : '—';
+    return lastAt ? formatTimestamp(lastAt) : '—';
   });
 
   protected readonly activeVersionLabel = computed(
@@ -151,25 +158,43 @@ export class LogsAndMonitoringComponent implements OnDestroy {
     return avg === null || avg === undefined ? '—' : `${avg} ms`;
   });
 
+  protected readonly canClearLogs = computed(() =>
+    this.permissions.can('log:clear'),
+  );
+
   ngOnDestroy(): void {
     window.clearInterval(this.tickTimer);
+    if (this.exportTimer !== null) {
+      window.clearTimeout(this.exportTimer);
+      this.exportTimer = null;
+    }
   }
 
   protected formatEntryTime(isoTime: string): string {
-    return this.auditLog.formatTimestamp(isoTime);
+    return formatTimestamp(isoTime);
+  }
+
+  protected isFailEntry(entry: { kind: string; message: string }): boolean {
+    return (
+      entry.kind === 'interface' &&
+      /\b(4\d\d|5\d\d)\b/.test(entry.message)
+    );
   }
 
   protected onFilterInput(event: Event): void {
-    this.filterTerm.set((event.target as HTMLInputElement).value);
+    const value = (event.target as HTMLInputElement).value;
+    this.filterTerm.set(value);
+    this.auditLog.setFilter(value);
+  }
+
+  protected clearFilter(): void {
+    this.filterTerm.set('');
+    this.auditLog.clearFilter();
   }
 
   protected exportLogs(): void {
-    const summary = [
-      `  ${'System status'.padEnd(16)}CPU ${this.cpuPercent()}%, memory ${this.memPercent()}%, disk ${this.diskLabel()} (${this.diskPercent()}%), uptime ${this.uptimeLabel()}`,
-      `  ${'Data access'.padEnd(16)}${this.todayIngestLabel()} records today, ${this.anomalyLabel()} anomalies, latest ${this.latestDataLabel()}`,
-      `  ${'Model judgment'.padEnd(16)}version ${this.activeVersionLabel()}, ${this.inferenceTodayLabel()} inferences today, average ${this.avgDurationLabel()}`,
-    ];
-    const content = this.auditLog.buildExportFile(summary);
+    const filtered = this.filteredEntries();
+    const content = this.auditLog.exportContent(filtered);
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
@@ -177,6 +202,41 @@ export class LogsAndMonitoringComponent implements OnDestroy {
     anchor.download = `operation-logs_${exportStamp(new Date())}.log`;
     anchor.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    this.auditLog.logOperate('logs.export', `${filtered.length} entries`);
     this.toastService.show('Operation log exported.', 'success');
+  }
+
+  // ---------- Clear logs dialog ----------
+
+  protected readonly clearDialogOpen = signal(false);
+
+  protected openClearDialog(): void {
+    this.clearDialogOpen.set(true);
+  }
+
+  protected onClearCancel(): void {
+    this.clearDialogOpen.set(false);
+  }
+
+  protected onClearConfirm(): void {
+    this.clearDialogOpen.set(false);
+    this.auditLog.clear();
+    this.auditLog.logOperate('logs.clear', 'all entries');
+    this.toastService.show('Logs cleared', 'success');
+  }
+
+  // ---------- Metrics retry ----------
+
+  protected retryMetrics(): void {
+    this.metricsLoading.set(true);
+    this.metricsError.set(false);
+    this.metricsService.poll();
+    window.setTimeout(() => {
+      this.metricsLoading.set(false);
+      if (!this.metrics() || this.metricsSource() === 'local') {
+        this.metricsError.set(true);
+      }
+    }, 3000);
   }
 }

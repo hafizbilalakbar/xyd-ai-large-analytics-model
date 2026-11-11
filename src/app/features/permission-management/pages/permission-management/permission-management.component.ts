@@ -12,6 +12,7 @@ import { PageHeaderComponent } from '../../../../shared/components/page-header/p
 import { ToastContainerComponent } from '../../../../shared/components/toast-container/toast-container.component';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { AuditLogService } from '../../../../core/logging/audit-log.service';
 import {
   AccessStoreService,
   type AccessUser,
@@ -41,6 +42,7 @@ const CSV_TEMPLATE_FILE_NAME = 'user-import-template.csv';
 export class PermissionManagementComponent {
   private readonly store = inject(AccessStoreService);
   private readonly toastService = inject(ToastService);
+  private readonly auditLog = inject(AuditLogService);
 
   protected readonly groups = PERMISSION_GROUPS;
 
@@ -455,6 +457,7 @@ export class PermissionManagementComponent {
     anchor.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     this.toastService.show('Template downloaded.', 'success');
+    this.auditLog.logOperate('template.download', CSV_TEMPLATE_FILE_NAME);
   }
 
   protected async onCsvSelected(event: Event): Promise<void> {
