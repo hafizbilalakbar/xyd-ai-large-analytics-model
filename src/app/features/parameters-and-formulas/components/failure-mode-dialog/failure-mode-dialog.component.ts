@@ -2,12 +2,12 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { ParametersAndFormulasService } from '../../data-access/parameters-and-formulas.service';
 import { FailureModeFormData } from '../../data-access/parameters-and-formulas.models';
 import { FormsModule } from '@angular/forms';
-import { IconComponent } from '../../../../shared/components/icon/icon.component';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 
 @Component({
   selector: 'app-failure-mode-dialog',
   standalone: true,
-  imports: [FormsModule, IconComponent],
+  imports: [FormsModule, ModalComponent],
   templateUrl: './failure-mode-dialog.component.html',
   styleUrl: './failure-mode-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

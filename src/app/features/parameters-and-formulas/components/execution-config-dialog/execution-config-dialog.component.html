@@ -1,23 +1,10 @@
 @if (state().open) {
-  <div class="modal-backdrop" (click)="onCancel()" role="presentation"></div>
-  <div
-    class="modal-dialog"
-    role="dialog"
-    aria-modal="true"
-    [attr.aria-labelledby]="'exec-dialog-title'">
-    
-    <div class="modal-header">
-      <h2 id="exec-dialog-title" class="modal-title">{{ title() }}</h2>
-      <button
-        type="button"
-        class="btn-close"
-        (click)="onCancel()"
-        aria-label="Close dialog">
-        <app-icon name="x" [size]="20" />
-      </button>
-    </div>
-
-    <div class="modal-body">
+  <app-modal
+    [title]="title()"
+    [open]="state().open"
+    [closeDisabled]="isSaving()"
+    (close)="onCancel()">
+    <div modalBody>
       <!-- Section 1: Record Index -->
       <div class="section-header">
         <span class="section-badge">1</span>
@@ -28,17 +15,24 @@
           <label for="field-batchNumber" class="form-label">
             Batch Number <span class="required-star">*</span>
           </label>
-          <input
-            id="field-batchNumber"
-            type="text"
-            class="form-input"
-            [class.is-readonly]="isBatchReadOnly()"
-            [readonly]="isBatchReadOnly()"
-            placeholder="For example, 1"
-            [ngModel]="state().form.batchNumber"
-            (ngModelChange)="onFieldChange('batchNumber', $event)"
-            [attr.aria-invalid]="!!errors()['batchNumber']"
-            [attr.aria-describedby]="errors()['batchNumber'] ? 'err-batchNumber' : 'hint-batchNumber'" />
+          <div class="input-wrap">
+            <input
+              id="field-batchNumber"
+              type="text"
+              class="form-input"
+              [class.is-readonly]="isBatchReadOnly()"
+              [readonly]="isBatchReadOnly()"
+              placeholder="For example, 1"
+              [ngModel]="state().form.batchNumber"
+              (ngModelChange)="onFieldChange('batchNumber', $event)"
+              [attr.aria-invalid]="!!errors()['batchNumber']"
+              [attr.aria-describedby]="errors()['batchNumber'] ? 'err-batchNumber' : 'hint-batchNumber'" />
+            @if (isBatchReadOnly()) {
+              <svg class="field-lock" aria-hidden="true" focusable="false">
+                <path d="M18 8h-1V6c0-2.2-1.8-4-4-4S8 3.8 8 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2ZM8 12V6c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v6H8Z" />
+              </svg>
+            }
+          </div>
           <p id="hint-batchNumber" class="form-helper">
             Unique record index. Once created it is read-only and cannot be changed.
           </p>
@@ -58,15 +52,17 @@
           <label for="field-screwdriverBitModel" class="form-label">
             Screwdriver bit model <span class="required-star">*</span>
           </label>
-          <input
-            id="field-screwdriverBitModel"
-            type="text"
-            class="form-input"
-            placeholder="e.g. P2"
-            [ngModel]="state().form.screwdriverBitModel"
-            (ngModelChange)="onFieldChange('screwdriverBitModel', $event)"
-            [attr.aria-invalid]="!!errors()['screwdriverBitModel']"
-            [attr.aria-describedby]="errors()['screwdriverBitModel'] ? 'err-screwdriverBitModel' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-screwdriverBitModel"
+              type="text"
+              class="form-input"
+              placeholder="e.g. P2"
+              [ngModel]="state().form.screwdriverBitModel"
+              (ngModelChange)="onFieldChange('screwdriverBitModel', $event)"
+              [attr.aria-invalid]="!!errors()['screwdriverBitModel']"
+              [attr.aria-describedby]="errors()['screwdriverBitModel'] ? 'err-screwdriverBitModel' : null" />
+          </div>
           @if (errors()['screwdriverBitModel']) {
             <p id="err-screwdriverBitModel" class="form-error" role="alert">{{ errors()['screwdriverBitModel'] }}</p>
           }
@@ -76,15 +72,17 @@
           <label for="field-screwSpec" class="form-label">
             Screw specification <span class="required-star">*</span>
           </label>
-          <input
-            id="field-screwSpec"
-            type="text"
-            class="form-input"
-            placeholder="e.g. M2"
-            [ngModel]="state().form.screwSpec"
-            (ngModelChange)="onFieldChange('screwSpec', $event)"
-            [attr.aria-invalid]="!!errors()['screwSpec']"
-            [attr.aria-describedby]="errors()['screwSpec'] ? 'err-screwSpec' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-screwSpec"
+              type="text"
+              class="form-input"
+              placeholder="e.g. M2"
+              [ngModel]="state().form.screwSpec"
+              (ngModelChange)="onFieldChange('screwSpec', $event)"
+              [attr.aria-invalid]="!!errors()['screwSpec']"
+              [attr.aria-describedby]="errors()['screwSpec'] ? 'err-screwSpec' : null" />
+          </div>
           @if (errors()['screwSpec']) {
             <p id="err-screwSpec" class="form-error" role="alert">{{ errors()['screwSpec'] }}</p>
           }
@@ -94,15 +92,17 @@
           <label for="field-electricScrewdriverModel" class="form-label">
             Electric screwdriver model <span class="required-star">*</span>
           </label>
-          <input
-            id="field-electricScrewdriverModel"
-            type="text"
-            class="form-input"
-            placeholder="e.g. 008"
-            [ngModel]="state().form.electricScrewdriverModel"
-            (ngModelChange)="onFieldChange('electricScrewdriverModel', $event)"
-            [attr.aria-invalid]="!!errors()['electricScrewdriverModel']"
-            [attr.aria-describedby]="errors()['electricScrewdriverModel'] ? 'err-electricScrewdriverModel' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-electricScrewdriverModel"
+              type="text"
+              class="form-input"
+              placeholder="e.g. 008"
+              [ngModel]="state().form.electricScrewdriverModel"
+              (ngModelChange)="onFieldChange('electricScrewdriverModel', $event)"
+              [attr.aria-invalid]="!!errors()['electricScrewdriverModel']"
+              [attr.aria-describedby]="errors()['electricScrewdriverModel'] ? 'err-electricScrewdriverModel' : null" />
+          </div>
           @if (errors()['electricScrewdriverModel']) {
             <p id="err-electricScrewdriverModel" class="form-error" role="alert">{{ errors()['electricScrewdriverModel'] }}</p>
           }
@@ -112,15 +112,17 @@
           <label for="field-modelName" class="form-label">
             Model name <span class="required-star">*</span>
           </label>
-          <input
-            id="field-modelName"
-            type="text"
-            class="form-input"
-            placeholder="e.g. XYD Model"
-            [ngModel]="state().form.modelName"
-            (ngModelChange)="onFieldChange('modelName', $event)"
-            [attr.aria-invalid]="!!errors()['modelName']"
-            [attr.aria-describedby]="errors()['modelName'] ? 'err-modelName' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-modelName"
+              type="text"
+              class="form-input"
+              placeholder="e.g. XYD Model"
+              [ngModel]="state().form.modelName"
+              (ngModelChange)="onFieldChange('modelName', $event)"
+              [attr.aria-invalid]="!!errors()['modelName']"
+              [attr.aria-describedby]="errors()['modelName'] ? 'err-modelName' : null" />
+          </div>
           @if (errors()['modelName']) {
             <p id="err-modelName" class="form-error" role="alert">{{ errors()['modelName'] }}</p>
           }
@@ -130,15 +132,17 @@
           <label for="field-lockedItemMaterial" class="form-label">
             Locked item material <span class="required-star">*</span>
           </label>
-          <input
-            id="field-lockedItemMaterial"
-            type="text"
-            class="form-input"
-            placeholder="e.g. Alloy"
-            [ngModel]="state().form.lockedItemMaterial"
-            (ngModelChange)="onFieldChange('lockedItemMaterial', $event)"
-            [attr.aria-invalid]="!!errors()['lockedItemMaterial']"
-            [attr.aria-describedby]="errors()['lockedItemMaterial'] ? 'err-lockedItemMaterial' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-lockedItemMaterial"
+              type="text"
+              class="form-input"
+              placeholder="e.g. Alloy"
+              [ngModel]="state().form.lockedItemMaterial"
+              (ngModelChange)="onFieldChange('lockedItemMaterial', $event)"
+              [attr.aria-invalid]="!!errors()['lockedItemMaterial']"
+              [attr.aria-describedby]="errors()['lockedItemMaterial'] ? 'err-lockedItemMaterial' : null" />
+          </div>
           @if (errors()['lockedItemMaterial']) {
             <p id="err-lockedItemMaterial" class="form-error" role="alert">{{ errors()['lockedItemMaterial'] }}</p>
           }
@@ -148,30 +152,40 @@
           <label for="field-glueResistant" class="form-label">
             Glue residue resistant? <span class="required-star">*</span>
           </label>
-          <select
-            id="field-glueResistant"
-            class="form-select"
-            [ngModel]="state().form.glueResistant"
-            (ngModelChange)="onFieldChange('glueResistant', $event)">
-            <option value="Not set">Not set</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
+          <div class="select-wrap">
+            <select
+              id="field-glueResistant"
+              class="form-select"
+              [ngModel]="state().form.glueResistant"
+              (ngModelChange)="onFieldChange('glueResistant', $event)">
+              <option value="Not set">Not set</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+            <svg class="select-chevron" aria-hidden="true" focusable="false">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </div>
         </div>
 
         <div class="form-group">
           <label for="field-toothShape" class="form-label">
             Tooth shape <span class="required-star">*</span>
           </label>
-          <select
-            id="field-toothShape"
-            class="form-select"
-            [ngModel]="state().form.toothShape"
-            (ngModelChange)="onFieldChange('toothShape', $event)">
-            <option value="Not set">Not set</option>
-            <option value="Machine thread">Machine thread</option>
-            <option value="Self-tapping thread">Self-tapping thread</option>
-          </select>
+          <div class="select-wrap">
+            <select
+              id="field-toothShape"
+              class="form-select"
+              [ngModel]="state().form.toothShape"
+              (ngModelChange)="onFieldChange('toothShape', $event)">
+              <option value="Not set">Not set</option>
+              <option value="Machine thread">Machine thread</option>
+              <option value="Self-tapping thread">Self-tapping thread</option>
+            </select>
+            <svg class="select-chevron" aria-hidden="true" focusable="false">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </div>
         </div>
       </div>
 
@@ -185,15 +199,17 @@
           <label for="field-targetTorque" class="form-label">
             Target torque (kgf·cm) <span class="required-star">*</span>
           </label>
-          <input
-            id="field-targetTorque"
-            type="number"
-            step="0.001"
-            class="form-input"
-            [value]="state().form.targetTorque"
-            (input)="onNumericChange('targetTorque', $event)"
-            [attr.aria-invalid]="!!errors()['targetTorque']"
-            [attr.aria-describedby]="errors()['targetTorque'] ? 'err-targetTorque' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-targetTorque"
+              type="number"
+              step="0.001"
+              class="form-input"
+              [value]="state().form.targetTorque"
+              (input)="onNumericChange('targetTorque', $event)"
+              [attr.aria-invalid]="!!errors()['targetTorque']"
+              [attr.aria-describedby]="errors()['targetTorque'] ? 'err-targetTorque' : null" />
+          </div>
           @if (errors()['targetTorque']) {
             <p id="err-targetTorque" class="form-error" role="alert">{{ errors()['targetTorque'] }}</p>
           }
@@ -203,15 +219,17 @@
           <label for="field-targetTorqueLowerLimit" class="form-label">
             Target torque lower limit (kgf·cm) <span class="required-star">*</span>
           </label>
-          <input
-            id="field-targetTorqueLowerLimit"
-            type="number"
-            step="0.00001"
-            class="form-input"
-            [value]="state().form.targetTorqueLowerLimit"
-            (input)="onNumericChange('targetTorqueLowerLimit', $event)"
-            [attr.aria-invalid]="!!errors()['targetTorqueLowerLimit']"
-            [attr.aria-describedby]="errors()['targetTorqueLowerLimit'] ? 'err-targetTorqueLowerLimit' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-targetTorqueLowerLimit"
+              type="number"
+              step="0.00001"
+              class="form-input"
+              [value]="state().form.targetTorqueLowerLimit"
+              (input)="onNumericChange('targetTorqueLowerLimit', $event)"
+              [attr.aria-invalid]="!!errors()['targetTorqueLowerLimit']"
+              [attr.aria-describedby]="errors()['targetTorqueLowerLimit'] ? 'err-targetTorqueLowerLimit' : null" />
+          </div>
           @if (errors()['targetTorqueLowerLimit']) {
             <p id="err-targetTorqueLowerLimit" class="form-error" role="alert">{{ errors()['targetTorqueLowerLimit'] }}</p>
           }
@@ -221,15 +239,17 @@
           <label for="field-targetTorqueUpperLimit" class="form-label">
             Target torque upper limit (kgf·cm) <span class="required-star">*</span>
           </label>
-          <input
-            id="field-targetTorqueUpperLimit"
-            type="number"
-            step="0.00001"
-            class="form-input"
-            [value]="state().form.targetTorqueUpperLimit"
-            (input)="onNumericChange('targetTorqueUpperLimit', $event)"
-            [attr.aria-invalid]="!!errors()['targetTorqueUpperLimit']"
-            [attr.aria-describedby]="errors()['targetTorqueUpperLimit'] ? 'err-targetTorqueUpperLimit' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-targetTorqueUpperLimit"
+              type="number"
+              step="0.00001"
+              class="form-input"
+              [value]="state().form.targetTorqueUpperLimit"
+              (input)="onNumericChange('targetTorqueUpperLimit', $event)"
+              [attr.aria-invalid]="!!errors()['targetTorqueUpperLimit']"
+              [attr.aria-describedby]="errors()['targetTorqueUpperLimit'] ? 'err-targetTorqueUpperLimit' : null" />
+          </div>
           @if (errors()['targetTorqueUpperLimit']) {
             <p id="err-targetTorqueUpperLimit" class="form-error" role="alert">{{ errors()['targetTorqueUpperLimit'] }}</p>
           }
@@ -239,15 +259,17 @@
           <label for="field-clampingTorqueLowerLimit" class="form-label">
             Clamping torque lower limit <span class="required-star">*</span>
           </label>
-          <input
-            id="field-clampingTorqueLowerLimit"
-            type="number"
-            step="0.01"
-            class="form-input"
-            [value]="state().form.clampingTorqueLowerLimit"
-            (input)="onNumericChange('clampingTorqueLowerLimit', $event)"
-            [attr.aria-invalid]="!!errors()['clampingTorqueLowerLimit']"
-            [attr.aria-describedby]="errors()['clampingTorqueLowerLimit'] ? 'err-clampingTorqueLowerLimit' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-clampingTorqueLowerLimit"
+              type="number"
+              step="0.01"
+              class="form-input"
+              [value]="state().form.clampingTorqueLowerLimit"
+              (input)="onNumericChange('clampingTorqueLowerLimit', $event)"
+              [attr.aria-invalid]="!!errors()['clampingTorqueLowerLimit']"
+              [attr.aria-describedby]="errors()['clampingTorqueLowerLimit'] ? 'err-clampingTorqueLowerLimit' : null" />
+          </div>
           @if (errors()['clampingTorqueLowerLimit']) {
             <p id="err-clampingTorqueLowerLimit" class="form-error" role="alert">{{ errors()['clampingTorqueLowerLimit'] }}</p>
           }
@@ -257,15 +279,17 @@
           <label for="field-maximumClampingAngle" class="form-label">
             Maximum clamping angle (°) <span class="required-star">*</span>
           </label>
-          <input
-            id="field-maximumClampingAngle"
-            type="number"
-            step="1"
-            class="form-input"
-            [value]="state().form.maximumClampingAngle"
-            (input)="onNumericChange('maximumClampingAngle', $event)"
-            [attr.aria-invalid]="!!errors()['maximumClampingAngle']"
-            [attr.aria-describedby]="errors()['maximumClampingAngle'] ? 'err-maximumClampingAngle' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-maximumClampingAngle"
+              type="number"
+              step="1"
+              class="form-input"
+              [value]="state().form.maximumClampingAngle"
+              (input)="onNumericChange('maximumClampingAngle', $event)"
+              [attr.aria-invalid]="!!errors()['maximumClampingAngle']"
+              [attr.aria-describedby]="errors()['maximumClampingAngle'] ? 'err-maximumClampingAngle' : null" />
+          </div>
           @if (errors()['maximumClampingAngle']) {
             <p id="err-maximumClampingAngle" class="form-error" role="alert">{{ errors()['maximumClampingAngle'] }}</p>
           }
@@ -275,15 +299,17 @@
           <label for="field-minimumClampingAngle" class="form-label">
             Minimum clamping angle (°) <span class="required-star">*</span>
           </label>
-          <input
-            id="field-minimumClampingAngle"
-            type="number"
-            step="1"
-            class="form-input"
-            [value]="state().form.minimumClampingAngle"
-            (input)="onNumericChange('minimumClampingAngle', $event)"
-            [attr.aria-invalid]="!!errors()['minimumClampingAngle']"
-            [attr.aria-describedby]="errors()['minimumClampingAngle'] ? 'err-minimumClampingAngle' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-minimumClampingAngle"
+              type="number"
+              step="1"
+              class="form-input"
+              [value]="state().form.minimumClampingAngle"
+              (input)="onNumericChange('minimumClampingAngle', $event)"
+              [attr.aria-invalid]="!!errors()['minimumClampingAngle']"
+              [attr.aria-describedby]="errors()['minimumClampingAngle'] ? 'err-minimumClampingAngle' : null" />
+          </div>
           @if (errors()['minimumClampingAngle']) {
             <p id="err-minimumClampingAngle" class="form-error" role="alert">{{ errors()['minimumClampingAngle'] }}</p>
           }
@@ -293,15 +319,17 @@
           <label for="field-maximumAngleThreshold" class="form-label">
             Maximum angle threshold (°) <span class="required-star">*</span>
           </label>
-          <input
-            id="field-maximumAngleThreshold"
-            type="number"
-            step="1"
-            class="form-input"
-            [value]="state().form.maximumAngleThreshold"
-            (input)="onNumericChange('maximumAngleThreshold', $event)"
-            [attr.aria-invalid]="!!errors()['maximumAngleThreshold']"
-            [attr.aria-describedby]="errors()['maximumAngleThreshold'] ? 'err-maximumAngleThreshold' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-maximumAngleThreshold"
+              type="number"
+              step="1"
+              class="form-input"
+              [value]="state().form.maximumAngleThreshold"
+              (input)="onNumericChange('maximumAngleThreshold', $event)"
+              [attr.aria-invalid]="!!errors()['maximumAngleThreshold']"
+              [attr.aria-describedby]="errors()['maximumAngleThreshold'] ? 'err-maximumAngleThreshold' : null" />
+          </div>
           @if (errors()['maximumAngleThreshold']) {
             <p id="err-maximumAngleThreshold" class="form-error" role="alert">{{ errors()['maximumAngleThreshold'] }}</p>
           }
@@ -311,15 +339,17 @@
           <label for="field-minimumAngleThreshold" class="form-label">
             Minimum angle threshold (°) <span class="required-star">*</span>
           </label>
-          <input
-            id="field-minimumAngleThreshold"
-            type="number"
-            step="1"
-            class="form-input"
-            [value]="state().form.minimumAngleThreshold"
-            (input)="onNumericChange('minimumAngleThreshold', $event)"
-            [attr.aria-invalid]="!!errors()['minimumAngleThreshold']"
-            [attr.aria-describedby]="errors()['minimumAngleThreshold'] ? 'err-minimumAngleThreshold' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-minimumAngleThreshold"
+              type="number"
+              step="1"
+              class="form-input"
+              [value]="state().form.minimumAngleThreshold"
+              (input)="onNumericChange('minimumAngleThreshold', $event)"
+              [attr.aria-invalid]="!!errors()['minimumAngleThreshold']"
+              [attr.aria-describedby]="errors()['minimumAngleThreshold'] ? 'err-minimumAngleThreshold' : null" />
+          </div>
           @if (errors()['minimumAngleThreshold']) {
             <p id="err-minimumAngleThreshold" class="form-error" role="alert">{{ errors()['minimumAngleThreshold'] }}</p>
           }
@@ -329,15 +359,17 @@
           <label for="field-fitStandardDeviationThreshold" class="form-label">
             Fit standard deviation threshold <span class="required-star">*</span>
           </label>
-          <input
-            id="field-fitStandardDeviationThreshold"
-            type="number"
-            step="0.1"
-            class="form-input"
-            [value]="state().form.fitStandardDeviationThreshold"
-            (input)="onNumericChange('fitStandardDeviationThreshold', $event)"
-            [attr.aria-invalid]="!!errors()['fitStandardDeviationThreshold']"
-            [attr.aria-describedby]="errors()['fitStandardDeviationThreshold'] ? 'err-fitStandardDeviationThreshold' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-fitStandardDeviationThreshold"
+              type="number"
+              step="0.1"
+              class="form-input"
+              [value]="state().form.fitStandardDeviationThreshold"
+              (input)="onNumericChange('fitStandardDeviationThreshold', $event)"
+              [attr.aria-invalid]="!!errors()['fitStandardDeviationThreshold']"
+              [attr.aria-describedby]="errors()['fitStandardDeviationThreshold'] ? 'err-fitStandardDeviationThreshold' : null" />
+          </div>
           @if (errors()['fitStandardDeviationThreshold']) {
             <p id="err-fitStandardDeviationThreshold" class="form-error" role="alert">{{ errors()['fitStandardDeviationThreshold'] }}</p>
           }
@@ -347,15 +379,17 @@
           <label for="field-transThreadSpectrumThreshold" class="form-label">
             Trans-thread spectrum threshold <span class="required-star">*</span>
           </label>
-          <input
-            id="field-transThreadSpectrumThreshold"
-            type="number"
-            step="1"
-            class="form-input"
-            [value]="state().form.transThreadSpectrumThreshold"
-            (input)="onNumericChange('transThreadSpectrumThreshold', $event)"
-            [attr.aria-invalid]="!!errors()['transThreadSpectrumThreshold']"
-            [attr.aria-describedby]="errors()['transThreadSpectrumThreshold'] ? 'err-transThreadSpectrumThreshold' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-transThreadSpectrumThreshold"
+              type="number"
+              step="1"
+              class="form-input"
+              [value]="state().form.transThreadSpectrumThreshold"
+              (input)="onNumericChange('transThreadSpectrumThreshold', $event)"
+              [attr.aria-invalid]="!!errors()['transThreadSpectrumThreshold']"
+              [attr.aria-describedby]="errors()['transThreadSpectrumThreshold'] ? 'err-transThreadSpectrumThreshold' : null" />
+          </div>
           @if (errors()['transThreadSpectrumThreshold']) {
             <p id="err-transThreadSpectrumThreshold" class="form-error" role="alert">{{ errors()['transThreadSpectrumThreshold'] }}</p>
           }
@@ -365,15 +399,17 @@
           <label for="field-normalizedIntegralThreshold" class="form-label">
             Normalized integral threshold <span class="required-star">*</span>
           </label>
-          <input
-            id="field-normalizedIntegralThreshold"
-            type="number"
-            step="0.01"
-            class="form-input"
-            [value]="state().form.normalizedIntegralThreshold"
-            (input)="onNumericChange('normalizedIntegralThreshold', $event)"
-            [attr.aria-invalid]="!!errors()['normalizedIntegralThreshold']"
-            [attr.aria-describedby]="errors()['normalizedIntegralThreshold'] ? 'err-normalizedIntegralThreshold' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-normalizedIntegralThreshold"
+              type="number"
+              step="0.01"
+              class="form-input"
+              [value]="state().form.normalizedIntegralThreshold"
+              (input)="onNumericChange('normalizedIntegralThreshold', $event)"
+              [attr.aria-invalid]="!!errors()['normalizedIntegralThreshold']"
+              [attr.aria-describedby]="errors()['normalizedIntegralThreshold'] ? 'err-normalizedIntegralThreshold' : null" />
+          </div>
           @if (errors()['normalizedIntegralThreshold']) {
             <p id="err-normalizedIntegralThreshold" class="form-error" role="alert">{{ errors()['normalizedIntegralThreshold'] }}</p>
           }
@@ -383,15 +419,17 @@
           <label for="field-fittingPositionStandardDeviationThreshold" class="form-label">
             Fitting position standard deviation threshold <span class="required-star">*</span>
           </label>
-          <input
-            id="field-fittingPositionStandardDeviationThreshold"
-            type="number"
-            step="0.1"
-            class="form-input"
-            [value]="state().form.fittingPositionStandardDeviationThreshold"
-            (input)="onNumericChange('fittingPositionStandardDeviationThreshold', $event)"
-            [attr.aria-invalid]="!!errors()['fittingPositionStandardDeviationThreshold']"
-            [attr.aria-describedby]="errors()['fittingPositionStandardDeviationThreshold'] ? 'err-fittingPositionStandardDeviationThreshold' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-fittingPositionStandardDeviationThreshold"
+              type="number"
+              step="0.1"
+              class="form-input"
+              [value]="state().form.fittingPositionStandardDeviationThreshold"
+              (input)="onNumericChange('fittingPositionStandardDeviationThreshold', $event)"
+              [attr.aria-invalid]="!!errors()['fittingPositionStandardDeviationThreshold']"
+              [attr.aria-describedby]="errors()['fittingPositionStandardDeviationThreshold'] ? 'err-fittingPositionStandardDeviationThreshold' : null" />
+          </div>
           @if (errors()['fittingPositionStandardDeviationThreshold']) {
             <p id="err-fittingPositionStandardDeviationThreshold" class="form-error" role="alert">{{ errors()['fittingPositionStandardDeviationThreshold'] }}</p>
           }
@@ -401,15 +439,17 @@
           <label for="field-slippageStandardDeviationThreshold" class="form-label">
             Slippage standard deviation threshold <span class="required-star">*</span>
           </label>
-          <input
-            id="field-slippageStandardDeviationThreshold"
-            type="number"
-            step="0.1"
-            class="form-input"
-            [value]="state().form.slippageStandardDeviationThreshold"
-            (input)="onNumericChange('slippageStandardDeviationThreshold', $event)"
-            [attr.aria-invalid]="!!errors()['slippageStandardDeviationThreshold']"
-            [attr.aria-describedby]="errors()['slippageStandardDeviationThreshold'] ? 'err-slippageStandardDeviationThreshold' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-slippageStandardDeviationThreshold"
+              type="number"
+              step="0.1"
+              class="form-input"
+              [value]="state().form.slippageStandardDeviationThreshold"
+              (input)="onNumericChange('slippageStandardDeviationThreshold', $event)"
+              [attr.aria-invalid]="!!errors()['slippageStandardDeviationThreshold']"
+              [attr.aria-describedby]="errors()['slippageStandardDeviationThreshold'] ? 'err-slippageStandardDeviationThreshold' : null" />
+          </div>
           @if (errors()['slippageStandardDeviationThreshold']) {
             <p id="err-slippageStandardDeviationThreshold" class="form-error" role="alert">{{ errors()['slippageStandardDeviationThreshold'] }}</p>
           }
@@ -419,15 +459,17 @@
           <label for="field-adhesionRatioThreshold" class="form-label">
             Adhesion ratio threshold <span class="required-star">*</span>
           </label>
-          <input
-            id="field-adhesionRatioThreshold"
-            type="number"
-            step="0.0001"
-            class="form-input"
-            [value]="state().form.adhesionRatioThreshold"
-            (input)="onNumericChange('adhesionRatioThreshold', $event)"
-            [attr.aria-invalid]="!!errors()['adhesionRatioThreshold']"
-            [attr.aria-describedby]="errors()['adhesionRatioThreshold'] ? 'err-adhesionRatioThreshold' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-adhesionRatioThreshold"
+              type="number"
+              step="0.0001"
+              class="form-input"
+              [value]="state().form.adhesionRatioThreshold"
+              (input)="onNumericChange('adhesionRatioThreshold', $event)"
+              [attr.aria-invalid]="!!errors()['adhesionRatioThreshold']"
+              [attr.aria-describedby]="errors()['adhesionRatioThreshold'] ? 'err-adhesionRatioThreshold' : null" />
+          </div>
           @if (errors()['adhesionRatioThreshold']) {
             <p id="err-adhesionRatioThreshold" class="form-error" role="alert">{{ errors()['adhesionRatioThreshold'] }}</p>
           }
@@ -437,15 +479,17 @@
           <label for="field-slippagePercentageThreshold" class="form-label">
             Slippage percentage threshold <span class="required-star">*</span>
           </label>
-          <input
-            id="field-slippagePercentageThreshold"
-            type="number"
-            step="0.0001"
-            class="form-input"
-            [value]="state().form.slippagePercentageThreshold"
-            (input)="onNumericChange('slippagePercentageThreshold', $event)"
-            [attr.aria-invalid]="!!errors()['slippagePercentageThreshold']"
-            [attr.aria-describedby]="errors()['slippagePercentageThreshold'] ? 'err-slippagePercentageThreshold' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-slippagePercentageThreshold"
+              type="number"
+              step="0.0001"
+              class="form-input"
+              [value]="state().form.slippagePercentageThreshold"
+              (input)="onNumericChange('slippagePercentageThreshold', $event)"
+              [attr.aria-invalid]="!!errors()['slippagePercentageThreshold']"
+              [attr.aria-describedby]="errors()['slippagePercentageThreshold'] ? 'err-slippagePercentageThreshold' : null" />
+          </div>
           @if (errors()['slippagePercentageThreshold']) {
             <p id="err-slippagePercentageThreshold" class="form-error" role="alert">{{ errors()['slippagePercentageThreshold'] }}</p>
           }
@@ -455,15 +499,17 @@
           <label for="field-torqueStartThreshold" class="form-label">
             Torque start threshold <span class="required-star">*</span>
           </label>
-          <input
-            id="field-torqueStartThreshold"
-            type="number"
-            step="0.01"
-            class="form-input"
-            [value]="state().form.torqueStartThreshold"
-            (input)="onNumericChange('torqueStartThreshold', $event)"
-            [attr.aria-invalid]="!!errors()['torqueStartThreshold']"
-            [attr.aria-describedby]="errors()['torqueStartThreshold'] ? 'err-torqueStartThreshold' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-torqueStartThreshold"
+              type="number"
+              step="0.01"
+              class="form-input"
+              [value]="state().form.torqueStartThreshold"
+              (input)="onNumericChange('torqueStartThreshold', $event)"
+              [attr.aria-invalid]="!!errors()['torqueStartThreshold']"
+              [attr.aria-describedby]="errors()['torqueStartThreshold'] ? 'err-torqueStartThreshold' : null" />
+          </div>
           @if (errors()['torqueStartThreshold']) {
             <p id="err-torqueStartThreshold" class="form-error" role="alert">{{ errors()['torqueStartThreshold'] }}</p>
           }
@@ -473,15 +519,17 @@
           <label for="field-crossThreadExtremeThreshold" class="form-label">
             Cross-thread extreme threshold <span class="required-star">*</span>
           </label>
-          <input
-            id="field-crossThreadExtremeThreshold"
-            type="number"
-            step="0.1"
-            class="form-input"
-            [value]="state().form.crossThreadExtremeThreshold"
-            (input)="onNumericChange('crossThreadExtremeThreshold', $event)"
-            [attr.aria-invalid]="!!errors()['crossThreadExtremeThreshold']"
-            [attr.aria-describedby]="errors()['crossThreadExtremeThreshold'] ? 'err-crossThreadExtremeThreshold' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-crossThreadExtremeThreshold"
+              type="number"
+              step="0.1"
+              class="form-input"
+              [value]="state().form.crossThreadExtremeThreshold"
+              (input)="onNumericChange('crossThreadExtremeThreshold', $event)"
+              [attr.aria-invalid]="!!errors()['crossThreadExtremeThreshold']"
+              [attr.aria-describedby]="errors()['crossThreadExtremeThreshold'] ? 'err-crossThreadExtremeThreshold' : null" />
+          </div>
           @if (errors()['crossThreadExtremeThreshold']) {
             <p id="err-crossThreadExtremeThreshold" class="form-error" role="alert">{{ errors()['crossThreadExtremeThreshold'] }}</p>
           }
@@ -491,15 +539,17 @@
           <label for="field-crossThreadExtremeValueBacktrackingWindow" class="form-label">
             Cross-thread extreme value backtracking window (°) <span class="required-star">*</span>
           </label>
-          <input
-            id="field-crossThreadExtremeValueBacktrackingWindow"
-            type="number"
-            step="1"
-            class="form-input"
-            [value]="state().form.crossThreadExtremeValueBacktrackingWindow"
-            (input)="onNumericChange('crossThreadExtremeValueBacktrackingWindow', $event)"
-            [attr.aria-invalid]="!!errors()['crossThreadExtremeValueBacktrackingWindow']"
-            [attr.aria-describedby]="errors()['crossThreadExtremeValueBacktrackingWindow'] ? 'err-crossThreadExtremeValueBacktrackingWindow' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-crossThreadExtremeValueBacktrackingWindow"
+              type="number"
+              step="1"
+              class="form-input"
+              [value]="state().form.crossThreadExtremeValueBacktrackingWindow"
+              (input)="onNumericChange('crossThreadExtremeValueBacktrackingWindow', $event)"
+              [attr.aria-invalid]="!!errors()['crossThreadExtremeValueBacktrackingWindow']"
+              [attr.aria-describedby]="errors()['crossThreadExtremeValueBacktrackingWindow'] ? 'err-crossThreadExtremeValueBacktrackingWindow' : null" />
+          </div>
           @if (errors()['crossThreadExtremeValueBacktrackingWindow']) {
             <p id="err-crossThreadExtremeValueBacktrackingWindow" class="form-error" role="alert">{{ errors()['crossThreadExtremeValueBacktrackingWindow'] }}</p>
           }
@@ -509,23 +559,24 @@
           <label for="field-nyquistNormalizedCutoffFrequency" class="form-label">
             Nyquist normalized cutoff frequency <span class="required-star">*</span>
           </label>
-          <input
-            id="field-nyquistNormalizedCutoffFrequency"
-            type="number"
-            step="0.01"
-            class="form-input"
-            [value]="state().form.nyquistNormalizedCutoffFrequency"
-            (input)="onNumericChange('nyquistNormalizedCutoffFrequency', $event)"
-            [attr.aria-invalid]="!!errors()['nyquistNormalizedCutoffFrequency']"
-            [attr.aria-describedby]="errors()['nyquistNormalizedCutoffFrequency'] ? 'err-nyquistNormalizedCutoffFrequency' : null" />
+          <div class="input-wrap">
+            <input
+              id="field-nyquistNormalizedCutoffFrequency"
+              type="number"
+              step="0.01"
+              class="form-input"
+              [value]="state().form.nyquistNormalizedCutoffFrequency"
+              (input)="onNumericChange('nyquistNormalizedCutoffFrequency', $event)"
+              [attr.aria-invalid]="!!errors()['nyquistNormalizedCutoffFrequency']"
+              [attr.aria-describedby]="errors()['nyquistNormalizedCutoffFrequency'] ? 'err-nyquistNormalizedCutoffFrequency' : null" />
+          </div>
           @if (errors()['nyquistNormalizedCutoffFrequency']) {
             <p id="err-nyquistNormalizedCutoffFrequency" class="form-error" role="alert">{{ errors()['nyquistNormalizedCutoffFrequency'] }}</p>
           }
         </div>
       </div>
     </div>
-
-    <div class="modal-footer">
+    <div modalFooter class="footer-actions">
       <button
         type="button"
         class="btn btn-secondary"
@@ -535,7 +586,7 @@
       </button>
       <button
         type="button"
-        class="btn btn-primary"
+        class="btn btn-primary btn-save"
         (click)="onSave()"
         [disabled]="isSaving()">
         @if (isSaving()) {
@@ -544,5 +595,5 @@
         <span>Save and Apply</span>
       </button>
     </div>
-  </div>
+  </app-modal>
 }
