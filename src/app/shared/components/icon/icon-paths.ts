@@ -22,7 +22,10 @@ export type IconName =
   | 'x'
   | 'inbox'
   | 'alert-triangle'
-  | 'eye-off';
+  | 'eye-off'
+  | 'edit'
+  | 'power'
+  | 'trash';
 
 export const ICON_PATHS: Record<IconName, readonly string[]> = {
   home: ['M3 10.5 12 3l9 7.5', 'M5 9.5V21h14V9.5', 'M9.5 21v-6h5v6'],
@@ -77,4 +80,7 @@ export const ICON_PATHS: Record<IconName, readonly string[]> = {
     'M12 8v4',
     'M12 16h.01',
   ],
+  edit: ['M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25Z', 'M20.71 7.04c1.1-1.09 1.1-2.86 0-3.95l-6.9-6.9a-1 1 0 0 0-1.41 0l-6.53 6.53c-1.09 1.09-1.09 2.86 0 3.95l6.53 6.53c1.1 1.09 2.86 1.09 3.95 0l6.9-6.9a1 1 0 0 0 0-1.41l-6.53-6.53a1 1 0 0 0-1.41 0z'],
+  power: ['M12 2a7 7 0 1 0 7 7v3h3a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-3v-3a7 7 0 0 0-7-7Z'],
+  trash: ['M20 6H9L7.5 2h-5L5 6H4v15a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V6Z', 'M10 11V7h4v4Z', 'M14 11V7h4v4Z']
 };

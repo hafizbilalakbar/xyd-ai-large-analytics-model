@@ -1,8 +1,11 @@
 :host {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: var(--icon-size, 1.25rem);
   height: var(--icon-size, 1.25rem);
-  flex: none;
+  flex: 0 0 auto;
+  line-height: 0;
 }
 
 svg {

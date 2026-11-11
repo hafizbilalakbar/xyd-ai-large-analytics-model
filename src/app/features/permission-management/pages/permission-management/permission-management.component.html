@@ -12,7 +12,7 @@
         <p class="role-panel__subtitle">Roles bundle page permissions for member accounts</p>
       </div>
       <button class="btn btn--primary btn--sm" type="button" (click)="openCreateRoleModal()">
-        <app-icon name="plus" [size]="14" />
+        <app-icon name="plus" />
         <span>Create</span>
       </button>
     </header>
@@ -30,7 +30,7 @@
               (click)="selectRole(role.id)"
             >
               <span class="role-list__icon" aria-hidden="true">
-                <app-icon name="shield" [size]="15" />
+                <app-icon name="shield" />
               </span>
               <span class="role-list__copy">
                 <span class="role-list__name">{{ role.name }}</span>
@@ -43,7 +43,7 @@
         }
       </ul>
       <footer class="role-panel__foot">
-        There are {{ roles().length }} characters in total
+        {{ roleTotalLabel() }}
       </footer>
     } @else {
       <div class="role-panel__empty">
@@ -51,7 +51,7 @@
           No character available yet, please create one first.
         </p>
         <button class="btn btn--primary btn--sm" type="button" (click)="openCreateRoleModal()">
-          <app-icon name="plus" [size]="14" />
+          <app-icon name="plus" />
           <span>Create a new character</span>
         </button>
       </div>
@@ -65,9 +65,10 @@
         <header class="perms-panel__head">
           <div class="perms-panel__head-copy">
             <h2 class="perms-panel__title" id="perms-title">Role Permissions</h2>
+            <span class="perms-panel__chip">{{ role.name }}</span>
             <p class="perms-panel__subtitle">
-              {{ members().length }} {{ members().length === 1 ? 'member' : 'members' }} · pages
-              this role can open
+              {{ members().length }} {{ members().length === 1 ? 'member' : 'members' }} ·
+              pages this role can open
             </p>
           </div>
           <div class="perms-panel__head-actions">
@@ -80,7 +81,8 @@
               {{ hasUnsavedChanges() ? 'Unsaved changes' : 'Saved' }}
             </span>
             <button class="btn btn--danger-ghost btn--sm" type="button" (click)="requestDeleteRole()">
-              Delete role
+              <app-icon name="close" />
+              <span>Delete role</span>
             </button>
             <button
               class="btn btn--primary btn--sm"
@@ -88,7 +90,8 @@
               [disabled]="!hasUnsavedChanges()"
               (click)="saveRoleChanges()"
             >
-              Save changes
+              <app-icon name="check" />
+              <span>Save changes</span>
             </button>
           </div>
         </header>
@@ -97,7 +100,7 @@
           <label class="form-label" for="role-name-edit">Role name</label>
           <input
             id="role-name-edit"
-            class="form-input"
+            class="form-input form-input--name"
             type="text"
             name="roleName"
             autocomplete="off"
@@ -109,15 +112,21 @@
         <div class="perms-toolbar">
           <span class="perms-toolbar__label">Page permissions</span>
           <div class="perms-toolbar__actions">
-            <button class="link-btn" type="button" (click)="selectAllPermissions()">Select all</button>
-            <button class="link-btn" type="button" (click)="invertPermissions()">Invert</button>
+            <button class="link-btn" type="button" (click)="selectAllPermissions()">
+              <app-icon name="check" [size]="13" />
+              <span>Select all</span>
+            </button>
+            <button class="link-btn" type="button" (click)="invertPermissions()">
+              <app-icon name="close" [size]="13" />
+              <span>Invert</span>
+            </button>
           </div>
         </div>
 
-        <div class="perm-tree">
+        <div class="perm-rows">
           @for (group of groups; track group.key) {
-            <div class="perm-group">
-              <label class="perm-group__head">
+            <div class="perm-row">
+              <div class="perm-row__parent">
                 <input
                   class="perm-check"
                   type="checkbox"
@@ -126,27 +135,25 @@
                   [indeterminate]="groupState(group) === 'half'"
                   (change)="toggleGroup(group)"
                 />
-                <span class="perm-group__label">{{ group.label }}</span>
-                @if (group.items.length > 1) {
-                  <span class="perm-group__count">{{ group.items.length }} permissions</span>
-                }
-              </label>
-              <ul class="perm-group__items">
+                <span class="perm-row__name">{{ group.label }}</span>
+              </div>
+              <div class="perm-row__children">
                 @for (item of group.items; track item.id) {
-                  <li>
-                    <label class="perm-item">
-                      <input
-                        class="perm-check"
-                        type="checkbox"
-                        [checked]="isPermissionChecked(item.id)"
-                        (change)="togglePermission(item.id)"
-                      />
-                      <span class="perm-item__label">{{ item.label }}</span>
-                    </label>
-                  </li>
+                  <label class="perm-row__child">
+                    <input
+                      class="perm-check"
+                      type="checkbox"
+                      [checked]="isPermissionChecked(item.id)"
+                      (change)="togglePermission(item.id)"
+                    />
+                    <span class="perm-row__child-label">{{ item.label }}</span>
+                  </label>
                 }
-              </ul>
+              </div>
             </div>
+            @if (!lastGroup(group)) {
+              <div class="perm-row__divider"></div>
+            }
           }
         </div>
       </section>
@@ -159,11 +166,11 @@
           </div>
           <div class="members-panel__actions">
             <button class="btn btn--secondary btn--sm" type="button" (click)="downloadTemplate()">
-              <app-icon name="download" [size]="14" />
+              <app-icon name="download" />
               <span>Download template</span>
             </button>
             <label class="btn btn--secondary btn--sm">
-              <app-icon name="upload" [size]="14" />
+              <app-icon name="upload" />
               <span>Import CSV</span>
               <input
                 class="file-input"
@@ -173,7 +180,7 @@
               />
             </label>
             <button class="btn btn--primary btn--sm" type="button" (click)="openCreateUserModal()">
-              <app-icon name="plus" [size]="14" />
+              <app-icon name="plus" />
               <span>Add User</span>
             </button>
             @if (selectedMemberIds().size > 0) {
@@ -182,7 +189,8 @@
                 type="button"
                 (click)="requestRemoveSelectedMembers()"
               >
-                Remove selected ({{ selectedMemberIds().size }})
+                <app-icon name="close" />
+                <span>Remove selected ({{ selectedMemberIds().size }})</span>
               </button>
             }
           </div>
@@ -223,7 +231,7 @@
                     <td class="members-table__username">
                       <span class="members-table__user-cell">
                         <span class="members-table__avatar" aria-hidden="true">
-                          <app-icon name="user" [size]="13" />
+                          <app-icon name="user" />
                         </span>
                         {{ member.username }}
                       </span>
@@ -244,7 +252,8 @@
                           [attr.aria-label]="'Edit ' + member.username"
                           (click)="openEditUserModal(member)"
                         >
-                          Edit
+                          <app-icon name="edit" [size]="13" />
+                          <span>Edit</span>
                         </button>
                         <button
                           class="row-actions__btn"
@@ -252,7 +261,8 @@
                           [attr.aria-label]="(member.enabled ? 'Disable ' : 'Enable ') + member.username"
                           (click)="toggleUserEnabled(member)"
                         >
-                          {{ member.enabled ? 'Disable' : 'Enable' }}
+                          <app-icon name="power" [size]="13" />
+                          <span>{{ member.enabled ? 'Disable' : 'Enable' }}</span>
                         </button>
                         <button
                           class="row-actions__btn row-actions__btn--danger"
@@ -260,7 +270,8 @@
                           [attr.aria-label]="'Delete ' + member.username"
                           (click)="requestDeleteUser(member)"
                         >
-                          Delete
+                          <app-icon name="trash" [size]="13" />
+                          <span>Delete</span>
                         </button>
                       </div>
                     </td>
@@ -286,7 +297,7 @@
             Create a character to choose which pages its members can open.
           </p>
           <button class="btn btn--primary btn--sm" type="button" (click)="openCreateRoleModal()">
-            <app-icon name="plus" [size]="14" />
+            <app-icon name="plus" />
             <span>Create a new character</span>
           </button>
         </div>
@@ -347,7 +358,10 @@
     <button class="btn btn--secondary btn--sm" type="button" (click)="roleModalOpen.set(false)">
       Cancel
     </button>
-    <button class="btn btn--primary btn--sm" type="button" (click)="submitRoleModal()">Create</button>
+    <button class="btn btn--primary btn--sm" type="button" (click)="submitRoleModal()">
+      <app-icon name="plus" />
+      <span>Create</span>
+    </button>
   </div>
 </app-modal>
 
@@ -424,7 +438,8 @@
       Cancel
     </button>
     <button class="btn btn--primary btn--sm" type="button" (click)="submitUserModal()">
-      {{ userModalMode() === 'create' ? 'Add user' : 'Save changes' }}
+      <app-icon name="user" />
+      <span>{{ userModalMode() === 'create' ? 'Add user' : 'Save changes' }}</span>
     </button>
   </div>
 </app-modal>

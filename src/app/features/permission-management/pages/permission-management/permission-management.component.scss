@@ -25,22 +25,24 @@
   box-shadow: var(--shadow-card);
 }
 
-/* ---------- Buttons ---------- */
+/* ---------- Shared button base ---------- */
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 12px;
+  gap: 8px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 14px;
   border: 1px solid transparent;
-  border-radius: 7px;
+  border-radius: var(--radius-md);
   font-family: inherit;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
+  line-height: 1;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
@@ -49,8 +51,38 @@
   opacity: 0.55;
 }
 
+.btn > app-icon {
+  --icon-size: 16px;
+  flex: 0 0 auto;
+}
+
 .btn--sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   height: 32px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.btn--sm:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.btn--sm > app-icon {
+  --icon-size: 14px;
+  flex: 0 0 auto;
 }
 
 .btn--primary {
@@ -84,6 +116,9 @@
 }
 
 .link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 0;
   border: none;
   background: none;
@@ -91,6 +126,7 @@
   font-size: 12.5px;
   color: var(--color-primary-600);
   cursor: pointer;
+  line-height: 1;
 }
 
 .link-btn:hover {
@@ -107,13 +143,17 @@
 
 .role-panel__head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .role-panel__head-copy {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .role-panel__title {
@@ -124,7 +164,7 @@
 }
 
 .role-panel__subtitle {
-  margin: 3px 0 0;
+  margin: 0;
   font-size: 12px;
   line-height: 1.5;
   color: var(--color-text-muted);
@@ -139,9 +179,13 @@
   gap: 6px;
 }
 
+.role-list__row {
+  display: contents;
+}
+
 .role-list__item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 9px;
   width: 100%;
   min-height: 44px;
@@ -171,7 +215,6 @@
   justify-content: center;
   width: 26px;
   height: 26px;
-  margin-top: 1px;
   border-radius: 6px;
   background: var(--color-primary-50);
   color: var(--color-primary-600);
@@ -230,11 +273,18 @@
 .perms-panel__head,
 .members-panel__head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
   margin-bottom: 14px;
+}
+
+.perms-panel__head-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 }
 
 .perms-panel__title,
@@ -245,9 +295,19 @@
   color: var(--color-text);
 }
 
+.perms-panel__chip {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary-600);
+  background: var(--color-primary-50);
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
 .perms-panel__subtitle,
 .members-panel__caption {
-  margin: 3px 0 0;
+  margin: 0;
   font-size: 12px;
   color: var(--color-text-muted);
 }
@@ -303,65 +363,68 @@
   gap: 14px;
 }
 
-.perm-tree {
+/* ---------- Permission rows (horizontal grid) ---------- */
+
+.perm-rows {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
 }
 
-.perm-group {
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-surface);
-  overflow: hidden;
+.perm-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 260px) 1fr;
+  gap: 14px 16px;
+  align-items: center;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.perm-group__head {
+.perm-row:last-child {
+  border-bottom: none;
+}
+
+.perm-row__parent {
   display: flex;
   align-items: center;
   gap: 9px;
   min-height: 40px;
-  padding: 6px 12px;
-  background: var(--color-surface-muted);
-  cursor: pointer;
-  user-select: none;
 }
 
-.perm-group__label {
+.perm-row__name {
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text);
+  min-width: 0;
 }
 
-.perm-group__count {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--color-text-muted);
-}
-
-.perm-group__items {
-  margin: 0;
-  padding: 6px 0 10px;
-  list-style: none;
-}
-
-.perm-item {
+.perm-row__children {
   display: flex;
   align-items: center;
-  gap: 9px;
-  min-height: 38px;
-  padding: 4px 14px 4px 36px;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+
+.perm-row__child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
   cursor: pointer;
   user-select: none;
 }
 
-.perm-item:hover {
-  background: var(--color-surface-muted);
-}
-
-.perm-item__label {
+.perm-row__child-label {
   font-size: 12.5px;
   color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.perm-row__divider {
+  grid-column: 1 / -1;
+  height: 1px;
+  background: var(--color-border);
+  margin: 0 -12px;
 }
 
 .perm-check {
@@ -522,6 +585,9 @@
 }
 
 .row-actions__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   min-height: 30px;
   padding: 0 9px;
   border: none;
@@ -531,6 +597,7 @@
   font-size: 12.5px;
   color: var(--color-primary-600);
   cursor: pointer;
+  line-height: 1;
 }
 
 .row-actions__btn:hover {
@@ -587,6 +654,10 @@
   font-family: inherit;
   font-size: 13px;
   color: var(--color-text);
+}
+
+.form-input--name {
+  max-width: 400px;
 }
 
 .form-input--area {
@@ -672,6 +743,26 @@
   .access-layout {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .perms-panel__head,
+  .members-panel__head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .perms-panel__head-actions {
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .perms-panel__head-actions .btn {
+    flex: 0 0 auto;
+  }
+
+  .perm-row {
+    grid-template-columns: minmax(160px, 220px) 1fr;
+    padding: 6px 10px;
+  }
 }
 
 @media (max-width: 720px) {
@@ -679,8 +770,7 @@
     padding: 14px;
   }
 
-  .role-list__item,
-  .perm-item {
+  .role-list__item {
     min-height: 44px;
   }
 
@@ -697,13 +787,21 @@
     flex: 1 1 auto;
   }
 
-  .perms-panel__head,
-  .members-panel__head {
-    flex-direction: column;
-    align-items: stretch;
+  .perm-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 8px 10px;
   }
 
-  .perms-panel__head-actions {
-    justify-content: flex-end;
+  .perm-row__parent {
+    min-height: 44px;
+  }
+
+  .perm-row__children {
+    gap: 6px 16px;
+  }
+
+  .perm-row__child {
+    min-height: 44px;
   }
 }

@@ -20,6 +20,72 @@
   box-shadow: var(--shadow-card);
 }
 
+/* ---------- Button base (shared with other pages) ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.btn:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.btn > app-icon {
+  --icon-size: 16px;
+  flex: 0 0 auto;
+}
+
+.btn--sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.btn--sm:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.btn--sm > app-icon {
+  --icon-size: 14px;
+  flex: 0 0 auto;
+}
+
+.monitor-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .panel__head {
   display: flex;
   align-items: center;
@@ -39,10 +105,11 @@
 .panel__note {
   font-size: 12px;
   color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 .panel__footnote {
-  margin-top: 14px;
+  margin-top: auto;
   font-size: 12px;
   color: var(--color-text-muted);
 }
@@ -140,7 +207,7 @@
 
 .kv__row {
   display: grid;
-  grid-template-columns: minmax(110px, auto) 1fr;
+  grid-template-columns: minmax(150px, 1fr) 1fr;
   gap: 10px;
   align-items: baseline;
 }
@@ -166,17 +233,24 @@
   margin-bottom: 12px;
 }
 
+.log-panel__title-wrap {
+  display: contents;
+}
+
 .log-panel__actions {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  margin-left: auto;
 }
 
 .log-filter {
-  width: min(320px, 100%);
-  height: 32px;
-  padding: 0 10px;
+  flex: 1 1 260px;
+  max-width: 420px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 11px;
   border: 1px solid var(--color-border-strong);
   border-radius: 7px;
   background: var(--color-surface);
@@ -196,27 +270,8 @@
 }
 
 .log-export {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 12px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 7px;
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
-  font-size: 12px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.log-export:hover {
-  background: var(--color-surface-muted);
-  color: var(--color-text);
-  border-color: var(--color-primary-400);
+  height: 36px;
+  min-height: 36px;
 }
 
 .log-viewer {
@@ -228,33 +283,39 @@
   color: #d5e0ef;
   font-family: 'SF Mono', Consolas, Menlo, monospace;
   font-size: 12px;
-  line-height: 1.6;
+  line-height: 1.5;
   overflow: auto;
   overscroll-behavior: contain;
+  min-width: 0;
 }
 
 .log-line {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 2px 0;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 3px 0;
   border-bottom: 1px solid rgb(255 255 255 / 4%);
   min-width: 0;
 }
 
 .log-line__time {
   flex: none;
+  width: 72px;
   color: #7f93ae;
+  font-size: 11px;
+  line-height: 1.5;
   white-space: nowrap;
 }
 
 .log-line__tag {
   flex: none;
-  padding: 1px 7px;
+  width: 60px;
+  padding: 1px 6px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  line-height: 1.5;
+  line-height: 1.4;
+  text-align: center;
   white-space: nowrap;
 }
 
@@ -271,8 +332,18 @@
 .log-line__text {
   flex: 1 1 auto;
   min-width: 0;
+  font-size: 11px;
+  line-height: 1.5;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+  max-width: 60ch;
+}
+
+.log-line__text::after {
+  content: '';
+  display: block;
+  height: 0;
+  width: 0;
 }
 
 .log-viewer__empty {
@@ -305,15 +376,19 @@
 
   .log-panel__actions {
     width: 100%;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .log-filter {
     flex: 1 1 auto;
-    width: auto;
+    width: 100%;
+    max-width: none;
   }
 
   .log-export {
-    flex: 1 1 auto;
+    width: 100%;
+    justify-content: center;
   }
 
   .log-viewer {
@@ -323,5 +398,15 @@
 
   .log-line {
     flex-wrap: wrap;
+  }
+
+  .log-line__time {
+    width: auto;
+    white-space: normal;
+  }
+
+  .log-line__tag {
+    width: auto;
+    white-space: normal;
   }
 }

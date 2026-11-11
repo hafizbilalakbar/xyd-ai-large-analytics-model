@@ -135,6 +135,15 @@ export class PermissionManagementComponent {
     return `${count} ${count === 1 ? 'member' : 'members'}`;
   });
 
+  protected readonly roleTotalLabel = computed(() => {
+    const count = this.roles().length;
+    return `${count} role${count === 1 ? '' : 's'} in total`;
+  });
+
+  protected lastGroup(group: PermissionGroup): boolean {
+    return group.key === PERMISSION_GROUPS[PERMISSION_GROUPS.length - 1]?.key;
+  }
+
   // ---------- Selection / drafts ----------
 
   protected selectRole(id: number): void {

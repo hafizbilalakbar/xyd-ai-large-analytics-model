@@ -16,3 +16,52 @@
     @content;
   }
 }
+
+/* Shared button base used by all primary/secondary/danger/ghost/link buttons.
+   Keeps icon + text on the same vertical center line with a consistent gap. */
+@mixin button-base($height: 36px, $gap: 8px, $pad-x: 14px, $font-size: 13px) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap;
+  height: $height;
+  min-height: $height;
+  padding: 0 $pad-x;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: $font-size;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+
+  > app-icon {
+    --icon-size: 16px;
+    flex: 0 0 auto;
+  }
+}
+
+/* Small button variant (toolbars, modals, rows) */
+@mixin button-base-sm($height: 32px, $gap: 6px, $pad-x: 12px) {
+  @include button-base($height, $gap, $pad-x, 12.5px);
+
+  > app-icon {
+    --icon-size: 14px;
+  }
+}
+
+/* Icon-only button variant (square, centered) */
+@mixin button-icon-only($size: 32px) {
+  @include button-base($size, 0, 0);
+  width: $size;
+  min-width: $size;
+  padding: 0;
+  justify-content: center;
+}

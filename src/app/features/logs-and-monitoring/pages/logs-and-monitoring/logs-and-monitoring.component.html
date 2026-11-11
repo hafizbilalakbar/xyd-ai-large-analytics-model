@@ -4,7 +4,7 @@
 />
 
 <div class="monitor-cards">
-  <section class="panel" aria-labelledby="monitor-system-title">
+  <section class="panel monitor-card" aria-labelledby="monitor-system-title">
     <header class="panel__head">
       <h2 class="panel__title" id="monitor-system-title">System status</h2>
       <span class="panel__note">Refreshes every 10 seconds</span>
@@ -70,7 +70,7 @@
     }
   </section>
 
-  <section class="panel" aria-labelledby="monitor-ingest-title">
+  <section class="panel monitor-card" aria-labelledby="monitor-ingest-title">
     <header class="panel__head">
       <h2 class="panel__title" id="monitor-ingest-title">Data access</h2>
       <span class="panel__note">Real-time push notifications for electric screwdrivers</span>
@@ -90,7 +90,7 @@
     <p class="panel__footnote">The latest data time&nbsp; {{ latestDataLabel() }}</p>
   </section>
 
-  <section class="panel" aria-labelledby="monitor-model-title">
+  <section class="panel monitor-card" aria-labelledby="monitor-model-title">
     <header class="panel__head">
       <h2 class="panel__title" id="monitor-model-title">Model determination</h2>
       <span class="panel__note">Real-time classification</span>
@@ -115,7 +115,9 @@
 
 <section class="panel log-panel" aria-labelledby="monitor-log-title">
   <header class="panel__head log-panel__head">
-    <h2 class="panel__title" id="monitor-log-title">Log</h2>
+    <div class="log-panel__title-wrap">
+      <h2 class="panel__title" id="monitor-log-title">Log</h2>
+    </div>
     <div class="log-panel__actions">
       <input
         class="log-filter"
@@ -125,7 +127,7 @@
         [value]="filterTerm()"
         (input)="onFilterInput($event)"
       />
-      <button class="log-export" type="button" (click)="exportLogs()">
+      <button class="log-export btn btn--sm" type="button" (click)="exportLogs()">
         <app-icon name="download" />
         <span>Export Logs</span>
       </button>
@@ -134,7 +136,7 @@
 
   <div class="log-viewer" role="log" aria-label="Operation and interface logs">
     @for (entry of filteredLogs(); track entry.id) {
-      <div class="log-line">
+      <div class="log-line" [title]="entry.message">
         <span class="log-line__time">{{ formatEntryTime(entry.time) }}</span>
         <span
           class="log-line__tag"
