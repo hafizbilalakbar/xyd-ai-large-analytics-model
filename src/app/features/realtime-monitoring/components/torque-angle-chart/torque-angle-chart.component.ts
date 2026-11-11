@@ -9,7 +9,8 @@ import {
   input,
   NgZone,
 } from '@angular/core';
-import { init, use, type ECharts, type EChartsCoreOption } from 'echarts/core';
+import * as echarts from 'echarts';
+import { use } from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import { GridComponent, TooltipComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
@@ -37,8 +38,10 @@ export class TorqueAngleChartComponent implements AfterViewInit {
   private readonly zone = inject(NgZone);
   private readonly destroyRef = inject(DestroyRef);
 
-  private chart: ECharts | null = null;
+  private chart: echarts.ECharts | null = null;
   private resizeObserver: ResizeObserver | null = null;
+  private lastDataJson: string | null = null;
+  private lastRect: { width: number; height: number } | null = null;
 
   constructor() {
     this.destroyRef.onDestroy(() => {
@@ -54,41 +57,57 @@ export class TorqueAngleChartComponent implements AfterViewInit {
       });
     });
 
+    // Watch points; re-render when data changes
     effect(() => {
       const pts = this.points();
-      const container = this.el.nativeElement.querySelector(
-        '.chart__ec-container',
-      ) as HTMLElement | null;
-
-      if (!container) {
-        return;
-      }
-
-      if (!this.chart && pts.length > 0) {
-        this.zone.runOutsideAngular(() => {
-          this.chart = init(container, null, {
-            renderer: 'canvas',
-            width: '100%',
-            height: '100%',
-          });
-          this.createResizeObserver(container);
-          this.chart.showLoading({
-            color: '#2563eb',
-            textColor: '#0f172a',
-            maskColor: 'rgba(255, 255, 255, 0.8)',
-          });
-        });
-      }
-
-      if (this.chart && pts.length > 0) {
+      const json = JSON.stringify(pts);
+      if (this.chart && json !== this.lastDataJson && pts.length > 0) {
+        this.lastDataJson = json;
         this.render();
       }
     });
   }
 
   ngAfterViewInit(): void {
-    // Chart initialization is handled by the effect which watches for
-    // both the container's existence and the points data.
+    // Container is always in DOM now. Wait one tick for layout, then init.
+    setTimeout(() => this.initChart(), 0);
+  }
+
+  private initChart(): void {
+    const container = this.el.nativeElement.querySelector(
+      '.chart__ec-container',
+    ) as HTMLElement | null;
+    if (!container) {
+      return;
+    }
+    const rect = container.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) {
+      // Container has no size yet; retry on next tick
+      setTimeout(() => this.initChart(), 0);
+      return;
+    }
+    this.zone.runOutsideAngular(() => {
+      // Only init if not already initialized
+      if (!this.chart) {
+        this.chart = echarts.init(container, null, {
+          renderer: 'canvas',
+          width: rect.width,
+          height: rect.height,
+        });
+      }
+      if (!this.resizeObserver) {
+        this.createResizeObserver(container);
+      }
+      this.chart.showLoading({
+        color: '#2563eb',
+        textColor: '#0f172a',
+        maskColor: 'rgba(255, 255, 255, 0.8)',
+      });
+      const pts = this.points();
+      if (pts.length > 0) {
+        this.render();
+      }
+    });
   }
 
   private render(): void {
@@ -96,13 +115,10 @@ export class TorqueAngleChartComponent implements AfterViewInit {
     if (!this.chart || pts.length === 0) {
       return;
     }
-
     const reducedMotion = window.matchMedia(REDUCED_MOTION_QUERY).matches;
     const lastPoint = pts[pts.length - 1];
-
     const option = this.buildOption(pts, reducedMotion, lastPoint);
     const chart = this.chart;
-
     this.zone.runOutsideAngular(() => {
       chart.hideLoading();
       chart.setOption(option, !reducedMotion);
@@ -110,13 +126,20 @@ export class TorqueAngleChartComponent implements AfterViewInit {
   }
 
   private createResizeObserver(container: HTMLElement): void {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
     this.resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         if (entry.target === container && this.chart) {
-          const chart = this.chart;
-          this.zone.runOutsideAngular(() => {
-            chart.resize();
-          });
+          const rect = container.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0 && rect.width !== this.lastRect?.width && rect.height !== this.lastRect?.height) {
+            this.lastRect = { width: rect.width, height: rect.height };
+            this.zone.runOutsideAngular(() => {
+              // Chart is guaranteed non-null by the guard condition above
+              this.chart!.resize({ width: rect.width, height: rect.height });
+            });
+          }
         }
       }
     });
@@ -127,12 +150,13 @@ export class TorqueAngleChartComponent implements AfterViewInit {
     pts: readonly TorqueAnglePoint[],
     reducedMotion: boolean,
     lastPoint: TorqueAnglePoint | undefined,
-  ): EChartsCoreOption {
+  ): echarts.EChartsOption {
     const maxAngle = Math.max(...pts.map((p) => p.angle));
     const maxTorque = Math.max(...pts.map((p) => p.torque));
-    const angleStep = maxAngle > 80 ? 20 : 10;
-    const torqueStep = maxTorque > 10 ? 5 : maxTorque > 4 ? 2 : 1;
+    // Use evenly spaced numeric axis: 0, 20, 40, 60, 80 - cover full width
+    const angleStep = 20;
     const angleMax = Math.max(angleStep, Math.ceil(maxAngle / angleStep) * angleStep);
+    const torqueStep = maxTorque > 10 ? 5 : maxTorque > 4 ? 2 : 1;
     const torqueMax = Math.max(torqueStep, Math.ceil(maxTorque / torqueStep) * torqueStep);
 
     const seriesData = pts.map((p) => [p.angle, p.torque] as [number, number]);
@@ -141,10 +165,10 @@ export class TorqueAngleChartComponent implements AfterViewInit {
     const symbolSize = reducedMotion || isMobile ? 4 : 6;
     const lineWidth = reducedMotion || isMobile ? 1.5 : 2.5;
 
-    const option: EChartsCoreOption = {
+    return {
       animation: !reducedMotion,
-      animationDuration: reducedMotion ? 0 : 1200,
-      animationDurationUpdate: reducedMotion ? 0 : 600,
+      animationDuration: reducedMotion ? 0 : 800,
+      animationDurationUpdate: reducedMotion ? 0 : 400,
       animationEasing: reducedMotion ? 'linear' : 'cubicOut',
       animationEasingUpdate: reducedMotion ? 'linear' : 'cubicInOut',
       tooltip: {
@@ -155,14 +179,11 @@ export class TorqueAngleChartComponent implements AfterViewInit {
         borderColor: '#e2e8f0',
         borderWidth: 1,
         textStyle: { color: '#0f172a', fontSize: reducedMotion || isMobile ? 10 : 12 },
-        extraCssText:
-          'box-shadow: 0 4px 12px rgb(15 23 42 / 8%);',
+        extraCssText: 'box-shadow: 0 4px 12px rgb(15 23 42 / 8%);',
         formatter: (params: unknown) => {
           const item = Array.isArray(params) ? params[0] : params;
           const data = (item as { data?: [number, number] } | null)?.data;
-          if (!data) {
-            return '';
-          }
+          if (!data) return '';
           return `Angle: ${data[0].toFixed(1)}°<br/>Torque: ${data[1].toFixed(2)} N·m`;
         },
       },
@@ -170,13 +191,15 @@ export class TorqueAngleChartComponent implements AfterViewInit {
         left: reducedMotion || isMobile ? 44 : 56,
         right: reducedMotion || isMobile ? 12 : 28,
         top: reducedMotion || isMobile ? 16 : 24,
-        bottom: reducedMotion || isMobile ? 46 : 70,
+        // Show only horizontal dashed grid lines, no vertical lines
+        borderColor: '#e2e8f0',
         containLabel: true,
       },
       xAxis: {
-        type: 'category',
+        type: 'value',
         name: 'Angle (°)',
         nameLocation: 'middle',
+        nameGap: 20, // Increased gap to prevent overlap with tick numbers
         nameTextStyle: {
           fontSize: reducedMotion || isMobile ? 9 : 11,
           color: '#64748b',
@@ -185,15 +208,19 @@ export class TorqueAngleChartComponent implements AfterViewInit {
         axisLine: { lineStyle: { color: '#e2e8f0' } },
         axisTick: { show: false },
         axisLabel: { fontSize: reducedMotion || isMobile ? 9 : 11, color: '#64748b' },
-        splitLine: { show: true, lineStyle: { type: 'dashed', color: '#e8edf5' } },
+        // Only show horizontal dashed split lines, no vertical
+        splitLine: { show: false },
         min: 0,
         max: angleMax,
-        data: pts.map((p) => p.angle),
+        // Use evenly spaced numeric ticks
+        splitNumber: 4, // 0, 20, 40, 60, 80
+        boundaryGap: [0, 0],
       },
       yAxis: {
         type: 'value',
         name: 'Torque (N·m)',
         nameLocation: 'middle',
+        nameGap: 15, // Gap to prevent overlap with tick numbers
         nameTextStyle: {
           fontSize: reducedMotion || isMobile ? 9 : 11,
           color: '#64748b',
@@ -202,7 +229,10 @@ export class TorqueAngleChartComponent implements AfterViewInit {
         axisLine: { lineStyle: { color: '#e2e8f0' } },
         axisTick: { show: false },
         axisLabel: { fontSize: reducedMotion || isMobile ? 9 : 11, color: '#64748b' },
-        splitLine: { show: true, lineStyle: { type: 'dashed', color: '#e8edf5' } },
+        splitLine: {
+          show: true,
+          lineStyle: { type: 'dashed', color: '#e8edf5' },
+        },
         min: 0,
         max: torqueMax,
       },
@@ -243,7 +273,5 @@ export class TorqueAngleChartComponent implements AfterViewInit {
         },
       ],
     };
-
-    return option;
   }
 }

@@ -13,4 +13,5 @@ import { TorqueAngleChartComponent } from '../torque-angle-chart/torque-angle-ch
 export class MonitoringLiveResultComponent {
   readonly record = input.required<MonitoringRecord>();
   readonly recentRecords = input.required<readonly MonitoringRecord[]>();
+  readonly activeVersion = input.required<string>();
 }

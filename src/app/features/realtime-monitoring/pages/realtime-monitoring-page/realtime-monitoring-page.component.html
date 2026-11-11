@@ -19,6 +19,7 @@
       <app-monitoring-live-result
         [record]="record"
         [recentRecords]="monitoring.recentRecords()"
+        [activeVersion]="activeModelVersion()"
       />
     } @else {
       <app-monitoring-empty-state

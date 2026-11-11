@@ -73,13 +73,23 @@ export class MonitoringService {
     document.addEventListener('visibilitychange', onVisibilityChange);
     this.destroyRef.onDestroy(() => document.removeEventListener('visibilitychange', onVisibilityChange));
 
-    const poll = () => {
-      if (this.visible()) {
-        void this.refresh();
-      }
+    let pollTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    const schedulePoll = () => {
+      if (pollTimeout !== null) clearTimeout(pollTimeout);
+      pollTimeout = setTimeout(() => {
+        if (this.visible() && !this.refreshing) {
+          void this.refresh();
+        }
+        schedulePoll();
+      }, POLL_INTERVAL_MS);
     };
-    const timer = setInterval(poll, POLL_INTERVAL_MS);
-    this.destroyRef.onDestroy(() => clearInterval(timer));
+    schedulePoll();
+
+    this.destroyRef.onDestroy(() => {
+      if (pollTimeout !== null) clearTimeout(pollTimeout);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    });
 
     if (!USE_MONITORING_MOCK) {
       void this.refresh();

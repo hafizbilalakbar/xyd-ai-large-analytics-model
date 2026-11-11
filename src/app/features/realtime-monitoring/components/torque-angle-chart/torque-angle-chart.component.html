@@ -8,10 +8,6 @@
   </header>
 
   <div class="chart__canvas">
-    @if (points().length > 0) {
-      <div class="chart__ec-container" #echartsContainer></div>
-    } @else {
-      <div class="chart__empty">No torque-angle data available.</div>
-    }
+    <div class="chart__ec-container" #echartsContainer></div>
   </div>
 </article>

@@ -537,22 +537,26 @@ app.get('/api/v1/monitor/latest', requireAuth, (req, res) => {
   const monitors = (data.monitors || [])
     .slice()
     .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
-  const items = monitors.map((record) => {
-    const pass = record.pass_fail === true;
-    return {
-      sample_no: record.sample_no ?? record.id,
-      created_at: record.created_at,
-      pass_fail: pass,
-      top_code: pass ? null : (record.top_code ?? null),
-      top_confidence: record.top_confidence ?? null,
-      model_version: record.model_version ?? (active ? active.version : null),
-      workstation: record.workstation ?? 'WS-01',
-      torque: typeof record.torque === 'number' ? record.torque : 0,
-      angle: typeof record.angle === 'number' ? record.angle : 0,
-      curve: Array.isArray(record.curve) ? record.curve : lockCurve(),
-      results: pass ? [{ code: 'PASS', name: 'Pass' }] : [{ code: record.top_code ?? 'F01', name: record.top_code ?? 'Fail' }],
-    };
-  });
+  // Filter monitors by active version - only show samples from the active version
+  const versionFilter = active ? (v => v.model_version === active.version) : () => true;
+  const items = monitors
+    .filter(versionFilter)
+    .map((record) => {
+      const pass = record.pass_fail === true;
+      return {
+        sample_no: record.sample_no ?? record.id,
+        created_at: record.created_at,
+        pass_fail: pass,
+        top_code: pass ? null : (record.top_code ?? null),
+        top_confidence: record.top_confidence ?? null,
+        model_version: record.model_version ?? (active ? active.version : null),
+        workstation: record.workstation ?? 'WS-01',
+        torque: typeof record.torque === 'number' ? record.torque : 0,
+        angle: typeof record.angle === 'number' ? record.angle : 0,
+        curve: Array.isArray(record.curve) ? record.curve : lockCurve(),
+        results: pass ? [{ code: 'PASS', name: 'Pass' }] : [{ code: record.top_code ?? 'F01', name: record.top_code ?? 'Fail' }],
+      };
+    });
   res.json({ items, active_version: active ? active.version : null });
 });
 
