@@ -17,4 +17,20 @@ export class MonitoringStatusBarComponent {
     const frequency = this.frequency();
     return frequency === null ? '—' : `${frequency} / min`;
   });
+
+  protected readonly statusText = computed<string>(() => {
+    const timedOut = this.isTimedOut();
+    const frequency = this.frequency();
+    const lastReceived = this.lastReceivedAt();
+
+    if (timedOut) {
+      return 'Data reception timeout';
+    }
+
+    if (frequency !== null && frequency > 0 && lastReceived !== null) {
+      return 'Data reception normal';
+    }
+
+    return 'Waiting for data';
+  });
 }

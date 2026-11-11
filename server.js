@@ -586,6 +586,52 @@ app.post('/api/v1/monitor/ingest', requireAuth, (req, res) => {
   res.json({ ok: true, id: entry.id });
 });
 
+// Store samples received from the feed endpoint (POST only, no GET).
+app.post('/api/v1/monitor/samples', requireAuth, (req, res) => {
+  ensureMonitors();
+  const body = req.body || {};
+  const versionId = body.versionId;
+  if (!versionId) {
+    return res.status(400).json(apiError('versionId is required.', 'MISSING_VERSION_ID', 400));
+  }
+  // Validate that the version exists and is active
+  const active = findActiveVersion();
+  const versionMap = {
+    'V3.0': 2,
+    'V3.1': 9,
+    'V3.2': 10,
+  };
+  const versionIdNum = versionMap[versionId];
+  if (versionIdNum === undefined || versionIdNum !== active.version_id) {
+    return res.status(400).json(apiError('Unknown or inactive version.', 'UNKNOWN_VERSION', 400));
+  }
+  // Validate required fields
+  if (typeof body.torque !== 'number' || typeof body.angle !== 'number') {
+    return res.status(400).json(apiError('torque and angle are required.', 'INVALID_SAMPLE', 400));
+  }
+  if (!Array.isArray(body.curve) || body.curve.length === 0) {
+    return res.status(400).json(apiError('curve points are required.', 'MISSING_CURVE', 400));
+  }
+  // Build the sample record
+  const entry = {
+    id: `M-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    sample_no: body.sample_no,
+    created_at: body.receivedAt,
+    pass_fail: body.result === 'PASS',
+    top_code: body.result === 'FAIL' ? body.failureMode ?? null : null,
+    top_confidence: body.confidence ?? null,
+    model_version: versionId,
+    workstation: body.workstation ?? 'WS-01',
+    torque: body.torque,
+    angle: body.angle,
+    curve: body.curve,
+    results: body.result === 'PASS' ? [{ code: 'PASS', name: 'Pass' }] : [{ code: body.top_code ?? 'F01', name: body.top_code ?? 'Fail' }],
+  };
+  data.monitors.push(entry);
+  saveData();
+  res.json({ ok: true, id: entry.id, model_version: versionId });
+});
+
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`XYD analytics backend listening on http://localhost:${PORT}`);

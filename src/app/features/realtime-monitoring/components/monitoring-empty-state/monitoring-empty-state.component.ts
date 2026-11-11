@@ -9,4 +9,8 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 export class MonitoringEmptyStateComponent {
   readonly serviceRunning = input.required<boolean>();
   readonly devicePushed = input.required<boolean>();
+  readonly activeVersion = input.required<string>();
+  readonly samplesByVersionList = input.required<
+    { versionId: string; count: number; lastReceived: string }[]
+  >();
 }

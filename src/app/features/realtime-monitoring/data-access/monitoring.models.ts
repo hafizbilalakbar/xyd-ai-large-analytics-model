@@ -1,4 +1,4 @@
-export type MonitoringServiceStatus = 'idle' | 'receiving' | 'error';
+export type MonitoringServiceStatus = 'idle' | 'receiving' | 'timeout' | 'error';
 export type MonitoringDeviceStatus = 'waiting' | 'pushed';
 export type MonitoringResult = 'PASS' | 'FAIL';
 

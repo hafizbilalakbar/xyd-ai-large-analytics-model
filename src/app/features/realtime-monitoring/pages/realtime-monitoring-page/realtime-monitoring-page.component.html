@@ -25,6 +25,8 @@
       <app-monitoring-empty-state
         [serviceRunning]="serviceRunning()"
         [devicePushed]="devicePushed()"
+        [activeVersion]="activeModelVersion()"
+        [samplesByVersionList]="monitoring.samplesByVersionList()"
       />
     }
   </div>

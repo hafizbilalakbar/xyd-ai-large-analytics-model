@@ -51,6 +51,7 @@ function toRecord(item: unknown): MonitoringRecord {
 interface MonitorLatestResponse {
   readonly items?: readonly unknown[];
   readonly active_version?: string | null;
+  readonly samplesByVersion?: { versionId: string; count: number }[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -58,6 +59,7 @@ export class MonitoringApiService {
   async getLatest(): Promise<{
     readonly items: readonly MonitoringRecord[];
     readonly activeVersion: string | null;
+    readonly samplesByVersion: { versionId: string; count: number }[];
   }> {
     const response = await fetch(`${API_BASE}/latest`, { method: 'GET' });
     if (!response.ok) {
@@ -67,6 +69,7 @@ export class MonitoringApiService {
     return {
       items: (data.items ?? []).map((item) => toRecord(item)),
       activeVersion: data.active_version ?? null,
+      samplesByVersion: data.samplesByVersion ?? [],
     };
   }
 }

@@ -41,4 +41,15 @@
       Device push data
     </span>
   </div>
+
+  @if (serviceRunning() || devicePushed()) {
+    <div class="empty__developer-note">
+      <span class="empty__developer-icon" aria-hidden="true">ℹ️</span>
+      <span class="empty__developer-text">
+        Developer note: no lock samples for version {{ activeVersion() }} in data.json.
+        Samples exist only for: V3.0
+        Add real samples with POST /api/v1/monitor/samples.
+      </span>
+    </div>
+  }
 </div>

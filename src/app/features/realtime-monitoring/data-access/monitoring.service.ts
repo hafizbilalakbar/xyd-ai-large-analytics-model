@@ -14,6 +14,11 @@ const MOCK_RECORDS: readonly MonitoringRecord[] = [];
 
 type MonitorStatus = 'idle' | 'receiving' | 'timeout' | 'error';
 
+type VersionSampleInfo = {
+  count: number;
+  lastReceived: number; // timestamp
+};
+
 @Injectable({ providedIn: 'root' })
 export class MonitoringService {
   private readonly api = inject(MonitoringApiService);
@@ -23,7 +28,8 @@ export class MonitoringService {
   private readonly recordsState = signal<readonly MonitoringRecord[]>(MOCK_RECORDS);
   private readonly loadError = signal<string | null>(null);
   private readonly activeVersionState = signal<string | null>(null);
-  private refreshing = false;
+  private readonly refreshing = signal(false);
+  private readonly samplesByVersion = new Map<string, VersionSampleInfo>();
 
   readonly records = this.recordsState.asReadonly();
   readonly loadError$ = this.loadError.asReadonly();
@@ -34,7 +40,12 @@ export class MonitoringService {
       return 'error';
     }
     const records = this.recordsState();
-    if (records.length === 0) {
+    // Check samples for the active version only
+    const activeVersion = this.activeVersion();
+    const versionRecords = records.filter(
+      (record) => record.modelVersion === activeVersion
+    );
+    if (versionRecords.length === 0) {
       return 'idle';
     }
     if (this.isTimedOut()) {
@@ -52,7 +63,9 @@ export class MonitoringService {
   readonly lastReceivedAt = computed(() => this.latestRecord()?.lockedAt ?? null);
   readonly isTimedOut = computed(() => {
     const lastReceivedAt = this.lastReceivedAt();
-    return lastReceivedAt !== null && this.now() - lastReceivedAt.getTime() > RECEIVE_TIMEOUT_MS;
+    return (
+      lastReceivedAt !== null && this.now() - lastReceivedAt.getTime() > RECEIVE_TIMEOUT_MS
+    );
   });
   readonly receiveFrequency = computed<number | null>(() => {
     const records = this.recordsState();
@@ -61,6 +74,21 @@ export class MonitoringService {
     }
     const cutoff = this.now() - FREQUENCY_WINDOW_MS;
     return records.filter((record) => record.lockedAt.getTime() >= cutoff).length;
+  });
+  readonly samplesByVersionList = computed<
+    { versionId: string; count: number; lastReceived: string }[]
+  >(() => {
+    const result: { versionId: string; count: number; lastReceived: string }[] = [];
+    this.samplesByVersion.forEach((info, versionId) => {
+      result.push({
+        versionId,
+        count: info.count,
+        lastReceived: new Date(info.lastReceived).toLocaleString(),
+      });
+    });
+    // Sort by last received, newest first
+    result.sort((a, b) => b.lastReceived.localeCompare(a.lastReceived));
+    return result;
   });
 
   constructor() {
@@ -78,7 +106,7 @@ export class MonitoringService {
     const schedulePoll = () => {
       if (pollTimeout !== null) clearTimeout(pollTimeout);
       pollTimeout = setTimeout(() => {
-        if (this.visible() && !this.refreshing) {
+        if (this.visible() && !this.refreshing()) {
           void this.refresh();
         }
         schedulePoll();
@@ -97,21 +125,51 @@ export class MonitoringService {
   }
 
   async refresh(): Promise<void> {
-    if (USE_MONITORING_MOCK || this.refreshing) {
+    if (USE_MONITORING_MOCK || this.refreshing()) {
       return;
     }
-    this.refreshing = true;
+    this.refreshing.set(true);
     try {
       const data = await this.api.getLatest();
-      this.recordsState.set(data.items ?? []);
+      this.recordsState.set(data.items as MonitoringRecord[]);
       if (data.activeVersion !== undefined) {
         this.activeVersionState.set(data.activeVersion ?? null);
       }
+      // Update samplesByVersion from the new data
+      this.updateSamplesByVersion(data.items as MonitoringRecord[]);
       this.loadError.set(null);
     } catch (error) {
       this.loadError.set(error instanceof Error ? error.message : 'Failed to load monitoring data.');
     } finally {
-      this.refreshing = false;
+      this.refreshing.set(false);
+    }
+  }
+
+  private updateSamplesByVersion(records: MonitoringRecord[]): void {
+    // Clear existing map
+    this.samplesByVersion.clear();
+
+    // Count samples per version
+    const versionCounts = new Map<string, VersionSampleInfo>();
+    for (const record of records) {
+      const versionId = record.modelVersion;
+      if (!versionId) continue;
+      if (!versionCounts.has(versionId)) {
+        versionCounts.set(versionId, { count: 0, lastReceived: 0 });
+      }
+      const info = versionCounts.get(versionId)!;
+      info.count++;
+      const received = record.lockedAt?.getTime() ?? 0;
+      if (received > info.lastReceived) {
+        info.lastReceived = received;
+      }
+    }
+
+    for (const [versionId, info] of versionCounts.entries()) {
+      this.samplesByVersion.set(versionId, {
+        count: info.count,
+        lastReceived: info.lastReceived,
+      });
     }
   }
 }
