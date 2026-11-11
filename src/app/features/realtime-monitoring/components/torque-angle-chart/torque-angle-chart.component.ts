@@ -173,7 +173,7 @@ export class TorqueAngleChartComponent implements AfterViewInit {
       animationEasingUpdate: reducedMotion ? 'linear' : 'cubicInOut',
       tooltip: {
         trigger: 'axis',
-        axisPointer: { type: 'cross' },
+        axisPointer: { type: 'cross', label: { show: false } },
         confine: true,
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
         borderColor: '#e2e8f0',
@@ -184,13 +184,13 @@ export class TorqueAngleChartComponent implements AfterViewInit {
           const item = Array.isArray(params) ? params[0] : params;
           const data = (item as { data?: [number, number] } | null)?.data;
           if (!data) return '';
-          return `Angle: ${data[0].toFixed(1)}°<br/>Torque: ${data[1].toFixed(2)} N·m`;
+          return `Torque: ${data[1].toFixed(2)} N·m`;
         },
       },
       grid: {
         left: reducedMotion || isMobile ? 44 : 56,
-        right: reducedMotion || isMobile ? 12 : 28,
-        top: reducedMotion || isMobile ? 16 : 24,
+        right: reducedMotion || isMobile ? 24 : 36,
+        top: reducedMotion || isMobile ? 28 : 36,
         // Show only horizontal dashed grid lines, no vertical lines
         borderColor: '#e2e8f0',
         containLabel: true,
@@ -199,15 +199,15 @@ export class TorqueAngleChartComponent implements AfterViewInit {
         type: 'value',
         name: 'Angle (°)',
         nameLocation: 'middle',
-        nameGap: 20, // Increased gap to prevent overlap with tick numbers
+        nameGap: reducedMotion || isMobile ? 36 : 44, // Large enough that it never touches tick labels
         nameTextStyle: {
-          fontSize: reducedMotion || isMobile ? 9 : 11,
+          fontSize: reducedMotion || isMobile ? 11 : 12,
           color: '#64748b',
-          padding: [10, 0, 0, 0],
+          padding: [12, 0, 0, 0],
         },
         axisLine: { lineStyle: { color: '#e2e8f0' } },
         axisTick: { show: false },
-        axisLabel: { fontSize: reducedMotion || isMobile ? 9 : 11, color: '#64748b' },
+        axisLabel: { fontSize: reducedMotion || isMobile ? 10 : 12, color: '#64748b' },
         // Only show horizontal dashed split lines, no vertical
         splitLine: { show: false },
         min: 0,
@@ -220,15 +220,15 @@ export class TorqueAngleChartComponent implements AfterViewInit {
         type: 'value',
         name: 'Torque (N·m)',
         nameLocation: 'middle',
-        nameGap: 15, // Gap to prevent overlap with tick numbers
+        nameGap: reducedMotion || isMobile ? 36 : 44, // Gap to prevent overlap with tick numbers
         nameTextStyle: {
-          fontSize: reducedMotion || isMobile ? 9 : 11,
+          fontSize: reducedMotion || isMobile ? 11 : 12,
           color: '#64748b',
-          padding: [0, 0, 0, 10],
+          padding: [0, 0, 0, 14],
         },
         axisLine: { lineStyle: { color: '#e2e8f0' } },
         axisTick: { show: false },
-        axisLabel: { fontSize: reducedMotion || isMobile ? 9 : 11, color: '#64748b' },
+        axisLabel: { fontSize: reducedMotion || isMobile ? 10 : 12, color: '#64748b' },
         splitLine: {
           show: true,
           lineStyle: { type: 'dashed', color: '#e8edf5' },
@@ -264,7 +264,9 @@ export class TorqueAngleChartComponent implements AfterViewInit {
                     },
                     label: {
                       show: true,
-                      formatter: `Latest: ${lastPoint.torque.toFixed(2)} N·m @ ${lastPoint.angle.toFixed(1)}°`,
+                      // Position inside plot, short format
+                      formatter: `${lastPoint.torque.toFixed(2)} N·m`,
+                      offset: [0, -10], // Above the marker
                     },
                   },
                 ],
