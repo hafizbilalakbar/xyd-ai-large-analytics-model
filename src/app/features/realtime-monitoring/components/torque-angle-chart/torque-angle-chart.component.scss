@@ -4,7 +4,7 @@
   min-width: 0;
 }
 
-/* Chart wrapper - clips anything that overflows */
+/* Chart wrapper - fills the card, no clipping */
 .chart {
   display: flex;
   height: 100%;
@@ -15,7 +15,7 @@
   border-radius: var(--radius-md);
   background-color: var(--color-surface);
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Chart head with title and subtitle */
@@ -58,14 +58,13 @@
 .chart__canvas {
   width: 100%;
   max-width: none;
-  margin-top: auto;
+  margin-top: 0;
   margin-inline: 0;
   min-height: 0;
   height: 100%;
   min-width: 0;
   flex: 1 1 auto;
   position: relative;
-  /* Clip any overflow (grid lines, labels) */
   overflow: hidden;
 }
 
@@ -94,56 +93,63 @@
 /* Fixed height wrappers per breakpoint - chart fills wrapper 100% */
 @media (min-width: 1920px) {
   .chart__canvas {
-    height: 440px;
-    min-height: 440px;
+    height: 400px;
+    min-height: 400px;
   }
 }
 
 @media (min-width: 1440px) and (max-width: 1919px) {
   .chart__canvas {
-    height: 440px;
-    min-height: 440px;
+    height: 380px;
+    min-height: 380px;
   }
 }
 
 @media (min-width: 1280px) and (max-width: 1439px) {
   .chart__canvas {
-    height: 400px;
-    min-height: 400px;
+    height: 340px;
+    min-height: 340px;
   }
 }
 
 @media (min-width: 1024px) and (max-width: 1279px) {
   .chart__canvas {
-    height: 400px;
-    min-height: 400px;
+    height: 320px;
+    min-height: 320px;
   }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
   .chart__canvas {
-    height: 360px;
-    min-height: 360px;
+    height: 320px;
+    min-height: 320px;
   }
 }
 
-@media (max-width: 414px) {
+@media (min-width: 480px) and (max-width: 767px) {
   .chart__canvas {
-    height: 300px;
-    min-height: 300px;
+    height: 280px;
+    min-height: 280px;
   }
 }
 
-@media (min-width: 415px) and (max-width: 640px) and (orientation: landscape) {
+@media (max-width: 479px) {
   .chart__canvas {
     height: 260px;
     min-height: 260px;
   }
 }
 
-/* Reduce grid padding on smaller screens so labels stay inside */
-@media (max-width: 1024px) {
+@media (min-width: 480px) and (max-width: 767px) and (orientation: landscape) {
   .chart__canvas {
-    /* Grid padding reduced for smaller screens */
+    height: 240px;
+    min-height: 240px;
+  }
+}
+
+@media (max-width: 479px) and (orientation: landscape) {
+  .chart__canvas {
+    height: 240px;
+    min-height: 240px;
   }
 }

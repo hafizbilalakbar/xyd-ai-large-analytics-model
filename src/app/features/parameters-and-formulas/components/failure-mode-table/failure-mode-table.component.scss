@@ -7,9 +7,9 @@
 .table-scroll-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  margin: -16px -16px 0;
-  padding: 0 16px 16px;
-  width: calc(100% + 32px);
+  margin: -14px -14px 0;
+  padding: 0 14px 14px;
+  width: calc(100% + 28px);
   scrollbar-width: thin;
   overscroll-behavior-x: contain;
 }
@@ -32,7 +32,7 @@
     position: sticky;
     top: 0;
     background-color: #f3f5f9;
-    padding: 10px 12px;
+    padding: 8px 12px;
     font-size: 13px;
     font-weight: 600;
     color: var(--color-text);
@@ -59,7 +59,7 @@
     left: 0;
     background-color: white;
     z-index: 2;
-    padding: 14px 12px;
+    padding: 10px 12px;
     font-size: 13px;
     color: var(--color-text);
     border-bottom: 1px solid var(--color-border);
@@ -242,8 +242,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  margin-top: 10px;
-  padding: 0.875rem 1.25rem;
+  margin-top: 8px;
+  padding: 0.75rem 1rem;
   font-size: 13px;
   color: var(--color-text-secondary);
   border-top: 1px solid var(--color-border);
@@ -314,7 +314,7 @@
   }
 
   .modes-table td {
-    padding: 12px 8px;
+    padding: 10px 8px;
     font-size: 12px;
   }
 
@@ -356,7 +356,7 @@
   }
 
   .modes-table td {
-    padding: 10px 6px;
+    padding: 8px 6px;
     font-size: 12px;
   }
 

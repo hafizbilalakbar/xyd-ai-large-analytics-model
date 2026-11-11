@@ -8,16 +8,11 @@
   min-width: 0;
   margin: 0;
   padding: 0;
-  /* Fit page to viewport height - no horizontal scroll on desktop */
-  height: calc(100dvh - var(--header-height) - var(--space-4) - var(--space-8));
-  min-height: auto;
   overflow-x: hidden;
 }
 
 @media (max-width: 768px) {
   .monitoring {
-    height: auto;
-    min-height: calc(100dvh - var(--header-height) - var(--space-5) - var(--space-8));
     overflow-x: hidden;
   }
 }
@@ -26,12 +21,11 @@
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   background-color: var(--color-surface);
   box-shadow: var(--shadow-card);
-  /* Equal height for chart and key values on desktop */
   align-items: stretch;
 }
 
@@ -39,6 +33,7 @@
   .monitoring__card {
     min-height: auto;
     overflow: visible;
+    flex-direction: column;
   }
 }
 
@@ -46,13 +41,11 @@
 .chart__canvas {
   width: 100%;
   max-width: none;
-  /* height set per breakpoint in torque-angle-chart component */
   min-height: 0;
   height: 100%;
   min-width: 0;
   flex: 1 1 auto;
   position: relative;
-  /* Clip any overflow (grid lines, labels) */
   overflow: hidden;
 }
 
@@ -64,7 +57,7 @@
   overflow: hidden;
 }
 
-/* Status bar styling - with gaps and proper width */
+/* Status bar styling - same width as the card, gap above */
 .monitoring__status-bar {
   display: flex;
   align-items: center;
@@ -75,17 +68,15 @@
   border-bottom: 1px solid var(--color-border);
   background-color: var(--color-surface);
   width: 100%;
-  /* Never wider than the monitoring card */
   margin-left: calc(-1 * var(--space-5));
   margin-right: calc(-1 * var(--space-5));
 }
 
-/* Add gap between card and status bar */
+/* Gap between card and status bar */
 .monitoring > .monitoring__card {
-  margin-bottom: calc(var(--space-4));
+  margin-bottom: var(--space-4);
 }
 
-/* Reduce gaps slightly for desktop fit */
 @media (min-width: 1024px) {
   :root {
     --space-4: 16px;

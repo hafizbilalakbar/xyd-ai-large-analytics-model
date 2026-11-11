@@ -25,9 +25,9 @@
 }
 
 .filter-card__fields {
-  padding: 12px;
+  padding: 10px;
   display: grid;
-  gap: 12px 12px;
+  gap: 10px 10px;
   grid-template-columns: repeat(4, 1fr);
 }
 
@@ -139,8 +139,8 @@
 
 .filter-card__actions {
   display: flex;
-  gap: 10px;
-  padding: 12px 18px 18px;
+  gap: 8px;
+  padding: 10px 16px 16px;
   justify-content: flex-end;
   border-top: 1px solid var(--color-border);
 }

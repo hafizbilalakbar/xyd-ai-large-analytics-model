@@ -37,7 +37,7 @@
 }
 
 .panel + .panel {
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .panel__head {
@@ -45,8 +45,8 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: nowrap;
-  gap: 12px;
-  padding: 10px 16px;
+  gap: 10px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -68,27 +68,27 @@
 }
 
 .panel__body {
-  padding: 16px;
+  padding: 14px;
 }
 
 .panel__body--table {
-  padding: 0 16px 16px;
+  padding: 0 14px 14px;
 }
 
 .tiles {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-auto-rows: 1fr;
-  gap: 12px;
+  gap: 10px;
   animation: content-in 200ms ease-out;
 }
 
 .tile {
   display: flex;
   min-width: 0;
-  min-height: 116px;
+  min-height: 104px;
   flex-direction: column;
-  padding: 13px 15px;
+  padding: 12px 14px;
   border: 1px solid var(--color-border);
   border-top: 2px solid var(--color-primary-600);
   border-radius: 8px;
@@ -96,7 +96,7 @@
 }
 
 .tile__label {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   color: var(--color-text-muted);
   font-size: 11px;
   font-weight: 500;
@@ -122,7 +122,7 @@
 
 .tile__sub {
   margin-top: auto;
-  padding-top: 4px;
+  padding-top: 2px;
   color: var(--color-text-muted);
   font-size: 11px;
   line-height: 1.4;
@@ -493,33 +493,33 @@
 
 @media (min-width: 1280px) {
   .panel__head {
-    padding: 16px 20px;
+    padding: 12px 18px;
   }
 
   .panel__body {
-    padding: 20px;
+    padding: 18px;
   }
 
   .panel__body--table {
-    padding: 0 20px 20px;
+    padding: 0 18px 18px;
   }
 
   .tiles {
-    gap: 16px;
+    gap: 12px;
   }
 }
 
 @media (max-width: 1023px) {
   .panel__head {
-    padding: 12px 14px;
+    padding: 10px 14px;
   }
 
   .panel__body {
-    padding: 14px;
+    padding: 12px;
   }
 
   .panel__body--table {
-    padding: 0 14px 14px;
+    padding: 0 12px 12px;
   }
 }
 
@@ -536,7 +536,7 @@
 
   .panel__head {
     gap: 8px;
-    padding: 12px;
+    padding: 10px;
   }
 
   .panel__title {
@@ -544,11 +544,11 @@
   }
 
   .panel__body {
-    padding: 12px;
+    padding: 10px;
   }
 
   .panel__body--table {
-    padding: 0 12px 12px;
+    padding: 0 10px 10px;
   }
 
   .state-block {

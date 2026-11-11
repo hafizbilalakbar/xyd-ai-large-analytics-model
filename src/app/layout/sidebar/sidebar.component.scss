@@ -9,6 +9,7 @@
   top: var(--header-height);
   display: flex;
   width: var(--sidebar-width);
+  min-height: 0;
   height: calc(100dvh - var(--header-height));
   flex-direction: column;
   border-right: 1px solid rgb(255 255 255 / 6%);
@@ -247,13 +248,13 @@
   max-width: 100%;
   flex: 1 1 auto;
   overflow: hidden;
-  overflow-wrap: anywhere;
-  white-space: normal;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   opacity: 1;
 }
 
 .sidebar__foot {
-  flex: none;
+  flex: 0 0 auto;
   padding: var(--space-3);
   border-top: 1px solid rgb(255 255 255 / 6%);
 }

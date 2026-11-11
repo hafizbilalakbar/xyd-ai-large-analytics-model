@@ -1,7 +1,7 @@
 .version-management {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -9,12 +9,12 @@
 
 @media (max-width: 479px) {
   .version-management {
-    gap: 12px;
+    gap: 10px;
   }
 }
 
 :host ::ng-deep .page-header {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 :host ::ng-deep .page-header__description {
@@ -36,7 +36,7 @@
 .version-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
   min-width: 0;
   animation: content-fade-in 200ms ease-out both;
@@ -55,7 +55,7 @@
 .skeleton {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
   min-width: 0;
 }
@@ -73,7 +73,7 @@
   align-items: center;
   gap: 0;
   min-height: 64px;
-  padding: 8px 16px;
+  padding: 6px 14px;
 }
 
 .skeleton-row:not(:last-child) {
@@ -143,9 +143,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  min-height: 220px;
-  padding: 40px 20px;
+  gap: 10px;
+  min-height: 180px;
+  padding: 32px 16px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background-color: var(--color-surface);
@@ -202,7 +202,7 @@
   .skeleton-row {
     grid-template-columns: 40px 1fr auto;
     gap: 0 12px;
-    padding: 10px 12px;
+    padding: 8px 12px;
     min-height: 56px;
   }
 

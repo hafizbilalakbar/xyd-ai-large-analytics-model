@@ -188,9 +188,10 @@ export class TorqueAngleChartComponent implements AfterViewInit {
         },
       },
       grid: {
-        left: reducedMotion || isMobile ? 44 : 56,
-        right: reducedMotion || isMobile ? 24 : 36,
-        top: reducedMotion || isMobile ? 28 : 36,
+        left: reducedMotion || isMobile ? 8 : 16,
+        right: reducedMotion || isMobile ? 12 : 24,
+        top: reducedMotion || isMobile ? 24 : 28,
+        bottom: reducedMotion || isMobile ? 24 : 28,
         // Show only horizontal dashed grid lines, no vertical lines
         borderColor: '#e2e8f0',
         containLabel: true,
@@ -199,11 +200,11 @@ export class TorqueAngleChartComponent implements AfterViewInit {
         type: 'value',
         name: 'Angle (°)',
         nameLocation: 'middle',
-        nameGap: reducedMotion || isMobile ? 36 : 44, // Large enough that it never touches tick labels
+        nameGap: reducedMotion || isMobile ? 32 : 40,
         nameTextStyle: {
           fontSize: reducedMotion || isMobile ? 11 : 12,
           color: '#64748b',
-          padding: [12, 0, 0, 0],
+          padding: [28, 0, 0, 0],
         },
         axisLine: { lineStyle: { color: '#e2e8f0' } },
         axisTick: { show: false },
@@ -212,15 +213,15 @@ export class TorqueAngleChartComponent implements AfterViewInit {
         splitLine: { show: false },
         min: 0,
         max: angleMax,
-        // Use evenly spaced numeric ticks
-        splitNumber: 4, // 0, 20, 40, 60, 80
+        // Use evenly spaced numeric ticks: 0, 20, 40, 60, 80
+        interval: 20,
         boundaryGap: [0, 0],
       },
       yAxis: {
         type: 'value',
         name: 'Torque (N·m)',
         nameLocation: 'middle',
-        nameGap: reducedMotion || isMobile ? 36 : 44, // Gap to prevent overlap with tick numbers
+        nameGap: reducedMotion || isMobile ? 32 : 40,
         nameTextStyle: {
           fontSize: reducedMotion || isMobile ? 11 : 12,
           color: '#64748b',
@@ -235,6 +236,8 @@ export class TorqueAngleChartComponent implements AfterViewInit {
         },
         min: 0,
         max: torqueMax,
+        // Use evenly spaced numeric ticks: 0, 3, 6, 9, 12, 15
+        interval: 3,
       },
       series: [
         {
@@ -263,10 +266,10 @@ export class TorqueAngleChartComponent implements AfterViewInit {
                       borderWidth: 2,
                     },
                     label: {
-                      show: true,
-                      // Position inside plot, short format
-                      formatter: `${lastPoint.torque.toFixed(2)} N·m`,
-                      offset: [0, -10], // Above the marker
+                      show: false,
+                      // Marker only - no text label to avoid overlap
+                      formatter: '',
+                      offset: [0, -10],
                     },
                   },
                 ],

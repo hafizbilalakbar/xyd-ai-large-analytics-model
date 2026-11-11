@@ -89,7 +89,7 @@
         [routerLink]="item.route"
         routerLinkActive="nav-item--active"
         ariaCurrentWhenActive="page"
-        [attr.title]="collapsed() ? null : item.label"
+        [attr.title]="item.label"
         (click)="onNavigate()"
         (mouseenter)="showItemTooltip(item.label, $event)"
         (mouseleave)="hideItemTooltip()"

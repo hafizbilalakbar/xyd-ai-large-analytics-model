@@ -10,7 +10,7 @@
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .page-header-actions {
@@ -164,7 +164,7 @@
   display: grid;
   min-width: 0;
   grid-template-columns: minmax(0, 1fr);
-  gap: 18px;
+  gap: 16px;
 }
 
 .kpi-grid app-stat-card {
@@ -188,7 +188,7 @@
   display: grid;
   min-width: 0;
   grid-template-columns: minmax(0, 1fr);
-  gap: 18px;
+  gap: 16px;
 }
 
 .chart-grid > * {
@@ -223,7 +223,7 @@ app-recent-warning {
 @media (min-width: 1200px) {
   .kpi-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 18px;
+    gap: 16px;
   }
 
   .chart-grid {

@@ -1,13 +1,13 @@
 .preview-table {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
 
 .preview-table__filters {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: nowrap;
   overflow-x: auto;
   scrollbar-width: thin;
@@ -45,9 +45,9 @@
 .selection-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 1px solid #d9dee7;
   border-radius: 6px;
   background: #f3f5f9;
@@ -122,8 +122,8 @@
   font-size: 13px;
   font-weight: 600;
   text-align: left;
-  padding: 10px 12px;
-  height: 38px;
+  padding: 8px 12px;
+  height: 36px;
   border-bottom: 1px solid var(--color-border);
   white-space: nowrap;
 }
@@ -131,24 +131,24 @@
 .preview-table__table td {
   color: var(--color-text);
   font-size: 13px;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-bottom: 1px solid var(--color-border);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  height: 40px;
+  height: 36px;
   box-sizing: border-box;
 }
 
 @media (max-width: 639px) {
   .preview-table__table th {
     font-size: 12px;
-    height: 38px;
+    height: 36px;
   }
 
   .preview-table__table td {
     font-size: 12px;
-    height: 40px;
+    height: 36px;
   }
 }
 
@@ -332,7 +332,7 @@
 
 .preview-table__footer {
   border-top: 1px solid var(--color-border);
-  padding-top: 12px;
+  padding-top: 10px;
 }
 
 @media (max-width: 768px) {

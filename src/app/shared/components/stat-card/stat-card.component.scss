@@ -8,9 +8,9 @@
   @include mixins.surface-card;
 
   display: flex;
-  min-height: 8.5rem;
+  min-height: 7.5rem;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
   padding: var(--space-4);
   transition:
     border-color 160ms ease,
@@ -86,7 +86,7 @@
 
 .stat-card__value {
   color: var(--color-text);
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -107,7 +107,7 @@
   gap: var(--space-1);
   margin-top: auto;
   color: var(--color-success);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .stat-card__delta--negative {

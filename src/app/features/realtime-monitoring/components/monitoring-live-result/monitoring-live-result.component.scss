@@ -2,13 +2,15 @@
   display: block;
   flex: 1;
   min-width: 0;
+  overflow: visible;
 }
 
 .live {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: var(--space-5);
+  padding: var(--space-4);
+  overflow: visible;
 }
 
 .live__banner {
@@ -68,36 +70,40 @@
 
 .live__body {
   display: grid;
+  min-width: 0;
   align-items: stretch;
   grid-template-columns: minmax(0, 1.6fr) minmax(15rem, 1fr);
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
 .live__values {
-  padding: var(--space-5);
+  padding: var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background-color: var(--color-surface-muted);
+  display: flex;
+  flex-direction: column;
 }
 
 .live__values-title {
   color: var(--color-text);
   font-size: var(--font-size-base);
   font-weight: 650;
+  margin: 0 0 var(--space-2) 0;
 }
 
 .live__value-list {
   display: flex;
   flex-direction: column;
-  margin: var(--space-2) 0 0;
+  margin: 0;
 }
 
 .live__value {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-2) 0;
+  gap: var(--space-3);
+  padding: 0.375rem 0;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -138,6 +144,7 @@
   color: var(--color-text);
   font-size: var(--font-size-base);
   font-weight: 650;
+  margin: 0;
 }
 
 .live__recent-head span {
@@ -148,7 +155,7 @@
 .live__results {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 var(--space-6);
+  gap: var(--space-3) var(--space-5);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -158,10 +165,14 @@
   display: grid;
   align-items: center;
   grid-template-columns: 4.5rem minmax(0, 1fr) auto;
-  gap: var(--space-3);
-  padding: 0.375rem 0;
+  gap: var(--space-2);
+  padding: 0.5rem 0;
   border-bottom: 1px solid var(--color-border);
   font-size: var(--font-size-sm);
+}
+
+.live__result:last-child {
+  border-bottom: none;
 }
 
 .live__result time {
@@ -203,12 +214,13 @@
 @media (max-width: 900px) {
   .live__results {
     grid-template-columns: 1fr;
+    gap: var(--space-3);
   }
 }
 
 @media (max-width: 768px) {
   .live {
-    padding: var(--space-4);
+    padding: var(--space-3);
   }
 
   .live__banner {
@@ -222,5 +234,6 @@
 
   .live__result {
     grid-template-columns: 4rem minmax(0, 1fr) auto;
+    padding: 0.375rem 0;
   }
 }
