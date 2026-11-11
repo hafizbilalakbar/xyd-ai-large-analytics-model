@@ -134,31 +134,30 @@
   <header class="panel__head log-panel__head">
     <div class="log-panel__title">
       <h2 class="panel__title" id="monitor-log-title">Log</h2>
+      <span class="log-filter-count">{{ filteredEntries().length }} / {{ entries().length }}</span>
     </div>
     <div class="log-panel__actions">
-      <div class="log-filter-wrapper">
-        <input
-          class="log-filter"
-          type="search"
-          placeholder="Quickly filter the results by: Sample ID / API / user / action"
-          aria-label="Quick filter log results"
-          [value]="filterTerm()"
-          (input)="onFilterInput($event)"
-        />
-        @if (filterTerm()) {
-          <button
-            class="log-filter-clear"
-            type="button"
-            aria-label="Clear filter"
-            (click)="clearFilter()"
-          >
-            <app-icon name="close" [size]="14" />
-          </button>
-        }
-        <span class="log-filter-count"
-          >{{ filteredEntries().length }} / {{ entries().length }}</span
+    <div class="log-filter-wrapper">
+      <input
+        class="log-filter"
+        type="search"
+        placeholder="Filter by user / action / page"
+        aria-label="Quick filter log results"
+        [value]="filterTerm()"
+        (input)="onFilterInput($event)"
+      />
+      @if (filterTerm()) {
+        <button
+          class="log-filter-clear"
+          type="button"
+          aria-label="Clear filter"
+          (click)="clearFilter()"
         >
-      </div>
+          <app-icon name="close" [size]="14" />
+        </button>
+      }
+    </div>
+    <div class="log-actions-group">
       <button
         class="log-export btn btn--sm"
         type="button"
@@ -179,6 +178,7 @@
         </button>
       }
     </div>
+  </div>
   </header>
 
   <div class="log-viewer" role="log" aria-label="Operation and interface logs">

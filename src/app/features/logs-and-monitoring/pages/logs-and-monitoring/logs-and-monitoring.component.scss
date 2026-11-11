@@ -455,69 +455,431 @@
   .monitor-cards {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* ---------- Tablet: 601px - 1024px ---------- */
+
+@media (min-width: 601px) and (max-width: 1024px) {
+  .monitor-cards {
+    gap: 12px;
+  }
+
+  /* Cards stack under 900px */
+  @media (max-width: 900px) {
+    .monitor-cards {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* Log header: stacked rows */
+  .log-panel__head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .log-panel__title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .log-panel__title .panel__title {
+    font-size: 15px;
+    font-weight: 650;
+    color: var(--color-text);
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .log-filter-count {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
 
   .log-panel__actions {
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
+    width: 100%;
   }
 
   .log-filter-wrapper {
     min-width: 0;
     width: 100%;
-    flex-direction: row;
+    flex-direction: column;
+    gap: 0;
   }
 
   .log-filter {
     flex: 1;
     max-width: none;
-    padding-right: 34px;
+    width: 100%;
+    height: 40px;
+    min-height: 40px;
+    font-size: 16px;
+    padding: 0 12px;
+    padding-right: 40px;
+  }
+
+  .log-filter-clear {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    left: -40px;
+  }
+
+  .log-actions-group {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .log-export,
+  .log-clear {
+    flex: 1;
+    height: 39px;
+    min-height: 39px;
+    max-height: 39px;
+    font-size: 13px;
+    padding: 0 10px;
+    border-radius: 7px;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+    min-width: 0;
+  }
+
+  .log-export {
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+  }
+
+  .log-clear {
+    border: 1px solid rgb(185 28 28 / 35%);
+    background: var(--color-surface);
+    color: var(--color-danger);
+  }
+
+  .log-export > app-icon,
+  .log-clear > app-icon {
+    --icon-size: 16px;
+  }
+
+  .log-viewer {
+    min-height: 200px;
+    max-height: 55dvh;
+    height: auto;
+    padding: 12px;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+
+  /* Log rows tablet: timestamp LEFT, badge RIGHT, message line 2 */
+  .log-line {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 8px 8px;
+    padding: 8px 0;
+  }
+
+  .log-line__time {
+    grid-column: 1;
+    grid-row: 1;
+    white-space: nowrap;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    align-self: center;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  .log-line__tag {
+    grid-column: 3;
+    grid-row: 1;
+    width: 56px;
+    height: 21px;
+    min-height: 21px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 4px;
+    line-height: 1;
+    align-self: center;
+    justify-self: flex-end;
+    white-space: nowrap;
+  }
+
+  .log-line__text {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  /* Data access: stat boxes side by side */
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stat {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .stat__label {
+    font-size: 11px;
+  }
+
+  .stat__value {
+    font-size: 20px;
+  }
+
+  /* Model determination: label left, value right */
+  .kv__row {
+    grid-template-columns: minmax(140px, 1fr) 1fr;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .kv__row dt {
+    font-size: 12px;
+  }
+
+  .kv__row dd {
+    font-size: 12px;
+    text-align: right;
+  }
+}
+
+/* ---------- Mobile: under 600px ---------- */
+
+@media (max-width: 600px) {
+  .log-panel__head {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 8px;
+  }
+
+  .log-panel__title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .log-panel__title .panel__title {
+    font-size: 15px;
+    font-weight: 650;
+    color: var(--color-text);
+    margin: 0;
+    white-space: nowrap;
   }
 
   .log-filter-count {
-    display: none;
+    font-size: 12px;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .log-panel__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .log-filter-wrapper {
+    min-width: 0;
+    width: 100%;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .log-filter {
+    flex: 1;
+    max-width: none;
+    width: 100%;
+    height: 40px;
+    min-height: 40px;
+    font-size: 16px;
+    padding: 0 12px;
+    padding-right: 40px;
+  }
+
+  .log-filter-clear {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    left: -40px;
+  }
+
+  .log-actions-group {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .log-export,
+  .log-clear {
+    flex: 1;
+    height: 39px;
+    min-height: 39px;
+    max-height: 39px;
+    font-size: 13px;
+    padding: 0 10px;
+    border-radius: 7px;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+    min-width: 0;
+  }
+
+  .log-export {
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+  }
+
+  .log-clear {
+    border: 1px solid rgb(185 28 28 / 35%);
+    background: var(--color-surface);
+    color: var(--color-danger);
+  }
+
+  .log-export > app-icon,
+  .log-clear > app-icon {
+    --icon-size: 16px;
+  }
+
+  .log-viewer {
+    min-height: 160px;
+    max-height: 50dvh;
+    height: auto;
+    padding: 12px;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+
+  /* Log rows mobile: timestamp LEFT, badge RIGHT, message line 2 */
+  .log-line {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 8px 8px;
+    padding: 8px 0;
+  }
+
+  .log-line__time {
+    grid-column: 1;
+    grid-row: 1;
+    white-space: nowrap;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    align-self: center;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  .log-line__tag {
+    grid-column: 3;
+    grid-row: 1;
+    width: 56px;
+    height: 21px;
+    min-height: 21px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 4px;
+    line-height: 1;
+    align-self: center;
+    justify-self: flex-end;
+    white-space: nowrap;
+  }
+
+  .log-line__text {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stat {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .stat__label {
+    font-size: 11px;
+  }
+
+  .stat__value {
+    font-size: 20px;
+  }
+
+  .kv__row {
+    grid-template-columns: minmax(140px, 1fr) 1fr;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .kv__row dt {
+    font-size: 12px;
+  }
+
+  .kv__row dd {
+    font-size: 12px;
+    text-align: right;
+  }
+}
+
+@media (max-width: 360px) {
+  .stat-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .log-line__time {
+    font-size: 11px;
+  }
+
+  .log-line__text {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 340px) {
+  .log-actions-group {
+    flex-direction: column;
   }
 
   .log-export,
   .log-clear {
     width: 100%;
-    justify-content: center;
-    min-height: 40px;
-    height: 40px;
-  }
-
-  .log-viewer {
-    height: 360px;
-    max-height: 70dvh;
-  }
-
-  .stat-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 600px) {
-  .log-filter-count {
-    display: none;
-  }
-
-  .kv__row {
-    grid-template-columns: 1fr;
-  }
-
-  .log-line {
-    grid-template-columns: 1fr;
-    gap: 4px;
-  }
-
-  .log-line__time,
-  .log-line__tag {
-    grid-column: 1;
-    white-space: normal;
-  }
-
-  .log-line__tag {
-    display: inline-block;
-    margin-top: 2px;
   }
 }
