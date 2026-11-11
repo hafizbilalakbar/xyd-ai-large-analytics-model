@@ -22,7 +22,7 @@ export const LOG_ACTIONS = {
   authLoginFailed: 'auth.login.failed',
   authLogout: 'auth.logout',
   authSessionExpired: 'auth.session.expired',
-  uiNavigate: 'ui.navigate',
+  uiClick: 'ui.click',
   accessDenied: 'access.denied',
   roleCreate: 'role.create',
   roleUpdate: 'role.update',
@@ -37,6 +37,13 @@ export const LOG_ACTIONS = {
   templateDownload: 'template.download',
   logsExport: 'logs.export',
   logsClear: 'logs.clear',
+  dataImport: 'data.import',
+  dataExport: 'data.export',
+  trainingStart: 'training.start',
+  trainingStop: 'training.stop',
+  versionActivate: 'version.activate',
+  versionDelete: 'version.delete',
+  parameterSave: 'parameter.save',
 } as const;
 
 export const ROUTE_TO_PAGE: Readonly<Record<string, string>> = {

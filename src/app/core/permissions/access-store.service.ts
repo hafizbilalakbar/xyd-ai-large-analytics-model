@@ -202,7 +202,7 @@ export class AccessStoreService {
     });
     this.persist();
     this.auditLog.logOperate(
-      'role.permissions.save',
+      'role.permissions',
       role.name,
       `${unique.length} permissions selected`,
     );

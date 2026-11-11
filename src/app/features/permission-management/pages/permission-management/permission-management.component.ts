@@ -25,6 +25,18 @@ import {
 
 const CSV_TEMPLATE_FILE_NAME = 'user-import-template.csv';
 
+// Build a map from permission id to human-readable label.
+const PERMISSION_LABELS = new Map<string, string>();
+for (const group of PERMISSION_GROUPS) {
+  for (const item of group.items) {
+    PERMISSION_LABELS.set(item.id, item.label);
+  }
+}
+
+function permissionNames(ids: readonly string[]): string[] {
+  return [...ids].map((id) => PERMISSION_LABELS.get(id) ?? id);
+}
+
 @Component({
   selector: 'app-permission-management',
   imports: [
@@ -232,10 +244,16 @@ export class PermissionManagementComponent {
     if (!role) {
       return;
     }
+    const isRename = this.draftRoleName().trim() !== role.name;
     const update = this.store.updateRole(role.id, this.draftRoleName(), role.description);
     if (!update.ok) {
       this.toastService.show(update.error ?? 'Could not save the role.', 'error');
       return;
+    }
+    if (isRename) {
+      this.auditLog.logOperate('role.rename', `${role.name} -> ${this.draftRoleName().trim()}`);
+    } else {
+      this.auditLog.logOperate('role.update', role.name);
     }
     const permissions = this.store.setRolePermissions(role.id, [
       ...this.draftPermissionIds(),
@@ -244,6 +262,22 @@ export class PermissionManagementComponent {
       this.toastService.show(permissions.error ?? 'Could not save permissions.', 'error');
       return;
     }
+    const saved = new Set(this.savedPermissionIds());
+    const draft = new Set(this.draftPermissionIds());
+    const added = [...draft].filter((id) => !saved.has(id));
+    const removed = [...saved].filter((id) => !draft.has(id));
+    const parts: string[] = [];
+    if (added.length > 0) {
+      parts.push(`+${permissionNames(added).join(', +')}`);
+    }
+    if (removed.length > 0) {
+      parts.push(`-${permissionNames(removed).join(', -')}`);
+    }
+    if (added.length === 0 && removed.length === 0) {
+      // First save: list all granted permissions
+      parts.push(...permissionNames([...draft]).map((name) => `+${name}`));
+    }
+    this.auditLog.logOperate('role.permissions', role.name, parts.join(' '));
     this.toastService.show('Role changes saved.', 'success');
   }
 
@@ -403,6 +437,9 @@ export class PermissionManagementComponent {
     if (id === null) {
       return;
     }
+    const oldUser = this.store.userById(id);
+    const oldRoles = oldUser?.roleIds.map((rid) => this.store.roleById(rid)?.name).filter(Boolean) ?? [];
+    const newRoles = roleIds.map((rid) => this.store.roleById(rid)?.name).filter(Boolean);
     const result = this.store.updateUser(id, {
       username,
       password: password === '' ? null : password,
@@ -414,6 +451,25 @@ export class PermissionManagementComponent {
     }
     this.userModalOpen.set(false);
     this.toastService.show('User updated.', 'success');
+
+    // Log detailed changes
+    const changes: string[] = [];
+    if (oldUser && username !== oldUser.username) {
+      changes.push(`username: ${oldUser.username} -> ${username}`);
+    }
+    const oldRolesStr = oldRoles.join(', ');
+    const newRolesStr = newRoles.join(', ');
+    if (oldRolesStr !== newRolesStr) {
+      changes.push(`role: ${oldRolesStr} -> ${newRolesStr}`);
+    }
+    if (password !== '' && password !== null) {
+      changes.push('password changed');
+    }
+    if (changes.length > 0) {
+      this.auditLog.logOperate('user.update', username, changes.join(', '));
+    } else {
+      this.auditLog.logOperate('user.update', username);
+    }
   }
 
   protected toggleUserEnabled(user: AccessUser): void {
@@ -473,6 +529,11 @@ export class PermissionManagementComponent {
     const result = this.store.importUsersCsv(content, assignRoleIds);
     this.importResult.set(result);
     this.importResultOpen.set(true);
+    this.auditLog.logOperate(
+      'user.import',
+      'CSV import',
+      `${result.addedCount} rows imported, ${result.errors.length} failed`,
+    );
     if (result.addedCount > 0 && result.errors.length === 0) {
       this.toastService.show(`${result.addedCount} users imported.`, 'success');
     }

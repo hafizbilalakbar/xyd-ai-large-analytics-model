@@ -86,8 +86,8 @@ export class LogsAndMonitoringComponent implements OnDestroy {
   private exportTimer: number | null = null;
 
   constructor() {
-    // Log that this page was opened
-    this.auditLog.logOperate('ui.navigate', 'Logs & Monitoring');
+    // Navigation is logged by NavigationLogger (router hook).
+    // Do not double-log here.
   }
 
   protected readonly cpuPercent = computed(() =>

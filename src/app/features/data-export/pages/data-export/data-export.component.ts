@@ -13,6 +13,8 @@ import { SampleResult } from '../../../sample-search/data-access/sample-models';
 import { MOCK_RESULTS } from '../../../sample-search/data-access/sample.mock';
 import { MultiSelectDropdownComponent } from '../../../sample-search/components/multi-select-dropdown/multi-select-dropdown.component';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { AuditLogService } from '../../../../core/logging/audit-log.service';
+import { LOG_ACTIONS } from '../../../../core/logging/log-actions';
 import { OperationLogService } from '../../../../shared/services/operation-log.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ToastService } from '../../../../shared/services/toast.service';
@@ -73,6 +75,7 @@ function csvEscape(value: unknown): string {
 export class DataExportComponent {
   private readonly service = inject(SampleService);
   private readonly authService = inject(AuthService);
+  private readonly auditLog = inject(AuditLogService);
   private readonly logService = inject(OperationLogService);
   private readonly toast = inject(ToastService);
 
@@ -377,6 +380,7 @@ export class DataExportComponent {
     this.exportStarted.set(false);
     const scope = this.scopeText();
     this.logService.add({ operator: this.operator(), format, scope, recordCount, deleted });
+    this.auditLog.logOperate(LOG_ACTIONS.dataExport, `${recordCount} records`, format);
     this.exportResult.set({ count: recordCount, format, fileName, size });
     this.showExportResult.set(true);
   }

@@ -117,19 +117,19 @@ export class AuthService implements OnDestroy {
         };
 
     this.startSession(authenticated, remember);
-    this.auditLog.logOperate('auth.login', authenticated.username);
+    this.auditLog.logOperate(LOG_ACTIONS.authLogin, authenticated.username);
     return { ok: true };
   }
 
   signOut(logOperation = true): void {
     const username = this.userState()?.username ?? null;
+    if (logOperation && username !== null) {
+      this.auditLog.logOperate(LOG_ACTIONS.authLogout, username);
+    }
     this.userState.set(null);
     this.sessionExpiresAt = null;
     this.clearStoredSession();
     this.auditLog.setUser(null);
-    if (logOperation && username !== null) {
-      this.auditLog.logOperate('auth.logout', username);
-    }
   }
 
   /** Drops the session when it expired; called by guards and a timer. */
@@ -139,9 +139,10 @@ export class AuthService implements OnDestroy {
       return;
     }
     if (Date.now() >= expiresAt) {
+      const user = this.userState();
       this.auditLog.logOperate(
         LOG_ACTIONS.authSessionExpired,
-        this.userState()?.username ?? 'unknown',
+        user?.username ?? 'unknown',
       );
       this.signOut(false);
       void this.router.navigate(['/login'], {
@@ -156,9 +157,10 @@ export class AuthService implements OnDestroy {
         .users()
         .find((candidate) => candidate.username.toLowerCase() === user.username.toLowerCase());
       if (!stored || !stored.enabled) {
+        const user = this.userState();
         this.auditLog.logOperate(
           LOG_ACTIONS.authLoginFailed,
-          user.username,
+          user?.username ?? 'unknown',
           'account disabled',
         );
         this.signOut(false);
@@ -181,7 +183,7 @@ export class AuthService implements OnDestroy {
 
   private startSession(user: AuthenticatedUser, remember: boolean): void {
     this.userState.set(user);
-    this.auditLog.setUser(user.username);
+    this.auditLog.setUser(user.username, user.role);
     this.sessionExpiresAt =
       Date.now() + AUTH_CONFIG.sessionDurationHours * 60 * 60 * 1000;
     this.persistSession(user, remember);

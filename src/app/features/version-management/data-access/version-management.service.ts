@@ -3,6 +3,8 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { ModelVersionStore } from '../../../shared/services/model-version.store';
 import type { ModelVersionStoreVersion } from '../../../shared/services/model-version.store';
 import { OperationLogService } from '../../../shared/services/operation-log.service';
+import { AuditLogService } from '../../../core/logging/audit-log.service';
+import { LOG_ACTIONS } from '../../../core/logging/log-actions';
 import { ToastService } from '../../../shared/services/toast.service';
 import { VersionManagementApiService } from './version-management-api.service';
 import type {
@@ -77,6 +79,7 @@ export class VersionManagementService {
   private readonly api = inject(VersionManagementApiService);
   private readonly store = inject(ModelVersionStore);
   private readonly operationLog = inject(OperationLogService);
+  private readonly auditLog = inject(AuditLogService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
 
@@ -201,6 +204,7 @@ export class VersionManagementService {
       this.store.activateVersion(versionId);
       await this.refreshComparison();
       this.toast.show(`Activated ${target.id}.`, 'success');
+      this.auditLog.logOperate(LOG_ACTIONS.versionActivate, target.id, 'result: success');
       this.operationLog.add({
         operator: this.auth.user()?.name ?? 'Administrator',
         format: 'Activate model version',
@@ -249,6 +253,7 @@ export class VersionManagementService {
 
     this.toast.dismissAll();
     this.toast.show(`Deleted version ${target.id}.`, 'success');
+    this.auditLog.logOperate(LOG_ACTIONS.versionDelete, target.id, 'result: success');
     this.operationLog.add({
       operator: this.auth.user()?.name ?? 'Administrator',
       format: 'Delete model version',

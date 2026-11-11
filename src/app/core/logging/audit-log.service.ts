@@ -6,6 +6,11 @@ export interface AuditLogEntry {
   readonly id: number;
   readonly time: string;
   readonly kind: AuditLogKind;
+  /** The username who performed the action (snapshot at action time). */
+  readonly user: string;
+  /** The role name of the user at action time (snapshot). */
+  readonly role: string;
+  /** Formatted entry content without timestamp and kind badge. */
   readonly message: string;
 }
 
@@ -13,6 +18,8 @@ interface PersistedAuditLogEntry {
   readonly id: number;
   readonly time: string;
   readonly kind: AuditLogKind;
+  readonly user: string;
+  readonly role: string;
   readonly message: string;
 }
 
@@ -20,6 +27,7 @@ const MAX_ENTRIES = 1000;
 const STORAGE_KEY = 'xyd_audit_logs_v1';
 const PERSIST_DEBOUNCE_MS = 300;
 const DEDUP_WINDOW_MS = 1000;
+const CLICK_BUFFER_MS = 400;
 
 function pad(value: number, width = 2): string {
   return String(value).padStart(width, '0');
@@ -44,10 +52,16 @@ export function formatTimestamp(isoTime: string): string {
  *
  * Entries are persisted to localStorage (latest 1000 kept) so they survive a
  * page refresh. If storage is blocked or full, writes fail silently and logs
- * continue working in memory.
+ * continue working in memory. This storage is local to the browser; a real
+ * backend can replace it later by changing only this service.
  *
  * Dedup: the same action key repeated within 1 second is ignored, preventing
  * double-click or double-poll spam.
+ *
+ * Click buffer: raw click events are held for 400ms before being emitted.
+ * If a specific action log (e.g. role.create) arrives within that window,
+ * the pending raw click is dropped to avoid duplicate lines for the same
+ * user action.
  */
 @Injectable({ providedIn: 'root' })
 export class AuditLogService {
@@ -55,9 +69,11 @@ export class AuditLogService {
   private readonly filterTerm = signal('');
   private nextId = 1;
   private currentUser: string | null = null;
+  private currentRole: string | null = null;
   private persistTimer: number | null = null;
   private lastLogKey = '';
   private lastLogTime = 0;
+  private pendingClick: { timeout: number | null; label: string } | null = null;
 
   /** Newest entry first, capped at the most recent 1000 entries. */
   readonly entries = this.entriesState.asReadonly();
@@ -73,6 +89,8 @@ export class AuditLogService {
       (entry) =>
         entry.message.toLowerCase().includes(term) ||
         entry.kind.includes(term) ||
+        entry.user.toLowerCase().includes(term) ||
+        entry.role.toLowerCase().includes(term) ||
         formatTimestamp(entry.time).toLowerCase().includes(term),
     );
   });
@@ -81,9 +99,10 @@ export class AuditLogService {
     this.restore();
   }
 
-  /** Tracks the signed-in user so operate entries can be attributed. */
-  setUser(username: string | null): void {
+  /** Tracks the signed-in user and role so operate entries can be attributed. */
+  setUser(username: string | null, role: string | null = null): void {
     this.currentUser = username;
+    this.currentRole = role;
   }
 
   /** Sets the live filter term. */
@@ -97,18 +116,56 @@ export class AuditLogService {
   }
 
   /**
-   * Records an `operate` entry.
+   * Records an `operate` entry with full attribution.
    * @param action - action key from LOG_ACTIONS (e.g. 'role.create')
    * @param target - the target name (e.g. role name or username)
    * @param detail - optional extra detail
    */
   logOperate(action: string, target: string, detail?: string): void {
+    // Cancel any pending raw click since a specific action log is being written.
+    this.pendingClick = null;
     const user = this.currentUser ?? '-';
+    const role = this.currentRole ?? 'unknown';
     const message =
       detail === undefined
-        ? `${user}  ${action}  ${target}`
-        : `${user}  ${action}  ${target}  ${detail}`;
+        ? `${user} (${role}) ${action} ${target}`
+        : `${user} (${role}) ${action} ${target} ${detail}`;
     this.addEntryDedup('operate', message, `${action}:${target}`);
+  }
+
+  /**
+   * Records a raw click event with a 400ms buffer. If a specific action log
+   * arrives within that window, the pending click is dropped.
+   */
+  logClick(label: string): void {
+    // Cancel any previous pending click of the same label within dedup window
+    const now = Date.now();
+    if (this.pendingClick?.label === label && now - this.lastLogTime < DEDUP_WINDOW_MS) {
+      return;
+    }
+    const pending = this.pendingClick;
+    if (pending && pending.timeout !== null) {
+      window.clearTimeout(pending.timeout);
+    }
+    this.pendingClick = {
+      timeout: window.setTimeout(() => {
+        this.pendingClick = null;
+        this.addEntryDedup('operate', label, `click:${label}`);
+      }, CLICK_BUFFER_MS),
+      label,
+    };
+  }
+
+  /**
+   * Cancels a pending click because a specific action log is about to be
+   * written for the same user action.
+   */
+  cancelPendingClick(label: string): void {
+    const pending = this.pendingClick;
+    if (pending && pending.label === label && pending.timeout !== null) {
+      window.clearTimeout(pending.timeout);
+      this.pendingClick = null;
+    }
   }
 
   /**
@@ -136,6 +193,7 @@ export class AuditLogService {
     this.nextId = 1;
     this.lastLogKey = '';
     this.lastLogTime = 0;
+    this.pendingClick = null;
     this.schedulePersist();
   }
 
@@ -168,6 +226,8 @@ export class AuditLogService {
       id: this.nextId++,
       time: new Date().toISOString(),
       kind,
+      user: this.currentUser ?? '-',
+      role: this.currentRole ?? 'unknown',
       message,
     };
     this.entriesState.update((entries) => [entry, ...entries].slice(0, MAX_ENTRIES));

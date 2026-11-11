@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastService } from '../../../shared/services/toast.service';
+import { AuditLogService } from '../../../core/logging/audit-log.service';
+import { LOG_ACTIONS } from '../../../core/logging/log-actions';
 import { ImportApiService } from './import-api.service';
 import { ImportParserService } from './import-parser.service';
 import {
@@ -49,6 +51,7 @@ interface FingerprintedFile {
 export class DataImportService {
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
+  private readonly auditLog = inject(AuditLogService);
   private readonly api = inject(ImportApiService);
   private readonly parser = inject(ImportParserService);
 
@@ -373,6 +376,8 @@ export class DataImportService {
         this.playbackFingerprints.set(batchId, batchFingerprints);
       }
 
+      this.auditLog.logOperate(LOG_ACTIONS.dataImport, 'playback', `${imported.length} curves imported`);
+
       this.playbackProgress.set({
         status: 'done',
         percent: 100,
@@ -433,6 +438,8 @@ export class DataImportService {
       this.applyDuplicateRules(merged, this.duplicateMode());
       this.trainingImportErrors.set([...result.errors]);
       this.trainingPage.set(1);
+
+      this.auditLog.logOperate(LOG_ACTIONS.dataImport, 'training', `${incoming.length} rows imported`);
 
       if (incoming.length > 0) {
         fresh.forEach((entry) => this.trainingFingerprints.set(entry.fingerprint, entry.file.name));

@@ -19,12 +19,15 @@ import {
   validateSystemSettings,
 } from './config-validators';
 import { ToastService } from '../../../shared/services/toast.service';
+import { AuditLogService } from '../../../core/logging/audit-log.service';
+import { LOG_ACTIONS } from '../../../core/logging/log-actions';
 
 @Injectable({ providedIn: 'root' })
 export class ParametersAndFormulasService {
   private readonly api = inject(ParametersAndFormulasApiService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly auditLog = inject(AuditLogService);
 
   readonly activeTab = signal<TabId>('execution');
 
@@ -487,6 +490,7 @@ export class ParametersAndFormulasService {
 
       await this.loadExecutionConfigs();
       this.closeExecutionDialog();
+      this.auditLog.logOperate(LOG_ACTIONS.parameterSave, state.mode === 'edit' ? state.config?.batchNumber ?? state.form.batchNumber : state.form.batchNumber, state.mode === 'edit' ? 'edit' : 'create');
       this.toast.show('Configuration saved and applied.', 'success');
     } catch {
       this.toast.show('Failed to save configuration. Please try again.', 'error');
@@ -612,6 +616,7 @@ export class ParametersAndFormulasService {
 
       await this.loadFailureModes();
       this.closeFailureModeDialog();
+      this.auditLog.logOperate(LOG_ACTIONS.parameterSave, state.failureMode?.code ?? state.form.code, state.mode === 'edit' ? 'edit' : 'create');
       this.toast.show('Failure mode saved.', 'success');
     } catch {
       this.toast.show('Failed to save failure mode.', 'error');
@@ -668,6 +673,7 @@ export class ParametersAndFormulasService {
     try {
       await this.api.setFailureModeStatus(code, status);
       await this.loadFailureModes();
+      this.auditLog.logOperate(LOG_ACTIONS.parameterSave, code, status.toLowerCase());
       this.toast.show(
         status === 'Enabled' ? 'Failure mode enabled.' : 'Failure mode disabled.',
         'success',
@@ -711,6 +717,7 @@ export class ParametersAndFormulasService {
       const saved = await this.api.saveSystemSettings(this.settingsForm());
       this.systemSettings.set(saved);
       this.settingsForm.set({ ...saved });
+      this.auditLog.logOperate(LOG_ACTIONS.parameterSave, 'system settings', 'save');
       this.toast.show('Settings saved.', 'success');
     } catch {
       this.toast.show('Failed to save settings.', 'error');

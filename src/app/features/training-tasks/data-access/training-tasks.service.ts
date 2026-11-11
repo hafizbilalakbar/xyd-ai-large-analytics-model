@@ -2,6 +2,8 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ModelVersionStore, type TrainingTaskStoreTask } from '../../../shared/services/model-version.store';
 import { OperationLogService } from '../../../shared/services/operation-log.service';
+import { AuditLogService } from '../../../core/logging/audit-log.service';
+import { LOG_ACTIONS } from '../../../core/logging/log-actions';
 import { ToastService } from '../../../shared/services/toast.service';
 import { TrainingTaskApiService } from './training-task-api.service';
 import { VersionManagementApiService } from '../../version-management/data-access/version-management-api.service';
@@ -21,6 +23,7 @@ export class TrainingTasksService {
   private readonly versionApi = inject(VersionManagementApiService);
   private readonly toast = inject(ToastService);
   private readonly operationLog = inject(OperationLogService);
+  private readonly auditLog = inject(AuditLogService);
   private readonly auth = inject(AuthService);
   private readonly store = inject(ModelVersionStore);
 
@@ -185,6 +188,7 @@ export class TrainingTasksService {
       this.trackPreviousStatuses([job]);
       this.syncJobsToStore([job]);
       this.logStart(job);
+      this.auditLog.logOperate(LOG_ACTIONS.trainingStart, `Task ${job.task_id}`, `${job.sample_count ?? 0} samples`);
       this.toast.show('Training task started.', 'success');
       this.store.setTrainingInProgress(true);
       this.listState.set('ok');
@@ -208,6 +212,7 @@ export class TrainingTasksService {
         this.detail.set(job);
         this.stopDetailPolling();
       }
+      this.auditLog.logOperate(LOG_ACTIONS.trainingStop, `Task ${taskId}`, `result: ${job.status}`);
       this.handleSettled(job);
       if (!this.hasActiveJob()) {
         this.stopPolling();
