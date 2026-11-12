@@ -53,7 +53,10 @@
                 </span>
                 <span class="role-list__copy">
                   <span class="role-list__name" [title]="role.name">{{ role.name }}</span>
-                  <span class="role-list__desc" [title]="role.description">
+                  <span
+                    class="role-list__desc role-list-item__desc"
+                    [title]="role.description"
+                  >
                     {{ role.description || 'No description' }}
                   </span>
                 </span>

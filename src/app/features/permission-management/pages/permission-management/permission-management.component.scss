@@ -204,7 +204,7 @@
 .role-list__item {
   display: flex;
   width: 100%;
-  min-height: 52px;
+  min-height: 60px;
   align-items: center;
   gap: 10px;
   padding: 7px 10px;
@@ -1055,6 +1055,17 @@
   .members-table__user-cell {
     gap: 7px;
   }
+}
+
+/* ---------- Role list card (scoped to the role list only) ---------- */
+
+.role-list-item__desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  max-height: 2lh;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ---------- Create role popup (scoped to this popup only) ---------- */

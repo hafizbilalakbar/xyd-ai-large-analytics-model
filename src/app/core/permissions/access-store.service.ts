@@ -49,6 +49,9 @@ export const ROLE_NAME_MIN_LENGTH = 2;
 export const ROLE_NAME_MAX_LENGTH = 40;
 export const ROLE_DESCRIPTION_MAX_LENGTH = 150;
 
+/** Fallback text used once when a role is created without a description. */
+export const ROLE_DESCRIPTION_DEFAULT = 'Description not added. Edit this role to add one.';
+
 /** Letters, numbers, spaces, hyphen and underscore are the only allowed name characters. */
 const ROLE_NAME_ALLOWED = /^[A-Za-z0-9 _-]+$/;
 
@@ -72,6 +75,34 @@ export function normalizeRoleName(value: string): string {
 /** Removes script blocks and HTML tags from free text. */
 export function stripHtmlTags(value: string): string {
   return value.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]*>/g, '');
+}
+
+/**
+ * Keeps a single copy of the default text. Descriptions that repeat the
+ * default text ("Default text. Default text.") are reduced to one copy so the
+ * description is never stored twice.
+ */
+export function collapseRepeatedDefault(value: string): string {
+  const text = value.trim();
+  const fallback = ROLE_DESCRIPTION_DEFAULT;
+  if (!fallback || !text.startsWith(fallback)) {
+    return text;
+  }
+  let rest = text.slice(fallback.length).trim();
+  let repeats = 1;
+  while (rest.startsWith(fallback)) {
+    repeats += 1;
+    rest = rest.slice(fallback.length).trim();
+  }
+  return repeats > 1 && rest.length === 0 ? fallback : text;
+}
+
+/**
+ * Normalizes a role description: only the text the user typed is kept, HTML is
+ * stripped and a repeated default text is reduced to a single copy.
+ */
+export function normalizeRoleDescription(value: string): string {
+  return collapseRepeatedDefault(stripHtmlTags(value).trim());
 }
 
 /**
@@ -192,7 +223,9 @@ export class AccessStoreService {
     if (descriptionError) {
       return fail(descriptionError);
     }
-    const cleanDescription = stripHtmlTags(rawDescription).trim();
+    const userDescription = normalizeRoleDescription(rawDescription);
+    const cleanDescription =
+      userDescription.length > 0 ? userDescription : ROLE_DESCRIPTION_DEFAULT;
     const state = this.stateSignal();
     const role: AccessRole = {
       id: state.nextRoleId,
@@ -220,7 +253,10 @@ export class AccessStoreService {
     if (nameError) {
       return fail(nameError);
     }
-    const updated: AccessRole = { ...role, name: trimmedName, description: description.trim() };
+    const userDescription = normalizeRoleDescription(description);
+    const cleanDescription =
+      userDescription.length > 0 ? userDescription : ROLE_DESCRIPTION_DEFAULT;
+    const updated: AccessRole = { ...role, name: trimmedName, description: cleanDescription };
     this.stateSignal.set({
       ...state,
       roles: state.roles.map((candidate) => (candidate.id === id ? updated : candidate)),
@@ -581,12 +617,15 @@ export class AccessStoreService {
     return {
       nextRoleId: typeof raw.nextRoleId === 'number' ? raw.nextRoleId : 1,
       nextUserId: typeof raw.nextUserId === 'number' ? raw.nextUserId : 2,
-      roles: raw.roles.filter(
-        (role): role is AccessRole =>
-          typeof role?.id === 'number' &&
-          typeof role?.name === 'string' &&
-          typeof role?.description === 'string',
-      ),
+      roles: raw.roles
+        .filter(
+          (role): role is AccessRole =>
+            typeof role?.id === 'number' &&
+            typeof role?.name === 'string' &&
+            typeof role?.description === 'string',
+        )
+        // Older data can hold the default description twice; keep a single copy.
+        .map((role) => ({ ...role, description: collapseRepeatedDefault(role.description) })),
       users: raw.users.filter(
         (user): user is AccessUser =>
           typeof user?.id === 'number' &&
