@@ -1,88 +1,80 @@
 :host {
   display: block;
+  min-width: 0;
 }
+
+/* ---------- Page frame ---------- */
 
 .access-layout {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
 
 .access-main {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   gap: 16px;
-  min-width: 0;
 }
 
 .panel {
   min-width: 0;
-  padding: 16px 18px;
+  padding: 14px 16px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 12px;
   box-shadow: var(--shadow-card);
 }
 
-/* ---------- Shared button base ---------- */
+/* ---------- Buttons (shared small button system) ---------- */
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   height: 36px;
   min-height: 36px;
   padding: 0 14px;
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
+  background: transparent;
   font-family: inherit;
   font-size: 13px;
   font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
   line-height: 1;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .btn:disabled {
   cursor: default;
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 .btn > app-icon {
-  --icon-size: 16px;
   flex: 0 0 auto;
 }
 
 .btn--sm {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
   height: 32px;
   min-height: 32px;
   padding: 0 12px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  font-family: inherit;
   font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  line-height: 1;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
-.btn--sm:disabled {
-  cursor: default;
-  opacity: 0.55;
-}
-
-.btn--sm > app-icon {
-  --icon-size: 14px;
-  flex: 0 0 auto;
+.btn--xs {
+  height: 30px;
+  min-height: 30px;
+  padding: 0 10px;
+  gap: 5px;
+  font-size: 12px;
 }
 
 .btn--primary {
@@ -115,30 +107,13 @@
   background: var(--color-danger-soft);
 }
 
-.link-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0;
-  border: none;
-  background: none;
-  font: inherit;
-  font-size: 12.5px;
-  color: var(--color-primary-600);
-  cursor: pointer;
-  line-height: 1;
-}
-
-.link-btn:hover {
-  text-decoration: underline;
-}
-
-/* ---------- Left role panel ---------- */
+/* ---------- Role card ---------- */
 
 .role-panel {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow: hidden;
 }
 
 .role-panel__head {
@@ -146,14 +121,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  flex-wrap: wrap;
 }
 
 .role-panel__head-copy {
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
 }
 
 .role-panel__title {
@@ -161,22 +132,69 @@
   font-size: 15px;
   font-weight: 650;
   color: var(--color-text);
+  line-height: 1.3;
 }
 
 .role-panel__subtitle {
-  margin: 0;
+  margin: 2px 0 0;
+  overflow: hidden;
+  color: var(--color-text-muted);
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.role-search__icon {
+  position: absolute;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.role-search__input {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px 0 32px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 8px;
+  background: var(--color-surface);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.role-search__input::placeholder {
   color: var(--color-text-muted);
 }
 
+.role-search__input:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+
 .role-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
   display: flex;
+  min-height: min(240px, calc(100dvh - 420px));
+  max-height: calc(100dvh - 300px);
+  flex: 1 1 auto;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  margin: 0;
+  padding: 0 2px 0 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  list-style: none;
+  scrollbar-width: thin;
 }
 
 .role-list__row {
@@ -185,18 +203,20 @@
 
 .role-list__item {
   display: flex;
-  align-items: center;
-  gap: 9px;
   width: 100%;
-  min-height: 44px;
-  padding: 8px 10px;
+  min-height: 52px;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   font-family: inherit;
   text-align: left;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .role-list__item:hover {
@@ -204,71 +224,82 @@
 }
 
 .role-list__item--active {
-  background: #f0f5fb;
-  border-color: var(--color-primary-400);
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-500);
 }
 
 .role-list__icon {
-  flex: none;
   display: inline-flex;
+  width: 32px;
+  height: 32px;
+  flex: none;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--color-primary-50);
   color: var(--color-primary-600);
 }
 
+.role-list__item--active .role-list__icon {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
 .role-list__copy {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   gap: 2px;
-  min-width: 0;
 }
 
 .role-list__name {
+  overflow: hidden;
+  color: var(--color-text);
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text);
-  overflow: hidden;
+  line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .role-list__desc {
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--color-text-muted);
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .role-panel__foot {
-  padding-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid var(--color-border);
-  font-size: 12px;
   color: var(--color-text-muted);
+  font-size: 12px;
 }
 
 .role-panel__empty {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
-  padding: 18px 4px 6px;
+  gap: 10px;
+  padding: 14px 2px;
+}
+
+.role-panel__empty--search {
+  padding: 18px 2px;
+  color: var(--color-text-muted);
+  font-size: 13px;
 }
 
 .role-panel__empty-title {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.6;
   color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
-/* ---------- Permissions panel ---------- */
+/* ---------- Role permissions card ---------- */
 
 .perms-panel__head,
 .members-panel__head {
@@ -280,39 +311,56 @@
   margin-bottom: 14px;
 }
 
-.perms-panel__head-copy {
+.perms-panel__head-copy,
+.members-panel__head-copy {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   gap: 3px;
+}
+
+.perms-panel__title-row,
+.members-panel__title-row {
+  display: flex;
   min-width: 0;
+  align-items: center;
+  gap: 8px;
 }
 
 .perms-panel__title,
 .members-panel__title {
   margin: 0;
+  color: var(--color-text);
   font-size: 15px;
   font-weight: 650;
-  color: var(--color-text);
+  line-height: 1.3;
+  white-space: nowrap;
 }
 
 .perms-panel__chip {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-primary-600);
-  background: var(--color-primary-50);
+  max-width: 190px;
+  overflow: hidden;
   padding: 2px 8px;
   border-radius: 6px;
+  background: var(--color-primary-50);
+  color: var(--color-primary-600);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .perms-panel__subtitle,
 .members-panel__caption {
   margin: 0;
-  font-size: 12px;
   color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
 }
 
-.perms-panel__head-actions {
+.perms-panel__head-actions,
+.members-panel__actions {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -323,13 +371,15 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
   color: var(--color-text-muted);
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .save-state__dot {
   width: 8px;
   height: 8px;
+  flex: none;
   border-radius: 50%;
   background: var(--color-success);
 }
@@ -340,99 +390,95 @@
 
 .perms-toolbar {
   display: flex;
+  min-height: 36px;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   flex-wrap: wrap;
-  margin: 14px 0 10px;
-  padding: 8px 12px;
-  background: var(--color-surface-muted);
+  margin: 14px 0 12px;
+  padding: 3px 6px 3px 12px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 8px;
+  background: var(--color-surface-muted);
 }
 
 .perms-toolbar__label {
+  color: var(--color-text-secondary);
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--color-text-secondary);
 }
 
 .perms-toolbar__actions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
 }
 
-/* ---------- Permission rows (horizontal grid) ---------- */
+/* ---------- Permission boxes ---------- */
 
-.perm-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.perm-row {
+.perm-grid {
   display: grid;
-  grid-template-columns: minmax(180px, 260px) 1fr;
-  gap: 14px 16px;
-  align-items: center;
-  padding: 7px 12px;
-  border-bottom: 1px solid var(--color-border);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.perm-row:last-child {
-  border-bottom: none;
-}
-
-.perm-row__parent {
+.perm-box {
   display: flex;
-  align-items: center;
-  gap: 9px;
-  min-height: 40px;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
 }
 
-.perm-row__name {
+.perm-box__head {
+  display: flex;
+  min-height: 24px;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.perm-box__name {
+  min-width: 0;
+  color: var(--color-text);
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text);
-  min-width: 0;
+  line-height: 1.35;
 }
 
-.perm-row__children {
+.perm-box__children {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 20px;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 24px;
 }
 
-.perm-row__child {
+.perm-box__child {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 34px;
+  min-height: 32px;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 0;
   cursor: pointer;
   user-select: none;
 }
 
-.perm-row__child-label {
-  font-size: 12.5px;
+.perm-box__child-label {
+  min-width: 0;
   color: var(--color-text-secondary);
-  white-space: nowrap;
-}
-
-.perm-row__divider {
-  grid-column: 1 / -1;
-  height: 1px;
-  background: var(--color-border);
-  margin: 0 -12px;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .perm-check {
+  width: 16px;
+  height: 16px;
   flex: none;
-  width: 15px;
-  height: 15px;
-  margin: 0;
-  accent-color: #0b57a8;
+  margin: 1px 0 0;
+  accent-color: var(--color-primary-600);
   cursor: pointer;
 }
 
@@ -442,44 +488,43 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 56px 20px;
+  padding: 48px 20px;
   text-align: center;
 }
 
 .perms-empty__mark {
   display: inline-flex;
+  width: 52px;
+  height: 52px;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
   border: 2px dashed var(--color-border-strong);
+  border-radius: 50%;
   color: var(--color-text-muted);
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 300;
   line-height: 1;
 }
 
 .perms-empty__title {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
+  color: var(--color-text);
   font-size: 15px;
   font-weight: 650;
-  color: var(--color-text);
 }
 
 .perms-empty__hint {
-  margin: 0 0 8px;
-  font-size: 12.5px;
+  margin: 0 0 6px;
   color: var(--color-text-muted);
+  font-size: 12.5px;
 }
 
-/* ---------- Members panel ---------- */
+/* ---------- Members card ---------- */
 
-.members-panel__actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+/* Keeps the hidden file input inside the button box so it cannot stretch the
+   document scroll area below the app shell. */
+.file-btn {
+  position: relative;
 }
 
 .file-input {
@@ -496,13 +541,15 @@
 }
 
 .table-wrap {
+  max-height: 392px;
   overflow-x: auto;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 .members-table {
   width: 100%;
-  min-width: 620px;
+  min-width: 520px;
   border-collapse: collapse;
   font-size: 13px;
 }
@@ -510,50 +557,61 @@
 .members-table th {
   padding: 8px 10px;
   border-bottom: 1px solid var(--color-border-strong);
-  text-align: left;
+  color: var(--color-text-muted);
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-muted);
+  text-align: left;
   white-space: nowrap;
 }
 
 .members-table td {
-  padding: 9px 10px;
+  height: 44px;
+  padding: 0 10px;
   border-bottom: 1px solid var(--color-border);
   color: var(--color-text);
   vertical-align: middle;
 }
 
-.members-table__check {
-  width: 40px;
+.members-table tr:last-child td {
+  border-bottom: none;
 }
 
 .members-table__username {
-  min-width: 160px;
+  min-width: 150px;
 }
 
 .members-table__user-cell {
   display: inline-flex;
+  min-width: 0;
   align-items: center;
   gap: 9px;
-  min-width: 0;
   font-weight: 600;
 }
 
 .members-table__avatar {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 26px;
   height: 26px;
-  flex-shrink: 0;
+  flex: none;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
   background: var(--color-primary-50);
   color: var(--color-primary-600);
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.members-table__row--selected td {
-  background: #f0f5fb;
+.members-table__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.members-table__status {
+  width: 1%;
+  white-space: nowrap;
 }
 
 .status-badge {
@@ -580,15 +638,15 @@
 .row-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
   justify-content: flex-end;
+  gap: 4px;
 }
 
 .row-actions__btn {
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
   min-height: 30px;
+  align-items: center;
+  gap: 5px;
   padding: 0 9px;
   border: none;
   border-radius: 6px;
@@ -598,6 +656,7 @@
   color: var(--color-primary-600);
   cursor: pointer;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .row-actions__btn:hover {
@@ -613,16 +672,20 @@
 }
 
 .members-table__empty {
-  padding: 30px 16px;
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
   border: 1px dashed var(--color-border-strong);
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 8px;
   color: var(--color-text-muted);
+  font-size: 13px;
   text-align: center;
 }
 
 .members-table__empty--plain {
-  padding: 44px 16px;
+  min-height: 96px;
 }
 
 /* ---------- Form fields (modals + inline role name) ---------- */
@@ -634,14 +697,23 @@
   margin-bottom: 14px;
 }
 
+.form-field--name {
+  max-width: 480px;
+}
+
 .form-label {
+  color: var(--color-text-secondary);
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-text-secondary);
 }
 
 .required-mark {
   color: var(--color-danger);
+}
+
+.form-input-wrap {
+  position: relative;
+  width: 100%;
 }
 
 .form-input {
@@ -649,7 +721,7 @@
   height: 36px;
   padding: 0 11px;
   border: 1px solid var(--color-border-strong);
-  border-radius: 7px;
+  border-radius: 8px;
   background: var(--color-surface);
   font-family: inherit;
   font-size: 13px;
@@ -657,7 +729,7 @@
 }
 
 .form-input--name {
-  max-width: 400px;
+  padding-right: 64px;
 }
 
 .form-input--area {
@@ -672,34 +744,45 @@
   box-shadow: 0 0 0 3px var(--color-primary-100);
 }
 
+.form-input__counter {
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
 .form-hint {
   margin: 0;
-  font-size: 12px;
   color: var(--color-text-muted);
+  font-size: 12px;
 }
 
 .form-error {
-  margin: 4px 0 0;
-  font-size: 12.5px;
+  margin: 2px 0 0;
   color: var(--color-danger);
+  font-size: 12.5px;
 }
 
 .role-picker {
   display: flex;
+  max-height: 210px;
   flex-direction: column;
   gap: 2px;
-  max-height: 210px;
-  overflow-y: auto;
   padding: 8px 10px;
+  overflow-y: auto;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .role-picker__item {
   display: flex;
+  min-height: 36px;
   align-items: center;
   gap: 9px;
-  min-height: 36px;
   padding: 2px 4px;
   border-radius: 6px;
   cursor: pointer;
@@ -711,16 +794,16 @@
 }
 
 .role-picker__name {
-  font-size: 13px;
   color: var(--color-text-secondary);
+  font-size: 13px;
 }
 
 /* ---------- Import result modal ---------- */
 
 .import-summary {
   margin: 0 0 8px;
-  font-size: 13px;
   color: var(--color-text);
+  font-size: 13px;
 }
 
 .import-summary--error {
@@ -730,78 +813,247 @@
 .import-errors {
   margin: 0;
   padding: 10px 12px 10px 28px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--color-surface-muted);
+  color: var(--color-text-secondary);
   font-size: 12.5px;
   line-height: 1.8;
-  color: var(--color-text-secondary);
 }
 
 /* ---------- Responsive ---------- */
+
+@media (min-width: 1024px) {
+  .role-panel {
+    position: sticky;
+    top: 16px;
+    max-height: calc(100dvh - var(--header-height) - 100px);
+  }
+}
+
+@media (max-width: 1599px) {
+  .perm-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1279px) {
+  .perm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 
 @media (max-width: 1024px) {
   .access-layout {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .perms-panel__head,
-  .members-panel__head {
-    flex-direction: column;
-    align-items: stretch;
+  .role-list {
+    max-height: min(220px, 45dvh);
   }
 
-  .perms-panel__head-actions {
-    justify-content: flex-end;
+  .members-panel__actions {
+    display: grid;
     width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .perms-panel__head-actions .btn {
-    flex: 0 0 auto;
-  }
-
-  .perm-row {
-    grid-template-columns: minmax(160px, 220px) 1fr;
-    padding: 6px 10px;
+  .members-panel__actions .btn {
+    height: 40px;
+    padding: 0 10px;
+    white-space: normal;
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .panel {
-    padding: 14px;
+    padding: 12px 12px 14px;
   }
 
-  .role-list__item {
-    min-height: 44px;
+  /* Comfortable touch targets on phones */
+  .btn--sm,
+  .btn--xs {
+    height: 40px;
+    min-height: 40px;
+  }
+
+  .role-search__input {
+    height: 40px;
+  }
+
+  .access-layout,
+  .access-main {
+    gap: 12px;
+  }
+
+  .perms-panel__head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .perms-panel__head-actions {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .save-state {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+
+  .perms-panel__head-actions .btn {
+    width: 100%;
+    height: 44px;
+  }
+
+  .perms-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .perms-toolbar__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .perms-toolbar__actions .btn {
+    width: 100%;
+    height: 40px;
+  }
+
+  .perm-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .perm-box__head {
+    min-height: 40px;
+    align-items: center;
+  }
+
+  .perm-box__child {
+    min-height: 40px;
+    align-items: center;
+  }
+
+  .perm-check {
+    margin: 0;
+  }
+
+  .form-input {
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .form-field--name {
+    max-width: 100%;
+  }
+
+  .members-panel__head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .members-panel__actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .members-panel__actions .btn {
+    width: 100%;
+    height: 44px;
+    white-space: nowrap;
+  }
+
+  .table-wrap {
+    max-height: none;
+    overflow-x: visible;
+    overflow-y: visible;
+  }
+
+  .members-table {
+    display: block;
+    min-width: 0;
+  }
+
+  .members-table thead {
+    display: none;
+  }
+
+  .members-table tbody {
+    display: block;
+  }
+
+  .members-table tr {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+
+  .members-table tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .members-table td {
+    display: block;
+    height: auto;
+    padding: 0;
+    border: none;
+  }
+
+  .members-table__username {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .members-table__user-cell {
+    min-width: 0;
+  }
+
+  .members-table__status {
+    flex: 0 0 auto;
+    width: auto;
+  }
+
+  .members-table__ops {
+    flex: 1 1 100%;
+    width: auto;
+    margin-top: 4px;
+  }
+
+  .row-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 4px;
   }
 
   .row-actions__btn {
     min-height: 40px;
-    padding: 0 12px;
+    padding: 0 10px;
   }
 
-  .members-panel__actions {
-    width: 100%;
+  /* Modals use the full width and 40px buttons on phones */
+  :host ::ng-deep .modal {
+    max-width: 100%;
   }
 
-  .members-panel__actions .btn {
-    flex: 1 1 auto;
+  :host ::ng-deep .modal__footer [modalFooter] .btn {
+    height: 40px !important;
+  }
+}
+
+@media (max-width: 399px) {
+  .perms-panel__chip {
+    max-width: 130px;
   }
 
-  .perm-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    padding: 8px 10px;
-  }
-
-  .perm-row__parent {
-    min-height: 44px;
-  }
-
-  .perm-row__children {
-    gap: 6px 16px;
-  }
-
-  .perm-row__child {
-    min-height: 44px;
+  .members-table__user-cell {
+    gap: 7px;
   }
 }

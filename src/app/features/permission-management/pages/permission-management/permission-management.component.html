@@ -9,53 +9,74 @@
     <header class="role-panel__head">
       <div class="role-panel__head-copy">
         <h2 class="role-panel__title" id="role-panel-title">Role</h2>
-        <p class="role-panel__subtitle">Roles bundle page permissions for member accounts</p>
+        <p class="role-panel__subtitle" title="Roles bundle page permissions for member accounts">
+          Roles bundle page permissions for member accounts
+        </p>
       </div>
       <button class="btn btn--primary btn--sm" type="button" (click)="openCreateRoleModal()">
-        <app-icon name="plus" />
+        <app-icon name="plus" [size]="14" />
         <span>Create</span>
       </button>
     </header>
 
+    <div class="role-search">
+      <span class="role-search__icon" aria-hidden="true">
+        <app-icon name="search" [size]="14" />
+      </span>
+      <input
+        class="role-search__input"
+        type="text"
+        name="roleSearch"
+        placeholder="Search roles"
+        aria-label="Search roles"
+        autocomplete="off"
+        [value]="roleSearch()"
+        (input)="onRoleSearch($event)"
+      />
+    </div>
+
     @if (roles().length > 0) {
-      <ul class="role-list" role="listbox" aria-label="Roles">
-        @for (role of roles(); track role.id) {
-          <li class="role-list__row">
-            <button
-              type="button"
-              class="role-list__item"
-              role="option"
-              [class.role-list__item--active]="selectedRoleId() === role.id"
-              [attr.aria-selected]="selectedRoleId() === role.id"
-              (click)="selectRole(role.id)"
-            >
-              <span class="role-list__icon" aria-hidden="true">
-                <app-icon name="shield" />
-              </span>
-              <span class="role-list__copy">
-                <span class="role-list__name">{{ role.name }}</span>
-                @if (role.description) {
-                  <span class="role-list__desc">{{ role.description }}</span>
-                }
-              </span>
-            </button>
-          </li>
-        }
-      </ul>
-      <footer class="role-panel__foot">
-        {{ roleTotalLabel() }}
-      </footer>
+      @if (visibleRoles().length > 0) {
+        <ul class="role-list" role="listbox" aria-label="Roles">
+          @for (role of visibleRoles(); track role.id) {
+            <li class="role-list__row">
+              <button
+                type="button"
+                class="role-list__item"
+                role="option"
+                [class.role-list__item--active]="selectedRoleId() === role.id"
+                [attr.aria-selected]="selectedRoleId() === role.id"
+                (click)="selectRole(role.id)"
+              >
+                <span class="role-list__icon" aria-hidden="true">
+                  <app-icon name="user" [size]="16" />
+                </span>
+                <span class="role-list__copy">
+                  <span class="role-list__name" [title]="role.name">{{ role.name }}</span>
+                  <span class="role-list__desc" [title]="role.description">
+                    {{ role.description || 'No description' }}
+                  </span>
+                </span>
+              </button>
+            </li>
+          }
+        </ul>
+      } @else {
+        <div class="role-panel__empty role-panel__empty--search">
+          No roles match “{{ roleSearch() }}”.
+        </div>
+      }
     } @else {
       <div class="role-panel__empty">
-        <p class="role-panel__empty-title">
-          No character available yet, please create one first.
-        </p>
+        <p class="role-panel__empty-title">No role yet. Create one.</p>
         <button class="btn btn--primary btn--sm" type="button" (click)="openCreateRoleModal()">
-          <app-icon name="plus" />
-          <span>Create a new character</span>
+          <app-icon name="plus" [size]="14" />
+          <span>Create</span>
         </button>
       </div>
     }
+
+    <footer class="role-panel__foot">{{ roleTotalLabel() }}</footer>
   </aside>
 
   <!-- Right: permissions + members -->
@@ -64,8 +85,10 @@
       <section class="panel perms-panel" aria-labelledby="perms-title">
         <header class="perms-panel__head">
           <div class="perms-panel__head-copy">
-            <h2 class="perms-panel__title" id="perms-title">Role Permissions</h2>
-            <span class="perms-panel__chip">{{ role.name }}</span>
+            <div class="perms-panel__title-row">
+              <h2 class="perms-panel__title" id="perms-title">Role Permissions</h2>
+              <span class="perms-panel__chip" [title]="role.name">{{ role.name }}</span>
+            </div>
             <p class="perms-panel__subtitle">
               {{ members().length }} {{ members().length === 1 ? 'member' : 'members' }} ·
               pages this role can open
@@ -81,7 +104,7 @@
               {{ hasUnsavedChanges() ? 'Unsaved changes' : 'Saved' }}
             </span>
             <button class="btn btn--danger-ghost btn--sm" type="button" (click)="requestDeleteRole()">
-              <app-icon name="close" />
+              <app-icon name="close" [size]="14" />
               <span>Delete role</span>
             </button>
             <button
@@ -90,43 +113,51 @@
               [disabled]="!hasUnsavedChanges()"
               (click)="saveRoleChanges()"
             >
-              <app-icon name="check" />
+              <app-icon name="check" [size]="14" />
               <span>Save changes</span>
             </button>
           </div>
         </header>
 
-        <div class="form-field">
+        <div class="form-field form-field--name">
           <label class="form-label" for="role-name-edit">Role name</label>
-          <input
-            id="role-name-edit"
-            class="form-input form-input--name"
-            type="text"
-            name="roleName"
-            autocomplete="off"
-            placeholder="Role name"
-            [(ngModel)]="draftRoleName"
-          />
+          <div class="form-input-wrap">
+            <input
+              id="role-name-edit"
+              class="form-input form-input--name"
+              type="text"
+              name="roleName"
+              autocomplete="off"
+              placeholder="Role name"
+              maxlength="40"
+              [ngModel]="draftRoleName()"
+              (ngModelChange)="onRoleNameChange($event)"
+            />
+            <span class="form-input__counter">{{ draftRoleName().length }} / 40</span>
+          </div>
+          @if (roleNameError()) {
+            <p class="form-error" role="alert">{{ roleNameError() }}</p>
+          }
         </div>
 
         <div class="perms-toolbar">
           <span class="perms-toolbar__label">Page permissions</span>
           <div class="perms-toolbar__actions">
-            <button class="link-btn" type="button" (click)="selectAllPermissions()">
-              <app-icon name="check" [size]="13" />
+            <button class="btn btn--secondary btn--xs" type="button" (click)="selectAllPermissions()">
+              <app-icon name="check" [size]="14" />
               <span>Select all</span>
             </button>
-            <button class="link-btn" type="button" (click)="invertPermissions()">
-              <app-icon name="close" [size]="13" />
+            <button class="btn btn--secondary btn--xs" type="button" (click)="invertPermissions()">
+              <app-icon name="close" [size]="14" />
               <span>Invert</span>
             </button>
           </div>
         </div>
 
-        <div class="perm-rows">
+        <div class="perm-grid">
           @for (group of groups; track group.key) {
-            <div class="perm-row">
-              <div class="perm-row__parent">
+            <section class="perm-box">
+              <label class="perm-box__head">
                 <input
                   class="perm-check"
                   type="checkbox"
@@ -135,25 +166,22 @@
                   [indeterminate]="groupState(group) === 'half'"
                   (change)="toggleGroup(group)"
                 />
-                <span class="perm-row__name">{{ group.label }}</span>
-              </div>
-              <div class="perm-row__children">
+                <span class="perm-box__name">{{ group.label }}</span>
+              </label>
+              <div class="perm-box__children">
                 @for (item of group.items; track item.id) {
-                  <label class="perm-row__child">
+                  <label class="perm-box__child">
                     <input
                       class="perm-check"
                       type="checkbox"
                       [checked]="isPermissionChecked(item.id)"
                       (change)="togglePermission(item.id)"
                     />
-                    <span class="perm-row__child-label">{{ item.label }}</span>
+                    <span class="perm-box__child-label">{{ item.label }}</span>
                   </label>
                 }
               </div>
-            </div>
-            @if (!lastGroup(group)) {
-              <div class="perm-row__divider"></div>
-            }
+            </section>
           }
         </div>
       </section>
@@ -161,16 +189,18 @@
       <section class="panel members-panel" aria-labelledby="members-title">
         <header class="members-panel__head">
           <div class="members-panel__head-copy">
-            <h2 class="members-panel__title" id="members-title">Characters</h2>
-            <p class="members-panel__caption">{{ membersCaption() }}</p>
+            <div class="members-panel__title-row">
+              <h2 class="members-panel__title" id="members-title">Characters</h2>
+              <p class="members-panel__caption">{{ membersCaption() }}</p>
+            </div>
           </div>
           <div class="members-panel__actions">
             <button class="btn btn--secondary btn--sm" type="button" (click)="downloadTemplate()">
-              <app-icon name="download" />
+              <app-icon name="download" [size]="16" />
               <span>Download template</span>
             </button>
-            <label class="btn btn--secondary btn--sm">
-              <app-icon name="upload" />
+            <label class="btn btn--secondary btn--sm file-btn">
+              <app-icon name="upload" [size]="16" />
               <span>Import CSV</span>
               <input
                 class="file-input"
@@ -180,19 +210,9 @@
               />
             </label>
             <button class="btn btn--primary btn--sm" type="button" (click)="openCreateUserModal()">
-              <app-icon name="plus" />
+              <app-icon name="plus" [size]="16" />
               <span>Add User</span>
             </button>
-            @if (selectedMemberIds().size > 0) {
-              <button
-                class="btn btn--danger-ghost btn--sm"
-                type="button"
-                (click)="requestRemoveSelectedMembers()"
-              >
-                <app-icon name="close" />
-                <span>Remove selected ({{ selectedMemberIds().size }})</span>
-              </button>
-            }
           </div>
         </header>
 
@@ -201,16 +221,6 @@
             <table class="members-table">
               <thead>
                 <tr>
-                  <th class="members-table__check">
-                    <input
-                      class="perm-check"
-                      type="checkbox"
-                      aria-label="Select all members"
-                      [checked]="allMembersSelected()"
-                      [indeterminate]="someMembersSelected()"
-                      (change)="toggleAllMembers($any($event.target).checked)"
-                    />
-                  </th>
                   <th class="members-table__username" scope="col">Username</th>
                   <th class="members-table__status" scope="col">Status</th>
                   <th class="members-table__ops" scope="col">Operations</th>
@@ -218,22 +228,13 @@
               </thead>
               <tbody>
                 @for (member of members(); track member.id) {
-                  <tr [class.members-table__row--selected]="isMemberSelected(member.id)">
-                    <td class="members-table__check">
-                      <input
-                        class="perm-check"
-                        type="checkbox"
-                        [attr.aria-label]="'Select ' + member.username"
-                        [checked]="isMemberSelected(member.id)"
-                        (change)="toggleMember(member.id)"
-                      />
-                    </td>
+                  <tr>
                     <td class="members-table__username">
                       <span class="members-table__user-cell">
                         <span class="members-table__avatar" aria-hidden="true">
-                          <app-icon name="user" />
+                          {{ member.username.charAt(0).toUpperCase() }}
                         </span>
-                        {{ member.username }}
+                        <span class="members-table__name">{{ member.username }}</span>
                       </span>
                     </td>
                     <td class="members-table__status">
@@ -252,7 +253,7 @@
                           [attr.aria-label]="'Edit ' + member.username"
                           (click)="openEditUserModal(member)"
                         >
-                          <app-icon name="edit" [size]="13" />
+                          <app-icon name="edit" [size]="14" />
                           <span>Edit</span>
                         </button>
                         <button
@@ -261,7 +262,7 @@
                           [attr.aria-label]="(member.enabled ? 'Disable ' : 'Enable ') + member.username"
                           (click)="toggleUserEnabled(member)"
                         >
-                          <app-icon name="power" [size]="13" />
+                          <app-icon name="power" [size]="14" />
                           <span>{{ member.enabled ? 'Disable' : 'Enable' }}</span>
                         </button>
                         <button
@@ -270,7 +271,7 @@
                           [attr.aria-label]="'Delete ' + member.username"
                           (click)="requestDeleteUser(member)"
                         >
-                          <app-icon name="trash" [size]="13" />
+                          <app-icon name="trash" [size]="14" />
                           <span>Delete</span>
                         </button>
                       </div>
@@ -290,24 +291,35 @@
       <section class="panel perms-panel" aria-labelledby="perms-empty-title">
         <div class="perms-empty">
           <span class="perms-empty__mark" aria-hidden="true">＋</span>
-          <h2 class="perms-empty__title" id="perms-empty-title">
-            There are no configurable characters yet
-          </h2>
-          <p class="perms-empty__hint">
-            Create a character to choose which pages its members can open.
-          </p>
-          <button class="btn btn--primary btn--sm" type="button" (click)="openCreateRoleModal()">
-            <app-icon name="plus" />
-            <span>Create a new character</span>
-          </button>
+          @if (roles().length === 0) {
+            <h2 class="perms-empty__title" id="perms-empty-title">
+              There are no configurable characters yet
+            </h2>
+            <p class="perms-empty__hint">
+              Create a character to choose which pages its members can open.
+            </p>
+            <button class="btn btn--primary btn--sm" type="button" (click)="openCreateRoleModal()">
+              <app-icon name="plus" [size]="14" />
+              <span>Create a new character</span>
+            </button>
+          } @else {
+            <h2 class="perms-empty__title" id="perms-empty-title">
+              Select a character to edit
+            </h2>
+            <p class="perms-empty__hint">
+              Pick a role on the left to manage its page permissions and members.
+            </p>
+          }
         </div>
       </section>
 
       <section class="panel members-panel" aria-labelledby="members-empty-title">
         <header class="members-panel__head">
           <div class="members-panel__head-copy">
-            <h2 class="members-panel__title" id="members-empty-title">Characters</h2>
-            <p class="members-panel__caption">{{ membersCaption() }}</p>
+            <div class="members-panel__title-row">
+              <h2 class="members-panel__title" id="members-empty-title">Characters</h2>
+              <p class="members-panel__caption">{{ membersCaption() }}</p>
+            </div>
           </div>
         </header>
         <div class="members-table__empty members-table__empty--plain">
@@ -336,6 +348,7 @@
         name="newRoleName"
         autocomplete="off"
         placeholder="e.g. Quality inspector"
+        maxlength="40"
         [(ngModel)]="roleFormName"
       />
     </div>
@@ -359,7 +372,7 @@
       Cancel
     </button>
     <button class="btn btn--primary btn--sm" type="button" (click)="submitRoleModal()">
-      <app-icon name="plus" />
+      <app-icon name="plus" [size]="14" />
       <span>Create</span>
     </button>
   </div>
@@ -438,7 +451,7 @@
       Cancel
     </button>
     <button class="btn btn--primary btn--sm" type="button" (click)="submitUserModal()">
-      <app-icon name="user" />
+      <app-icon name="user" [size]="14" />
       <span>{{ userModalMode() === 'create' ? 'Add user' : 'Save changes' }}</span>
     </button>
   </div>

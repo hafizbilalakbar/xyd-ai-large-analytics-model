@@ -71,21 +71,24 @@ export class PermissionManagementComponent {
     return id === null ? [] : this.store.usersInRole(id);
   });
 
-  protected readonly selectedMemberIds = signal<ReadonlySet<number>>(new Set());
+  /** Role search box filter (view only, the store keeps every role). */
+  protected readonly roleSearch = signal('');
 
-  protected readonly allMembersSelected = computed(() => {
-    const members = this.members();
-    return (
-      members.length > 0 && members.every((member) => this.selectedMemberIds().has(member.id))
+  protected readonly visibleRoles = computed(() => {
+    const query = this.roleSearch().trim().toLowerCase();
+    const roles = this.roles();
+    if (!query) {
+      return roles;
+    }
+    return roles.filter(
+      (role) =>
+        role.name.toLowerCase().includes(query) ||
+        role.description.toLowerCase().includes(query),
     );
   });
 
-  protected readonly someMembersSelected = computed(() => {
-    const selected = this.selectedMemberIds();
-    return selected.size > 0 && !this.allMembersSelected();
-  });
-
   protected readonly draftRoleName = signal('');
+  protected readonly roleNameError = signal('');
   protected readonly draftPermissionIds = signal<ReadonlySet<string>>(new Set());
 
   protected readonly savedPermissionIds = computed<ReadonlySet<string>>(() => {
@@ -154,15 +157,18 @@ export class PermissionManagementComponent {
     return `${count} role${count === 1 ? '' : 's'} in total`;
   });
 
-  protected lastGroup(group: PermissionGroup): boolean {
-    return group.key === PERMISSION_GROUPS[PERMISSION_GROUPS.length - 1]?.key;
+  // ---------- Selection / drafts ----------
+
+  protected onRoleSearch(event: Event): void {    this.roleSearch.set((event.target as HTMLInputElement).value);
   }
 
-  // ---------- Selection / drafts ----------
+  protected onRoleNameChange(value: string): void {
+    this.draftRoleName.set(value);
+    this.roleNameError.set('');
+  }
 
   protected selectRole(id: number): void {
     this.selectedRoleId.set(id);
-    this.selectedMemberIds.set(new Set());
     this.resetDraft();
   }
 
@@ -247,9 +253,11 @@ export class PermissionManagementComponent {
     const isRename = this.draftRoleName().trim() !== role.name;
     const update = this.store.updateRole(role.id, this.draftRoleName(), role.description);
     if (!update.ok) {
+      this.roleNameError.set(update.error ?? 'Could not save the role.');
       this.toastService.show(update.error ?? 'Could not save the role.', 'error');
       return;
     }
+    this.roleNameError.set('');
     if (isRename) {
       this.auditLog.logOperate('role.rename', `${role.name} -> ${this.draftRoleName().trim()}`);
     } else {
@@ -294,7 +302,7 @@ export class PermissionManagementComponent {
         const result = this.store.deleteRole(role.id);
         if (result.ok) {
           this.selectedRoleId.set(null);
-          this.selectedMemberIds.set(new Set());
+          this.roleNameError.set('');
           this.toastService.show('Role deleted.', 'success');
         } else {
           this.toastService.show(result.error ?? 'Could not delete the role.', 'error');
@@ -324,54 +332,6 @@ export class PermissionManagementComponent {
     if (role) {
       this.selectRole(role.id);
     }
-  }
-
-  // ---------- Members table ----------
-
-  protected isMemberSelected(userId: number): boolean {
-    return this.selectedMemberIds().has(userId);
-  }
-
-  protected toggleMember(userId: number): void {
-    this.selectedMemberIds.update((current) => {
-      const next = new Set(current);
-      if (next.has(userId)) {
-        next.delete(userId);
-      } else {
-        next.add(userId);
-      }
-      return next;
-    });
-  }
-
-  protected toggleAllMembers(checked: boolean): void {
-    if (!checked) {
-      this.selectedMemberIds.set(new Set());
-      return;
-    }
-    this.selectedMemberIds.set(new Set(this.members().map((member) => member.id)));
-  }
-
-  protected requestRemoveSelectedMembers(): void {
-    const roleId = this.selectedRoleId();
-    if (roleId === null || this.selectedMemberIds().size === 0) {
-      return;
-    }
-    const count = this.selectedMemberIds().size;
-    this.requestConfirm(
-      `Remove ${count} ${count === 1 ? 'member' : 'members'} from this role?`,
-      'The accounts are kept, but they lose the permissions of this role.',
-      'Remove',
-      () => {
-        const result = this.store.removeUsersFromRole(roleId, [...this.selectedMemberIds()]);
-        if (result.ok) {
-          this.selectedMemberIds.set(new Set());
-          this.toastService.show('Members removed from the role.', 'success');
-        } else {
-          this.toastService.show(result.error ?? 'Could not remove the members.', 'error');
-        }
-      },
-    );
   }
 
   // ---------- User modal ----------
