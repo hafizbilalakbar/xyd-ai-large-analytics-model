@@ -208,7 +208,7 @@
   align-items: center;
   gap: 10px;
   padding: 7px 10px;
-  border: 1px solid transparent;
+  border: 1px solid #0000001f;
   border-radius: 8px;
   background: transparent;
   font-family: inherit;
@@ -268,7 +268,7 @@
   font-size: 12px;
   line-height: 1.35;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .role-panel__foot {
@@ -751,8 +751,7 @@
   color: var(--color-text-muted);
   font-size: 12px;
   line-height: 1;
-  pointer-events: none;
-  transform: translateY(-50%);
+  pointer-events: none;  transform: translateY(-50%);
 }
 
 .form-hint {
@@ -1055,5 +1054,47 @@
 
   .members-table__user-cell {
     gap: 7px;
+  }
+}
+
+/* ---------- Create role popup (scoped to this popup only) ---------- */
+
+.create-role-modal__input-wrap {
+  position: relative;
+}
+
+.create-role-modal__counter {
+  position: absolute;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.create-role-modal__counter--name {
+  top: 50%;
+  right: 11px;
+  transform: translateY(-50%);
+}
+
+.create-role-modal__counter--area {
+  top: auto;
+  right: 11px;
+  bottom: 8px;
+  transform: none;
+}
+
+.create-role-modal__area {
+  padding-bottom: 26px;
+}
+
+.create-role-modal__error {
+  color: var(--color-danger);
+  font-size: 12.5px;
+}
+
+@media (max-width: 767px) {
+  .create-role-modal__area {
+    height: auto;
   }
 }

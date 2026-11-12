@@ -2,8 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
+  ElementRef,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
@@ -17,6 +20,12 @@ import {
   AccessStoreService,
   type AccessUser,
   type CsvImportResult,
+  normalizeRoleName,
+  ROLE_DESCRIPTION_MAX_LENGTH,
+  ROLE_NAME_MAX_LENGTH,
+  stripHtmlTags,
+  validateRoleDescriptionValue,
+  validateRoleNameValue,
 } from '../../../../core/permissions/access-store.service';
 import {
   PERMISSION_GROUPS,
@@ -55,6 +64,21 @@ export class PermissionManagementComponent {
   private readonly store = inject(AccessStoreService);
   private readonly toastService = inject(ToastService);
   private readonly auditLog = inject(AuditLogService);
+
+  constructor() {
+    // Focus the name field once the create-role popup is rendered.
+    effect((onCleanup) => {
+      if (!this.roleModalOpen()) {
+        return;
+      }
+      const input = this.roleNameInput();
+      if (!input) {
+        return;
+      }
+      const timer = window.setTimeout(() => input.nativeElement.focus(), 60);
+      onCleanup(() => window.clearTimeout(timer));
+    });
+  }
 
   protected readonly groups = PERMISSION_GROUPS;
 
@@ -122,6 +146,39 @@ export class PermissionManagementComponent {
   protected readonly roleFormName = signal('');
   protected readonly roleFormDescription = signal('');
   protected readonly roleFormError = signal('');
+  protected readonly roleNameServerError = signal('');
+  protected readonly roleNameTouched = signal(false);
+  protected readonly roleDescriptionTouched = signal(false);
+  protected readonly roleSubmitting = signal(false);
+  protected readonly roleNameMaxLength = ROLE_NAME_MAX_LENGTH;
+  protected readonly roleDescriptionMaxLength = ROLE_DESCRIPTION_MAX_LENGTH;
+  protected readonly roleNameInput =
+    viewChild<ElementRef<HTMLInputElement>>('roleNameInput');
+
+  protected readonly createRoleNameError = computed(() => {
+    const serverError = this.roleNameServerError();
+    if (serverError) {
+      return serverError;
+    }
+    const takenNames = this.roles().map((role) => role.name);
+    return validateRoleNameValue(this.roleFormName(), takenNames);
+  });
+
+  protected readonly roleDescriptionError = computed(() =>
+    validateRoleDescriptionValue(this.roleFormDescription()),
+  );
+
+  protected readonly showRoleNameError = computed(
+    () => this.roleNameTouched() && this.createRoleNameError() !== null,
+  );
+
+  protected readonly showRoleDescriptionError = computed(
+    () => this.roleDescriptionTouched() && this.roleDescriptionError() !== null,
+  );
+
+  protected readonly isCreateRoleValid = computed(
+    () => this.createRoleNameError() === null && this.roleDescriptionError() === null,
+  );
 
   // User create/edit modal
   protected readonly userModalOpen = signal(false);
@@ -314,23 +371,103 @@ export class PermissionManagementComponent {
   // ---------- Role create modal ----------
 
   protected openCreateRoleModal(): void {
-    this.roleFormName.set('');
-    this.roleFormDescription.set('');
-    this.roleFormError.set('');
+    this.resetRoleForm();
     this.roleModalOpen.set(true);
   }
 
-  protected submitRoleModal(): void {
-    const result = this.store.createRole(this.roleFormName(), this.roleFormDescription());
-    if (!result.ok) {
-      this.roleFormError.set(result.error ?? 'Could not create the role.');
+  protected closeRoleModal(): void {
+    this.resetRoleForm();
+    this.roleModalOpen.set(false);
+  }
+
+  private resetRoleForm(): void {
+    this.roleFormName.set('');
+    this.roleFormDescription.set('');
+    this.roleFormError.set('');
+    this.roleNameServerError.set('');
+    this.roleNameTouched.set(false);
+    this.roleDescriptionTouched.set(false);
+    this.roleSubmitting.set(false);
+  }
+
+  protected onRoleNameInput(value: string): void {
+    this.roleFormName.set(value);
+    this.roleNameServerError.set('');
+  }
+
+  protected onRoleDescriptionInput(value: string): void {
+    this.roleFormDescription.set(value);
+  }
+
+  protected onRoleNameBlur(): void {
+    this.roleNameTouched.set(true);
+  }
+
+  protected onRoleDescriptionBlur(): void {
+    this.roleDescriptionTouched.set(true);
+  }
+
+  /** Caps pasted text so a paste can never exceed the field limit. */
+  protected onLimitedPaste(event: ClipboardEvent, maxLength: number): void {
+    const field = event.target as HTMLInputElement | HTMLTextAreaElement;
+    const text = event.clipboardData?.getData('text/plain') ?? '';
+    const start = field.selectionStart ?? field.value.length;
+    const end = field.selectionEnd ?? field.value.length;
+    const available = Math.max(0, maxLength - (field.value.length - (end - start)));
+    if (text.length <= available) {
       return;
     }
-    this.roleModalOpen.set(false);
-    this.toastService.show('Role created.', 'success');
-    const role = result.value;
-    if (role) {
-      this.selectRole(role.id);
+    event.preventDefault();
+    const truncated = text.slice(0, available);
+    const next = field.value.slice(0, start) + truncated + field.value.slice(end);
+    field.value = next;
+    const caret = Math.min(start + truncated.length, next.length);
+    field.setSelectionRange(caret, caret);
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  protected onRoleNameKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Enter' || event.shiftKey) {
+      return;
+    }
+    event.preventDefault();
+    this.submitRoleModal();
+  }
+
+  protected submitRoleModal(): void {
+    if (this.roleSubmitting()) {
+      return;
+    }
+    this.roleNameTouched.set(true);
+    this.roleDescriptionTouched.set(true);
+    if (!this.isCreateRoleValid()) {
+      this.roleFormError.set('');
+      return;
+    }
+    const name = normalizeRoleName(this.roleFormName());
+    const description = stripHtmlTags(this.roleFormDescription()).trim();
+    this.roleSubmitting.set(true);
+    try {
+      const result = this.store.createRole(name, description);
+      if (!result.ok) {
+        const message = result.error ?? 'Could not create the role.';
+        if (/name/i.test(message)) {
+          this.roleNameServerError.set(message);
+          this.roleFormError.set('');
+        } else {
+          this.roleFormError.set(message);
+        }
+        return;
+      }
+      this.roleModalOpen.set(false);
+      this.resetRoleForm();
+      this.toastService.show('Role created.', 'success');
+      const role = result.value;
+      if (role) {
+        this.selectRole(role.id);
+      }
+    } finally {
+      this.roleSubmitting.set(false);
     }
   }
 

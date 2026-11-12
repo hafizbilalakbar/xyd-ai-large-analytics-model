@@ -45,6 +45,13 @@ const STORAGE_KEY = 'xyd_access_v1';
 
 const CSV_TEMPLATE = 'username,password\nzhangsan,Init@1234\nlisi,Init@1234\n';
 
+export const ROLE_NAME_MIN_LENGTH = 2;
+export const ROLE_NAME_MAX_LENGTH = 40;
+export const ROLE_DESCRIPTION_MAX_LENGTH = 150;
+
+/** Letters, numbers, spaces, hyphen and underscore are the only allowed name characters. */
+const ROLE_NAME_ALLOWED = /^[A-Za-z0-9 _-]+$/;
+
 function ok<T>(value?: T): AccessResult<T> {
   return { ok: true, value };
 }
@@ -55,6 +62,56 @@ function fail<T>(error: string): AccessResult<T> {
 
 function isBlank(value: string | undefined | null): boolean {
   return value === undefined || value === null || value.trim() === '';
+}
+
+/** Trims a role name and collapses runs of whitespace into single spaces. */
+export function normalizeRoleName(value: string): string {
+  return value.replace(/\s+/g, ' ').trim();
+}
+
+/** Removes script blocks and HTML tags from free text. */
+export function stripHtmlTags(value: string): string {
+  return value.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]*>/g, '');
+}
+
+/**
+ * Shared role name validation. `takenNames` holds the names that are already
+ * used; the comparison ignores case, surrounding spaces and repeated inner
+ * spaces, so "Quality Engineer", "quality engineer" and " Quality  Engineer "
+ * are all the same name.
+ */
+export function validateRoleNameValue(
+  rawName: string,
+  takenNames: readonly string[],
+): string | null {
+  const name = normalizeRoleName(rawName);
+  if (name.length === 0) {
+    return 'Role name is required.';
+  }
+  if (name.length < ROLE_NAME_MIN_LENGTH) {
+    return `Role name must be at least ${ROLE_NAME_MIN_LENGTH} characters.`;
+  }
+  if (name.length > ROLE_NAME_MAX_LENGTH) {
+    return `Role name must be at most ${ROLE_NAME_MAX_LENGTH} characters.`;
+  }
+  if (!ROLE_NAME_ALLOWED.test(name)) {
+    return 'Role name may only contain letters, numbers, spaces, hyphens and underscores.';
+  }
+  const clash = takenNames.some(
+    (taken) => normalizeRoleName(taken).toLowerCase() === name.toLowerCase(),
+  );
+  if (clash) {
+    return `A role named "${name}" already exists.`;
+  }
+  return null;
+}
+
+/** Shared role description validation (the description itself is optional). */
+export function validateRoleDescriptionValue(rawDescription: string): string | null {
+  if (rawDescription.length > ROLE_DESCRIPTION_MAX_LENGTH) {
+    return `Description must be at most ${ROLE_DESCRIPTION_MAX_LENGTH} characters.`;
+  }
+  return null;
 }
 
 /**
@@ -125,16 +182,22 @@ export class AccessStoreService {
   }
 
   createRole(name: string, description: string): AccessResult<AccessRole> {
-    const trimmedName = name.trim();
+    const trimmedName = normalizeRoleName(name);
     const nameError = this.validateRoleName(trimmedName);
     if (nameError) {
       return fail(nameError);
     }
+    const rawDescription = description.trim();
+    const descriptionError = validateRoleDescriptionValue(rawDescription);
+    if (descriptionError) {
+      return fail(descriptionError);
+    }
+    const cleanDescription = stripHtmlTags(rawDescription).trim();
     const state = this.stateSignal();
     const role: AccessRole = {
       id: state.nextRoleId,
       name: trimmedName,
-      description: description.trim(),
+      description: cleanDescription,
     };
     this.stateSignal.set({
       ...state,
@@ -152,7 +215,7 @@ export class AccessStoreService {
     if (!role) {
       return fail('This role no longer exists.');
     }
-    const trimmedName = name.trim();
+    const trimmedName = normalizeRoleName(name);
     const nameError = this.validateRoleName(trimmedName, id);
     if (nameError) {
       return fail(nameError);
@@ -426,20 +489,10 @@ export class AccessStoreService {
   }
 
   private validateRoleName(name: string, excludeRoleId?: number): string | null {
-    if (isBlank(name)) {
-      return 'Role name is required.';
-    }
-    if (name.length > 40) {
-      return 'Role name must be at most 40 characters.';
-    }
-    const clash = this.roles().find(
-      (role) =>
-        role.name.toLowerCase() === name.toLowerCase() && role.id !== excludeRoleId,
-    );
-    if (clash) {
-      return `A role named "${name}" already exists.`;
-    }
-    return null;
+    const takenNames = this.roles()
+      .filter((role) => role.id !== excludeRoleId)
+      .map((role) => role.name);
+    return validateRoleNameValue(name, takenNames);
   }
 
   private validateUsername(
