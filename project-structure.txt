@@ -1,421 +1,465 @@
-﻿
-├── .vscode
-│   ├── extensions.json
-│   ├── launch.json
-│   ├── tasks.json
-├── src
-│   ├── app
-│   │   ├── core
-│   │   │   ├── auth
-│   │   │   │   ├── auth.service.ts
-│   │   │   ├── config
-│   │   │   │   ├── app-settings.ts
-│   │   │   │   ├── navigation.config.ts
-│   │   │   ├── model-version-api.service.ts
-│   │   ├── features
-│   │   │   ├── dashboard
-│   │   │   │   ├── components
-│   │   │   │   │   ├── failure-mode-chart
-│   │   │   │   │   │   ├── failure-mode-chart.component.html
-│   │   │   │   │   │   ├── failure-mode-chart.component.scss
-│   │   │   │   │   │   ├── failure-mode-chart.component.ts
-│   │   │   │   │   ├── hourly-trend-chart
-│   │   │   │   │   │   ├── hourly-trend-chart.component.html
-│   │   │   │   │   │   ├── hourly-trend-chart.component.scss
-│   │   │   │   │   │   ├── hourly-trend-chart.component.ts
-│   │   │   │   │   ├── recent-warning
-│   │   │   │   │   │   ├── recent-warning.component.html
-│   │   │   │   │   │   ├── recent-warning.component.scss
-│   │   │   │   │   │   ├── recent-warning.component.ts
-│   │   │   │   │   ├── system-monitoring-table
-│   │   │   │   │   │   ├── system-monitoring-table.component.html
-│   │   │   │   │   │   ├── system-monitoring-table.component.scss
-│   │   │   │   │   │   ├── system-monitoring-table.component.ts
-│   │   │   │   ├── data-access
-│   │   │   │   │   ├── dashboard.data.ts
-│   │   │   │   │   ├── dashboard.models.ts
-│   │   │   │   │   ├── dashboard.store.ts
-│   │   │   │   ├── pages
-│   │   │   │   │   ├── dashboard
-│   │   │   │   │   │   ├── dashboard.component.html
-│   │   │   │   │   │   ├── dashboard.component.scss
-│   │   │   │   │   │   ├── dashboard.component.ts
-│   │   │   │   ├── dashboard.routes.ts
-│   │   │   ├── data-export
-│   │   │   │   ├── pages
-│   │   │   │   │   ├── data-export
-│   │   │   │   │   │   ├── data-export.component.html
-│   │   │   │   │   │   ├── data-export.component.scss
-│   │   │   │   │   │   ├── data-export.component.ts
-│   │   │   │   ├── data-export.routes.ts
-│   │   │   ├── data-import
-│   │   │   │   ├── components
-│   │   │   │   │   ├── column-mapping-dialog
-│   │   │   │   │   │   ├── column-mapping-dialog.component.html
-│   │   │   │   │   │   ├── column-mapping-dialog.component.scss
-│   │   │   │   │   │   ├── column-mapping-dialog.component.ts
-│   │   │   │   │   ├── curve-viewer
-│   │   │   │   │   │   ├── curve-viewer.component.html
-│   │   │   │   │   │   ├── curve-viewer.component.scss
-│   │   │   │   │   │   ├── curve-viewer.component.ts
-│   │   │   │   │   ├── file-dropzone
-│   │   │   │   │   │   ├── file-dropzone.component.html
-│   │   │   │   │   │   ├── file-dropzone.component.scss
-│   │   │   │   │   │   ├── file-dropzone.component.ts
-│   │   │   │   │   ├── import-progress
-│   │   │   │   │   │   ├── import-progress.component.html
-│   │   │   │   │   │   ├── import-progress.component.scss
-│   │   │   │   │   │   ├── import-progress.component.ts
-│   │   │   │   │   ├── import-tabs
-│   │   │   │   │   │   ├── import-tabs.component.html
-│   │   │   │   │   │   ├── import-tabs.component.scss
-│   │   │   │   │   │   ├── import-tabs.component.ts
-│   │   │   │   │   ├── playback-import-modal
-│   │   │   │   │   │   ├── playback-import-modal.component.html
-│   │   │   │   │   │   ├── playback-import-modal.component.scss
-│   │   │   │   │   │   ├── playback-import-modal.component.ts
-│   │   │   │   │   ├── playback-import-panel
-│   │   │   │   │   │   ├── playback-import-panel.component.html
-│   │   │   │   │   │   ├── playback-import-panel.component.scss
-│   │   │   │   │   │   ├── playback-import-panel.component.ts
-│   │   │   │   │   ├── playback-results-list
-│   │   │   │   │   │   ├── playback-results-list.component.html
-│   │   │   │   │   │   ├── playback-results-list.component.scss
-│   │   │   │   │   │   ├── playback-results-list.component.ts
-│   │   │   │   │   ├── training-import-panel
-│   │   │   │   │   │   ├── training-import-panel.component.html
-│   │   │   │   │   │   ├── training-import-panel.component.scss
-│   │   │   │   │   │   ├── training-import-panel.component.ts
-│   │   │   │   │   ├── training-preview-table
-│   │   │   │   │   │   ├── training-preview-table.component.html
-│   │   │   │   │   │   ├── training-preview-table.component.scss
-│   │   │   │   │   │   ├── training-preview-table.component.ts
-│   │   │   │   ├── data-access
-│   │   │   │   │   ├── column-mapper.service.ts
-│   │   │   │   │   ├── data-import.mock.ts
-│   │   │   │   │   ├── data-import.models.ts
-│   │   │   │   │   ├── data-import.service.ts
-│   │   │   │   │   ├── format-detector.service.ts
-│   │   │   │   │   ├── import-api.service.ts
-│   │   │   │   │   ├── import-constants.ts
-│   │   │   │   │   ├── import-parser.service.ts
-│   │   │   │   │   ├── import-parser.worker.ts
-│   │   │   │   ├── pages
-│   │   │   │   │   ├── data-import
-│   │   │   │   │   │   ├── data-import.component.html
-│   │   │   │   │   │   ├── data-import.component.scss
-│   │   │   │   │   │   ├── data-import.component.ts
-│   │   │   │   │   ├── data-import-page
-│   │   │   │   │   │   ├── data-import-page.component.html
-│   │   │   │   │   │   ├── data-import-page.component.scss
-│   │   │   │   │   │   ├── data-import-page.component.ts
-│   │   │   │   ├── data-import.routes.ts
-│   │   │   ├── logs-and-monitoring
-│   │   │   │   ├── pages
-│   │   │   │   │   ├── logs-and-monitoring
-│   │   │   │   │   │   ├── logs-and-monitoring.component.html
-│   │   │   │   │   │   ├── logs-and-monitoring.component.scss
-│   │   │   │   │   │   ├── logs-and-monitoring.component.ts
-│   │   │   │   ├── logs-and-monitoring.routes.ts
-│   │   │   ├── low-confidence-review
-│   │   │   │   ├── components
-│   │   │   │   │   ├── review-checklist-table
-│   │   │   │   │   │   ├── review-checklist-table.component.html
-│   │   │   │   │   │   ├── review-checklist-table.component.scss
-│   │   │   │   │   │   ├── review-checklist-table.component.ts
-│   │   │   │   │   ├── review-filter-panel
-│   │   │   │   │   │   ├── review-filter-panel.component.html
-│   │   │   │   │   │   ├── review-filter-panel.component.scss
-│   │   │   │   │   │   ├── review-filter-panel.component.ts
-│   │   │   │   │   ├── review-summary-cards
-│   │   │   │   │   │   ├── review-summary-cards.component.html
-│   │   │   │   │   │   ├── review-summary-cards.component.scss
-│   │   │   │   │   │   ├── review-summary-cards.component.ts
-│   │   │   │   ├── data-access
-│   │   │   │   │   ├── low-confidence-review.mock.ts
-│   │   │   │   │   ├── low-confidence-review.models.ts
-│   │   │   │   │   ├── low-confidence-review.service.ts
-│   │   │   │   ├── pages
-│   │   │   │   │   ├── low-confidence-review
-│   │   │   │   │   │   ├── low-confidence-review.component.html
-│   │   │   │   │   │   ├── low-confidence-review.component.scss
-│   │   │   │   │   │   ├── low-confidence-review.component.ts
-│   │   │   │   │   ├── low-confidence-review-page
-│   │   │   │   │   │   ├── low-confidence-review-page.component.html
-│   │   │   │   │   │   ├── low-confidence-review-page.component.scss
-│   │   │   │   │   │   ├── low-confidence-review-page.component.ts
-│   │   │   │   ├── low-confidence-review.routes.ts
-│   │   │   ├── parameters-and-formulas
-│   │   │   │   ├── components
-│   │   │   │   │   ├── config-tabs
-│   │   │   │   │   │   ├── config-tabs.component.html
-│   │   │   │   │   │   ├── config-tabs.component.scss
-│   │   │   │   │   │   ├── config-tabs.component.ts
-│   │   │   │   │   ├── execution-config-dialog
-│   │   │   │   │   │   ├── execution-config-dialog.component.html
-│   │   │   │   │   │   ├── execution-config-dialog.component.scss
-│   │   │   │   │   │   ├── execution-config-dialog.component.ts
-│   │   │   │   │   ├── execution-config-panel
-│   │   │   │   │   │   ├── execution-config-panel.component.html
-│   │   │   │   │   │   ├── execution-config-panel.component.scss
-│   │   │   │   │   │   ├── execution-config-panel.component.ts
-│   │   │   │   │   ├── execution-config-table
-│   │   │   │   │   │   ├── config-action-buttons
-│   │   │   │   │   │   │   ├── config-action-buttons.component.html
-│   │   │   │   │   │   │   ├── config-action-buttons.component.scss
-│   │   │   │   │   │   │   ├── config-action-buttons.component.ts
-│   │   │   │   │   │   ├── execution-config-table.component.html
-│   │   │   │   │   │   ├── execution-config-table.component.scss
-│   │   │   │   │   │   ├── execution-config-table.component.ts
-│   │   │   │   │   ├── failure-mode-dialog
-│   │   │   │   │   │   ├── failure-mode-dialog.component.html
-│   │   │   │   │   │   ├── failure-mode-dialog.component.scss
-│   │   │   │   │   │   ├── failure-mode-dialog.component.ts
-│   │   │   │   │   ├── failure-mode-panel
-│   │   │   │   │   │   ├── failure-mode-panel.component.html
-│   │   │   │   │   │   ├── failure-mode-panel.component.scss
-│   │   │   │   │   │   ├── failure-mode-panel.component.ts
-│   │   │   │   │   ├── failure-mode-table
-│   │   │   │   │   │   ├── failure-mode-actions
-│   │   │   │   │   │   │   ├── failure-mode-actions.component.html
-│   │   │   │   │   │   │   ├── failure-mode-actions.component.scss
-│   │   │   │   │   │   │   ├── failure-mode-actions.component.ts
-│   │   │   │   │   │   ├── failure-mode-table.component.html
-│   │   │   │   │   │   ├── failure-mode-table.component.scss
-│   │   │   │   │   │   ├── failure-mode-table.component.ts
-│   │   │   │   │   ├── system-settings-panel
-│   │   │   │   │   │   ├── system-settings-panel.component.html
-│   │   │   │   │   │   ├── system-settings-panel.component.scss
-│   │   │   │   │   │   ├── system-settings-panel.component.ts
-│   │   │   │   │   ├── system-settings-section
-│   │   │   │   │   │   ├── system-settings-section.component.html
-│   │   │   │   │   │   ├── system-settings-section.component.scss
-│   │   │   │   │   │   ├── system-settings-section.component.ts
-│   │   │   │   ├── data-access
-│   │   │   │   │   ├── config-validators.ts
-│   │   │   │   │   ├── parameters-and-formulas.mock.ts
-│   │   │   │   │   ├── parameters-and-formulas.models.ts
-│   │   │   │   │   ├── parameters-and-formulas.service.ts
-│   │   │   │   │   ├── parameters-and-formulas-api.service.ts
-│   │   │   │   ├── pages
-│   │   │   │   │   ├── parameters-and-formulas-page
-│   │   │   │   │   │   ├── parameters-and-formulas-page.component.html
-│   │   │   │   │   │   ├── parameters-and-formulas-page.component.scss
-│   │   │   │   │   │   ├── parameters-and-formulas-page.component.ts
-│   │   │   │   ├── parameters-and-formulas.routes.ts
-│   │   │   ├── permission-management
-│   │   │   │   ├── pages
-│   │   │   │   │   ├── permission-management
-│   │   │   │   │   │   ├── permission-management.component.html
-│   │   │   │   │   │   ├── permission-management.component.scss
-│   │   │   │   │   │   ├── permission-management.component.ts
-│   │   │   │   ├── permission-management.routes.ts
-│   │   │   ├── realtime-monitoring
-│   │   │   │   ├── components
-│   │   │   │   │   ├── monitoring-empty-state
-│   │   │   │   │   │   ├── monitoring-empty-state.component.html
-│   │   │   │   │   │   ├── monitoring-empty-state.component.scss
-│   │   │   │   │   │   ├── monitoring-empty-state.component.ts
-│   │   │   │   │   ├── monitoring-live-result
-│   │   │   │   │   │   ├── monitoring-live-result.component.html
-│   │   │   │   │   │   ├── monitoring-live-result.component.scss
-│   │   │   │   │   │   ├── monitoring-live-result.component.ts
-│   │   │   │   │   ├── monitoring-status-badges
-│   │   │   │   │   │   ├── monitoring-status-badges.component.html
-│   │   │   │   │   │   ├── monitoring-status-badges.component.scss
-│   │   │   │   │   │   ├── monitoring-status-badges.component.ts
-│   │   │   │   │   ├── monitoring-status-bar
-│   │   │   │   │   │   ├── monitoring-status-bar.component.html
-│   │   │   │   │   │   ├── monitoring-status-bar.component.scss
-│   │   │   │   │   │   ├── monitoring-status-bar.component.ts
-│   │   │   │   │   ├── torque-angle-chart
-│   │   │   │   │   │   ├── torque-angle-chart.component.html
-│   │   │   │   │   │   ├── torque-angle-chart.component.scss
-│   │   │   │   │   │   ├── torque-angle-chart.component.ts
-│   │   │   │   ├── data-access
-│   │   │   │   │   ├── monitoring.mock.ts
-│   │   │   │   │   ├── monitoring.models.ts
-│   │   │   │   │   ├── monitoring.service.ts
-│   │   │   │   │   ├── monitoring-api.service.ts
-│   │   │   │   ├── pages
-│   │   │   │   │   ├── realtime-monitoring-page
-│   │   │   │   │   │   ├── realtime-monitoring-page.component.html
-│   │   │   │   │   │   ├── realtime-monitoring-page.component.scss
-│   │   │   │   │   │   ├── realtime-monitoring-page.component.ts
-│   │   │   │   ├── realtime-monitoring.routes.ts
-│   │   │   ├── sample-search
-│   │   │   │   ├── components
-│   │   │   │   │   ├── multi-select-dropdown
-│   │   │   │   │   │   ├── multi-select-dropdown.component.html
-│   │   │   │   │   │   ├── multi-select-dropdown.component.scss
-│   │   │   │   │   │   ├── multi-select-dropdown.component.ts
-│   │   │   │   │   ├── sample-filter-panel
-│   │   │   │   │   │   ├── sample-filter-panel.component.html
-│   │   │   │   │   │   ├── sample-filter-panel.component.scss
-│   │   │   │   │   │   ├── sample-filter-panel.component.ts
-│   │   │   │   │   ├── sample-results-table
-│   │   │   │   │   │   ├── sample-results-table.component.html
-│   │   │   │   │   │   ├── sample-results-table.component.scss
-│   │   │   │   │   │   ├── sample-results-table.component.ts
-│   │   │   │   │   ├── table-pagination
-│   │   │   │   │   │   ├── table-pagination.component.html
-│   │   │   │   │   │   ├── table-pagination.component.scss
-│   │   │   │   │   │   ├── table-pagination.component.ts
-│   │   │   │   ├── data-access
-│   │   │   │   │   ├── sample.mock.ts
-│   │   │   │   │   ├── sample.service.ts
-│   │   │   │   │   ├── sample-models.ts
-│   │   │   │   ├── pages
-│   │   │   │   │   ├── sample-search
-│   │   │   │   │   │   ├── sample-search.component.html
-│   │   │   │   │   │   ├── sample-search.component.scss
-│   │   │   │   │   │   ├── sample-search.component.ts
-│   │   │   │   │   ├── sample-search-page
-│   │   │   │   │   │   ├── sample-search-page.component.html
-│   │   │   │   │   │   ├── sample-search-page.component.scss
-│   │   │   │   │   │   ├── sample-search-page.component.ts
-│   │   │   │   ├── sample-search.routes.ts
-│   │   │   ├── training-tasks
-│   │   │   │   ├── components
-│   │   │   │   │   ├── task-delete-dialog
-│   │   │   │   │   │   ├── task-delete-dialog.component.html
-│   │   │   │   │   │   ├── task-delete-dialog.component.scss
-│   │   │   │   │   │   ├── task-delete-dialog.component.ts
-│   │   │   │   │   ├── training-task-confirm
-│   │   │   │   │   │   ├── training-task-confirm.component.html
-│   │   │   │   │   │   ├── training-task-confirm.component.scss
-│   │   │   │   │   │   ├── training-task-confirm.component.ts
-│   │   │   │   │   ├── training-task-detail
-│   │   │   │   │   │   ├── training-task-detail.component.html
-│   │   │   │   │   │   ├── training-task-detail.component.scss
-│   │   │   │   │   │   ├── training-task-detail.component.ts
-│   │   │   │   ├── data-access
-│   │   │   │   │   ├── training-task.mock.ts
-│   │   │   │   │   ├── training-task.models.ts
-│   │   │   │   │   ├── training-task-api.service.ts
-│   │   │   │   │   ├── training-tasks.service.ts
-│   │   │   │   ├── pages
-│   │   │   │   │   ├── training-tasks
-│   │   │   │   │   │   ├── training-tasks.component.html
-│   │   │   │   │   │   ├── training-tasks.component.scss
-│   │   │   │   │   │   ├── training-tasks.component.ts
-│   │   │   │   ├── styles
-│   │   │   │   │   ├── _actions.scss
-│   │   │   │   ├── training-tasks.routes.ts
-│   │   │   ├── version-management
-│   │   │   │   ├── components
-│   │   │   │   │   ├── accuracy-comparison-card
-│   │   │   │   │   │   ├── accuracy-comparison-card.component.html
-│   │   │   │   │   │   ├── accuracy-comparison-card.component.scss
-│   │   │   │   │   │   ├── accuracy-comparison-card.component.ts
-│   │   │   │   │   ├── activate-version-dialog
-│   │   │   │   │   │   ├── activate-version-dialog.component.html
-│   │   │   │   │   │   ├── activate-version-dialog.component.scss
-│   │   │   │   │   │   ├── activate-version-dialog.component.ts
-│   │   │   │   │   ├── version-delete-dialog
-│   │   │   │   │   │   ├── version-delete-dialog.component.html
-│   │   │   │   │   │   ├── version-delete-dialog.component.scss
-│   │   │   │   │   │   ├── version-delete-dialog.component.ts
-│   │   │   │   │   ├── version-details-dialog
-│   │   │   │   │   │   ├── version-details-dialog.component.html
-│   │   │   │   │   │   ├── version-details-dialog.component.scss
-│   │   │   │   │   │   ├── version-details-dialog.component.ts
-│   │   │   │   │   ├── version-timeline
-│   │   │   │   │   │   ├── version-timeline.component.html
-│   │   │   │   │   │   ├── version-timeline.component.scss
-│   │   │   │   │   │   ├── version-timeline.component.ts
-│   │   │   │   ├── data-access
-│   │   │   │   │   ├── version-management.mock.ts
-│   │   │   │   │   ├── version-management.models.ts
-│   │   │   │   │   ├── version-management.service.ts
-│   │   │   │   │   ├── version-management-api.service.ts
-│   │   │   │   ├── pages
-│   │   │   │   │   ├── version-management-page
-│   │   │   │   │   │   ├── version-management-page.component.html
-│   │   │   │   │   │   ├── version-management-page.component.scss
-│   │   │   │   │   │   ├── version-management-page.component.ts
-│   │   │   │   ├── version-management.routes.ts
-│   │   ├── layout
-│   │   │   ├── header
-│   │   │   │   ├── header.component.html
-│   │   │   │   ├── header.component.scss
-│   │   │   │   ├── header.component.ts
-│   │   │   ├── main-layout
-│   │   │   │   ├── main-layout.component.html
-│   │   │   │   ├── main-layout.component.scss
-│   │   │   │   ├── main-layout.component.ts
-│   │   │   ├── sidebar
-│   │   │   │   ├── sidebar.component.html
-│   │   │   │   ├── sidebar.component.scss
-│   │   │   │   ├── sidebar.component.ts
-│   │   ├── shared
-│   │   │   ├── components
-│   │   │   │   ├── confirm-dialog
-│   │   │   │   │   ├── confirm-dialog.component.html
-│   │   │   │   │   ├── confirm-dialog.component.scss
-│   │   │   │   │   ├── confirm-dialog.component.ts
-│   │   │   │   ├── feature-placeholder
-│   │   │   │   │   ├── feature-placeholder.component.html
-│   │   │   │   │   ├── feature-placeholder.component.scss
-│   │   │   │   │   ├── feature-placeholder.component.ts
-│   │   │   │   ├── icon
-│   │   │   │   │   ├── icon.component.html
-│   │   │   │   │   ├── icon.component.scss
-│   │   │   │   │   ├── icon.component.ts
-│   │   │   │   │   ├── icon-paths.ts
-│   │   │   │   ├── modal
-│   │   │   │   │   ├── modal.component.html
-│   │   │   │   │   ├── modal.component.scss
-│   │   │   │   │   ├── modal.component.ts
-│   │   │   │   ├── page-header
-│   │   │   │   │   ├── page-header.component.html
-│   │   │   │   │   ├── page-header.component.scss
-│   │   │   │   │   ├── page-header.component.ts
-│   │   │   │   ├── stat-card
-│   │   │   │   │   ├── stat-card.component.html
-│   │   │   │   │   ├── stat-card.component.scss
-│   │   │   │   │   ├── stat-card.component.ts
-│   │   │   │   ├── toast-container
-│   │   │   │   │   ├── toast-container.component.html
-│   │   │   │   │   ├── toast-container.component.scss
-│   │   │   │   │   ├── toast-container.component.ts
-│   │   │   ├── services
-│   │   │   │   ├── model-version.service.ts
-│   │   │   │   ├── model-version.store.ts
-│   │   │   │   ├── model-version-api.service.ts
-│   │   │   │   ├── operation-log.service.ts
-│   │   │   │   ├── toast.service.ts
-│   │   ├── app.component.html
-│   │   ├── app.component.scss
-│   │   ├── app.component.ts
-│   │   ├── app.config.ts
-│   │   ├── app.routes.ts
-│   ├── assets
-│   │   ├── images
-│   │   │   ├── favicon.ico
-│   ├── styles
-│   │   ├── _base.scss
-│   │   ├── _mixins.scss
-│   │   ├── _variables.scss
-│   │   ├── tailwind.css
-│   ├── index.html
-│   ├── main.ts
-│   ├── styles.scss
+E:\XYD-Model\xyd-ai-large-analytics-model
 ├── .editorconfig
 ├── .gitattributes
 ├── .gitignore
 ├── .postcssrc.json
 ├── .prettierrc
+├── .vscode
+|  ├── extensions.json
+|  ├── launch.json
+|  └── tasks.json
 ├── angular.json
 ├── build.log
 ├── data.json
-├── package.json
 ├── package-lock.json
+├── package.json
 ├── project-structure.txt
 ├── proxy.conf.json
 ├── README.md
+├── scripts
+|  ├── generate-favicons.mjs
+|  └── simulate-feed.js
 ├── serve.log
 ├── server.js
+├── src
+|  ├── app
+|  |  ├── app.component.html
+|  |  ├── app.component.scss
+|  |  ├── app.component.ts
+|  |  ├── app.config.ts
+|  |  ├── app.routes.ts
+|  |  ├── core
+|  |  |  ├── auth
+|  |  |  |  ├── auth.config.ts
+|  |  |  |  ├── auth.guard.ts
+|  |  |  |  └── auth.service.ts
+|  |  |  ├── config
+|  |  |  |  ├── app-settings.ts
+|  |  |  |  └── navigation.config.ts
+|  |  |  ├── constants
+|  |  |  ├── logging
+|  |  |  |  ├── audit-log.service.ts
+|  |  |  |  ├── click-logger.service.ts
+|  |  |  |  ├── http-audit.interceptor.ts
+|  |  |  |  ├── log-actions.ts
+|  |  |  |  └── navigation-logger.service.ts
+|  |  |  ├── model-version-api.service.ts
+|  |  |  └── permissions
+|  |  |     ├── access-store.service.ts
+|  |  |     ├── permission-catalog.ts
+|  |  |     └── permission.service.ts
+|  |  ├── features
+|  |  |  ├── dashboard
+|  |  |  |  ├── components
+|  |  |  |  |  ├── failure-mode-chart
+|  |  |  |  |  |  ├── failure-mode-chart.component.html
+|  |  |  |  |  |  ├── failure-mode-chart.component.scss
+|  |  |  |  |  |  └── failure-mode-chart.component.ts
+|  |  |  |  |  ├── hourly-trend-chart
+|  |  |  |  |  |  ├── hourly-trend-chart.component.html
+|  |  |  |  |  |  ├── hourly-trend-chart.component.scss
+|  |  |  |  |  |  └── hourly-trend-chart.component.ts
+|  |  |  |  |  ├── recent-warning
+|  |  |  |  |  |  ├── recent-warning.component.html
+|  |  |  |  |  |  ├── recent-warning.component.scss
+|  |  |  |  |  |  └── recent-warning.component.ts
+|  |  |  |  |  └── system-monitoring-table
+|  |  |  |  |     ├── system-monitoring-table.component.html
+|  |  |  |  |     ├── system-monitoring-table.component.scss
+|  |  |  |  |     └── system-monitoring-table.component.ts
+|  |  |  |  ├── dashboard.routes.ts
+|  |  |  |  ├── data-access
+|  |  |  |  |  ├── dashboard.data.ts
+|  |  |  |  |  ├── dashboard.models.ts
+|  |  |  |  |  └── dashboard.store.ts
+|  |  |  |  └── pages
+|  |  |  |     └── dashboard
+|  |  |  |        ├── dashboard.component.html
+|  |  |  |        ├── dashboard.component.scss
+|  |  |  |        └── dashboard.component.ts
+|  |  |  ├── data-export
+|  |  |  |  ├── data-export.routes.ts
+|  |  |  |  └── pages
+|  |  |  |     └── data-export
+|  |  |  |        ├── data-export.component.html
+|  |  |  |        ├── data-export.component.scss
+|  |  |  |        └── data-export.component.ts
+|  |  |  ├── data-import
+|  |  |  |  ├── components
+|  |  |  |  |  ├── column-mapping-dialog
+|  |  |  |  |  |  ├── column-mapping-dialog.component.html
+|  |  |  |  |  |  ├── column-mapping-dialog.component.scss
+|  |  |  |  |  |  └── column-mapping-dialog.component.ts
+|  |  |  |  |  ├── curve-viewer
+|  |  |  |  |  |  ├── curve-viewer.component.html
+|  |  |  |  |  |  ├── curve-viewer.component.scss
+|  |  |  |  |  |  └── curve-viewer.component.ts
+|  |  |  |  |  ├── file-dropzone
+|  |  |  |  |  |  ├── file-dropzone.component.html
+|  |  |  |  |  |  ├── file-dropzone.component.scss
+|  |  |  |  |  |  └── file-dropzone.component.ts
+|  |  |  |  |  ├── import-progress
+|  |  |  |  |  |  ├── import-progress.component.html
+|  |  |  |  |  |  ├── import-progress.component.scss
+|  |  |  |  |  |  └── import-progress.component.ts
+|  |  |  |  |  ├── import-tabs
+|  |  |  |  |  |  ├── import-tabs.component.html
+|  |  |  |  |  |  ├── import-tabs.component.scss
+|  |  |  |  |  |  └── import-tabs.component.ts
+|  |  |  |  |  ├── playback-import-modal
+|  |  |  |  |  |  ├── playback-import-modal.component.html
+|  |  |  |  |  |  ├── playback-import-modal.component.scss
+|  |  |  |  |  |  └── playback-import-modal.component.ts
+|  |  |  |  |  ├── playback-import-panel
+|  |  |  |  |  |  ├── playback-import-panel.component.html
+|  |  |  |  |  |  ├── playback-import-panel.component.scss
+|  |  |  |  |  |  └── playback-import-panel.component.ts
+|  |  |  |  |  ├── playback-results-list
+|  |  |  |  |  |  ├── playback-results-list.component.html
+|  |  |  |  |  |  ├── playback-results-list.component.scss
+|  |  |  |  |  |  └── playback-results-list.component.ts
+|  |  |  |  |  ├── training-import-panel
+|  |  |  |  |  |  ├── training-import-panel.component.html
+|  |  |  |  |  |  ├── training-import-panel.component.scss
+|  |  |  |  |  |  └── training-import-panel.component.ts
+|  |  |  |  |  └── training-preview-table
+|  |  |  |  |     ├── training-preview-table.component.html
+|  |  |  |  |     ├── training-preview-table.component.scss
+|  |  |  |  |     └── training-preview-table.component.ts
+|  |  |  |  ├── data-access
+|  |  |  |  |  ├── column-mapper.service.ts
+|  |  |  |  |  ├── data-import.mock.ts
+|  |  |  |  |  ├── data-import.models.ts
+|  |  |  |  |  ├── data-import.service.ts
+|  |  |  |  |  ├── format-detector.service.ts
+|  |  |  |  |  ├── import-api.service.ts
+|  |  |  |  |  ├── import-constants.ts
+|  |  |  |  |  ├── import-parser.service.ts
+|  |  |  |  |  └── import-parser.worker.ts
+|  |  |  |  ├── data-import.routes.ts
+|  |  |  |  └── pages
+|  |  |  |     ├── data-import
+|  |  |  |     |  ├── data-import.component.html
+|  |  |  |     |  ├── data-import.component.scss
+|  |  |  |     |  └── data-import.component.ts
+|  |  |  |     └── data-import-page
+|  |  |  |        ├── data-import-page.component.html
+|  |  |  |        ├── data-import-page.component.scss
+|  |  |  |        └── data-import-page.component.ts
+|  |  |  ├── login
+|  |  |  |  ├── login.routes.ts
+|  |  |  |  └── pages
+|  |  |  |     └── login
+|  |  |  |        ├── login.component.html
+|  |  |  |        ├── login.component.scss
+|  |  |  |        └── login.component.ts
+|  |  |  ├── logs-and-monitoring
+|  |  |  |  ├── data-access
+|  |  |  |  |  └── system-metrics.service.ts
+|  |  |  |  ├── logs-and-monitoring.routes.ts
+|  |  |  |  └── pages
+|  |  |  |     └── logs-and-monitoring
+|  |  |  |        ├── logs-and-monitoring.component.html
+|  |  |  |        ├── logs-and-monitoring.component.scss
+|  |  |  |        └── logs-and-monitoring.component.ts
+|  |  |  ├── low-confidence-review
+|  |  |  |  ├── components
+|  |  |  |  |  ├── review-checklist-table
+|  |  |  |  |  |  ├── review-checklist-table.component.html
+|  |  |  |  |  |  ├── review-checklist-table.component.scss
+|  |  |  |  |  |  └── review-checklist-table.component.ts
+|  |  |  |  |  ├── review-filter-panel
+|  |  |  |  |  |  ├── review-filter-panel.component.html
+|  |  |  |  |  |  ├── review-filter-panel.component.scss
+|  |  |  |  |  |  └── review-filter-panel.component.ts
+|  |  |  |  |  └── review-summary-cards
+|  |  |  |  |     ├── review-summary-cards.component.html
+|  |  |  |  |     ├── review-summary-cards.component.scss
+|  |  |  |  |     └── review-summary-cards.component.ts
+|  |  |  |  ├── data-access
+|  |  |  |  |  ├── low-confidence-review.mock.ts
+|  |  |  |  |  ├── low-confidence-review.models.ts
+|  |  |  |  |  └── low-confidence-review.service.ts
+|  |  |  |  ├── low-confidence-review.routes.ts
+|  |  |  |  └── pages
+|  |  |  |     ├── low-confidence-review
+|  |  |  |     |  ├── low-confidence-review.component.html
+|  |  |  |     |  ├── low-confidence-review.component.scss
+|  |  |  |     |  └── low-confidence-review.component.ts
+|  |  |  |     └── low-confidence-review-page
+|  |  |  |        ├── low-confidence-review-page.component.html
+|  |  |  |        ├── low-confidence-review-page.component.scss
+|  |  |  |        └── low-confidence-review-page.component.ts
+|  |  |  ├── parameters-and-formulas
+|  |  |  |  ├── components
+|  |  |  |  |  ├── config-tabs
+|  |  |  |  |  |  ├── config-tabs.component.html
+|  |  |  |  |  |  ├── config-tabs.component.scss
+|  |  |  |  |  |  └── config-tabs.component.ts
+|  |  |  |  |  ├── execution-config-dialog
+|  |  |  |  |  |  ├── execution-config-dialog.component.html
+|  |  |  |  |  |  ├── execution-config-dialog.component.scss
+|  |  |  |  |  |  └── execution-config-dialog.component.ts
+|  |  |  |  |  ├── execution-config-panel
+|  |  |  |  |  |  ├── execution-config-panel.component.html
+|  |  |  |  |  |  ├── execution-config-panel.component.scss
+|  |  |  |  |  |  └── execution-config-panel.component.ts
+|  |  |  |  |  ├── execution-config-table
+|  |  |  |  |  |  ├── config-action-buttons
+|  |  |  |  |  |  |  ├── config-action-buttons.component.html
+|  |  |  |  |  |  |  ├── config-action-buttons.component.scss
+|  |  |  |  |  |  |  └── config-action-buttons.component.ts
+|  |  |  |  |  |  ├── execution-config-table.component.html
+|  |  |  |  |  |  ├── execution-config-table.component.scss
+|  |  |  |  |  |  └── execution-config-table.component.ts
+|  |  |  |  |  ├── failure-mode-dialog
+|  |  |  |  |  |  ├── failure-mode-dialog.component.html
+|  |  |  |  |  |  ├── failure-mode-dialog.component.scss
+|  |  |  |  |  |  └── failure-mode-dialog.component.ts
+|  |  |  |  |  ├── failure-mode-panel
+|  |  |  |  |  |  ├── failure-mode-panel.component.html
+|  |  |  |  |  |  ├── failure-mode-panel.component.scss
+|  |  |  |  |  |  └── failure-mode-panel.component.ts
+|  |  |  |  |  ├── failure-mode-table
+|  |  |  |  |  |  ├── failure-mode-actions
+|  |  |  |  |  |  |  ├── failure-mode-actions.component.html
+|  |  |  |  |  |  |  ├── failure-mode-actions.component.scss
+|  |  |  |  |  |  |  └── failure-mode-actions.component.ts
+|  |  |  |  |  |  ├── failure-mode-table.component.html
+|  |  |  |  |  |  ├── failure-mode-table.component.scss
+|  |  |  |  |  |  └── failure-mode-table.component.ts
+|  |  |  |  |  ├── system-settings-panel
+|  |  |  |  |  |  ├── system-settings-panel.component.html
+|  |  |  |  |  |  ├── system-settings-panel.component.scss
+|  |  |  |  |  |  └── system-settings-panel.component.ts
+|  |  |  |  |  └── system-settings-section
+|  |  |  |  |     ├── system-settings-section.component.html
+|  |  |  |  |     ├── system-settings-section.component.scss
+|  |  |  |  |     └── system-settings-section.component.ts
+|  |  |  |  ├── data-access
+|  |  |  |  |  ├── config-validators.ts
+|  |  |  |  |  ├── parameters-and-formulas-api.service.ts
+|  |  |  |  |  ├── parameters-and-formulas.mock.ts
+|  |  |  |  |  ├── parameters-and-formulas.models.ts
+|  |  |  |  |  └── parameters-and-formulas.service.ts
+|  |  |  |  ├── pages
+|  |  |  |  |  └── parameters-and-formulas-page
+|  |  |  |  |     ├── parameters-and-formulas-page.component.html
+|  |  |  |  |     ├── parameters-and-formulas-page.component.scss
+|  |  |  |  |     └── parameters-and-formulas-page.component.ts
+|  |  |  |  └── parameters-and-formulas.routes.ts
+|  |  |  ├── permission-management
+|  |  |  |  ├── pages
+|  |  |  |  |  └── permission-management
+|  |  |  |  |     ├── permission-management.component.html
+|  |  |  |  |     ├── permission-management.component.scss
+|  |  |  |  |     └── permission-management.component.ts
+|  |  |  |  └── permission-management.routes.ts
+|  |  |  ├── realtime-monitoring
+|  |  |  |  ├── components
+|  |  |  |  |  ├── monitoring-empty-state
+|  |  |  |  |  |  ├── monitoring-empty-state.component.html
+|  |  |  |  |  |  ├── monitoring-empty-state.component.scss
+|  |  |  |  |  |  └── monitoring-empty-state.component.ts
+|  |  |  |  |  ├── monitoring-live-result
+|  |  |  |  |  |  ├── monitoring-live-result.component.html
+|  |  |  |  |  |  ├── monitoring-live-result.component.scss
+|  |  |  |  |  |  └── monitoring-live-result.component.ts
+|  |  |  |  |  ├── monitoring-status-badges
+|  |  |  |  |  |  ├── monitoring-status-badges.component.html
+|  |  |  |  |  |  ├── monitoring-status-badges.component.scss
+|  |  |  |  |  |  └── monitoring-status-badges.component.ts
+|  |  |  |  |  ├── monitoring-status-bar
+|  |  |  |  |  |  ├── monitoring-status-bar.component.html
+|  |  |  |  |  |  ├── monitoring-status-bar.component.scss
+|  |  |  |  |  |  └── monitoring-status-bar.component.ts
+|  |  |  |  |  └── torque-angle-chart
+|  |  |  |  |     ├── torque-angle-chart.component.html
+|  |  |  |  |     ├── torque-angle-chart.component.scss
+|  |  |  |  |     └── torque-angle-chart.component.ts
+|  |  |  |  ├── data-access
+|  |  |  |  |  ├── monitoring-api.service.ts
+|  |  |  |  |  ├── monitoring.mock.ts
+|  |  |  |  |  ├── monitoring.models.ts
+|  |  |  |  |  └── monitoring.service.ts
+|  |  |  |  ├── pages
+|  |  |  |  |  └── realtime-monitoring-page
+|  |  |  |  |     ├── realtime-monitoring-page.component.html
+|  |  |  |  |     ├── realtime-monitoring-page.component.scss
+|  |  |  |  |     └── realtime-monitoring-page.component.ts
+|  |  |  |  └── realtime-monitoring.routes.ts
+|  |  |  ├── sample-search
+|  |  |  |  ├── components
+|  |  |  |  |  ├── multi-select-dropdown
+|  |  |  |  |  |  ├── multi-select-dropdown.component.html
+|  |  |  |  |  |  ├── multi-select-dropdown.component.scss
+|  |  |  |  |  |  └── multi-select-dropdown.component.ts
+|  |  |  |  |  ├── sample-filter-panel
+|  |  |  |  |  |  ├── sample-filter-panel.component.html
+|  |  |  |  |  |  ├── sample-filter-panel.component.scss
+|  |  |  |  |  |  └── sample-filter-panel.component.ts
+|  |  |  |  |  ├── sample-results-table
+|  |  |  |  |  |  ├── sample-results-table.component.html
+|  |  |  |  |  |  ├── sample-results-table.component.scss
+|  |  |  |  |  |  └── sample-results-table.component.ts
+|  |  |  |  |  └── table-pagination
+|  |  |  |  |     ├── table-pagination.component.html
+|  |  |  |  |     ├── table-pagination.component.scss
+|  |  |  |  |     └── table-pagination.component.ts
+|  |  |  |  ├── data-access
+|  |  |  |  |  ├── sample-models.ts
+|  |  |  |  |  ├── sample.mock.ts
+|  |  |  |  |  └── sample.service.ts
+|  |  |  |  ├── pages
+|  |  |  |  |  ├── sample-search
+|  |  |  |  |  |  ├── sample-search.component.html
+|  |  |  |  |  |  ├── sample-search.component.scss
+|  |  |  |  |  |  └── sample-search.component.ts
+|  |  |  |  |  └── sample-search-page
+|  |  |  |  |     ├── sample-search-page.component.html
+|  |  |  |  |     ├── sample-search-page.component.scss
+|  |  |  |  |     └── sample-search-page.component.ts
+|  |  |  |  └── sample-search.routes.ts
+|  |  |  ├── training-tasks
+|  |  |  |  ├── components
+|  |  |  |  |  ├── task-delete-dialog
+|  |  |  |  |  |  ├── task-delete-dialog.component.html
+|  |  |  |  |  |  ├── task-delete-dialog.component.scss
+|  |  |  |  |  |  └── task-delete-dialog.component.ts
+|  |  |  |  |  ├── training-task-confirm
+|  |  |  |  |  |  ├── training-task-confirm.component.html
+|  |  |  |  |  |  ├── training-task-confirm.component.scss
+|  |  |  |  |  |  └── training-task-confirm.component.ts
+|  |  |  |  |  └── training-task-detail
+|  |  |  |  |     ├── training-task-detail.component.html
+|  |  |  |  |     ├── training-task-detail.component.scss
+|  |  |  |  |     └── training-task-detail.component.ts
+|  |  |  |  ├── data-access
+|  |  |  |  |  ├── training-task-api.service.ts
+|  |  |  |  |  ├── training-task.mock.ts
+|  |  |  |  |  ├── training-task.models.ts
+|  |  |  |  |  └── training-tasks.service.ts
+|  |  |  |  ├── pages
+|  |  |  |  |  └── training-tasks
+|  |  |  |  |     ├── training-tasks.component.html
+|  |  |  |  |     ├── training-tasks.component.scss
+|  |  |  |  |     └── training-tasks.component.ts
+|  |  |  |  ├── styles
+|  |  |  |  |  └── _actions.scss
+|  |  |  |  └── training-tasks.routes.ts
+|  |  |  └── version-management
+|  |  |     ├── components
+|  |  |     |  ├── accuracy-comparison-card
+|  |  |     |  |  ├── accuracy-comparison-card.component.html
+|  |  |     |  |  ├── accuracy-comparison-card.component.scss
+|  |  |     |  |  └── accuracy-comparison-card.component.ts
+|  |  |     |  ├── activate-version-dialog
+|  |  |     |  |  ├── activate-version-dialog.component.html
+|  |  |     |  |  ├── activate-version-dialog.component.scss
+|  |  |     |  |  └── activate-version-dialog.component.ts
+|  |  |     |  ├── version-delete-dialog
+|  |  |     |  |  ├── version-delete-dialog.component.html
+|  |  |     |  |  ├── version-delete-dialog.component.scss
+|  |  |     |  |  └── version-delete-dialog.component.ts
+|  |  |     |  ├── version-details-dialog
+|  |  |     |  |  ├── version-details-dialog.component.html
+|  |  |     |  |  ├── version-details-dialog.component.scss
+|  |  |     |  |  └── version-details-dialog.component.ts
+|  |  |     |  └── version-timeline
+|  |  |     |     ├── version-timeline.component.html
+|  |  |     |     ├── version-timeline.component.scss
+|  |  |     |     └── version-timeline.component.ts
+|  |  |     ├── data-access
+|  |  |     |  ├── version-management-api.service.ts
+|  |  |     |  ├── version-management.mock.ts
+|  |  |     |  ├── version-management.models.ts
+|  |  |     |  └── version-management.service.ts
+|  |  |     ├── pages
+|  |  |     |  └── version-management-page
+|  |  |     |     ├── version-management-page.component.html
+|  |  |     |     ├── version-management-page.component.scss
+|  |  |     |     └── version-management-page.component.ts
+|  |  |     └── version-management.routes.ts
+|  |  ├── layout
+|  |  |  ├── header
+|  |  |  |  ├── header.component.html
+|  |  |  |  ├── header.component.scss
+|  |  |  |  └── header.component.ts
+|  |  |  ├── main-layout
+|  |  |  |  ├── main-layout.component.html
+|  |  |  |  ├── main-layout.component.scss
+|  |  |  |  └── main-layout.component.ts
+|  |  |  └── sidebar
+|  |  |     ├── sidebar.component.html
+|  |  |     ├── sidebar.component.scss
+|  |  |     └── sidebar.component.ts
+|  |  └── shared
+|  |     ├── components
+|  |     |  ├── backend-notice
+|  |     |  ├── brand-logo
+|  |     |  |  ├── brand-logo.component.html
+|  |     |  |  ├── brand-logo.component.scss
+|  |     |  |  └── brand-logo.component.ts
+|  |     |  ├── confirm-dialog
+|  |     |  |  ├── confirm-dialog.component.html
+|  |     |  |  ├── confirm-dialog.component.scss
+|  |     |  |  └── confirm-dialog.component.ts
+|  |     |  ├── feature-placeholder
+|  |     |  |  ├── feature-placeholder.component.html
+|  |     |  |  ├── feature-placeholder.component.scss
+|  |     |  |  └── feature-placeholder.component.ts
+|  |     |  ├── icon
+|  |     |  |  ├── icon-paths.ts
+|  |     |  |  ├── icon.component.html
+|  |     |  |  ├── icon.component.scss
+|  |     |  |  └── icon.component.ts
+|  |     |  ├── modal
+|  |     |  |  ├── modal.component.html
+|  |     |  |  ├── modal.component.scss
+|  |     |  |  └── modal.component.ts
+|  |     |  ├── page-header
+|  |     |  |  ├── page-header.component.html
+|  |     |  |  ├── page-header.component.scss
+|  |     |  |  └── page-header.component.ts
+|  |     |  ├── stat-card
+|  |     |  |  ├── stat-card.component.html
+|  |     |  |  ├── stat-card.component.scss
+|  |     |  |  └── stat-card.component.ts
+|  |     |  └── toast-container
+|  |     |     ├── toast-container.component.html
+|  |     |     ├── toast-container.component.scss
+|  |     |     └── toast-container.component.ts
+|  |     └── services
+|  |        ├── model-version-api.service.ts
+|  |        ├── model-version.store.ts
+|  |        ├── operation-log.service.ts
+|  |        └── toast.service.ts
+|  ├── assets
+|  |  ├── favicons
+|  |  |  ├── apple-touch-icon.png
+|  |  |  ├── favicon-16x16.png
+|  |  |  ├── favicon-180x180.png
+|  |  |  ├── favicon-192x192.png
+|  |  |  ├── favicon-32x32.png
+|  |  |  ├── favicon-48x48.png
+|  |  |  ├── favicon.ico
+|  |  |  ├── favicon.svg
+|  |  |  ├── icon-maskable-512.png
+|  |  |  ├── safari-pinned-tab.svg
+|  |  |  └── site.webmanifest
+|  |  └── images
+|  ├── index.html
+|  ├── main.ts
+|  ├── styles
+|  |  ├── tailwind.css
+|  |  ├── _base.scss
+|  |  ├── _mixins.scss
+|  |  └── _variables.scss
+|  └── styles.scss
 ├── tsc.log
 ├── tsconfig.app.json
-├── tsconfig.json
+└── tsconfig.json
+
+directory: 2125 file: 21779
+
+ignored: directory (155)
